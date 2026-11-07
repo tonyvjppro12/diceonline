@@ -379,6 +379,24 @@ function getColorName(hex, fallbackIndex){
   return COLOR_NAMES[fallbackIndex] || 'Color';
 }
 
+function getFaceValueForColor(colorOrName, fallbackIdx){
+  if(!colorOrName) return Math.floor(Math.random()*6)+1;
+  const str = String(colorOrName).toLowerCase().trim();
+  const num = parseInt(str);
+  if(!isNaN(num) && num >= 1 && num <= 6) return num;
+  const nameIdx = COLOR_NAMES.findIndex(n => n.toLowerCase() === str);
+  if(nameIdx !== -1) return nameIdx + 1;
+  if(HEX_TO_NAME[str]){
+    const n = HEX_TO_NAME[str].toLowerCase();
+    const idx = COLOR_NAMES.findIndex(item => item.toLowerCase() === n);
+    if(idx !== -1) return idx + 1;
+  }
+  const faceIdx = state.faceColors.findIndex(c => c.toLowerCase() === str);
+  if(faceIdx !== -1) return faceIdx + 1;
+
+  return (fallbackIdx % 6) + 1;
+}
+
 let rollCounter = 0;
 let rollHistory = [];
 
@@ -390,6 +408,8 @@ let state = {
   faceColors:   [...DEFAULT_FACE_COLORS],
   rollDuration: 1.0,         // thời gian lăn tính bằng giây (0.3s - 3.5s)
   showHistory:  true,        // hiển thị bảng lịch sử
+  targetMode:   'target',     // 'target' (kết quả cài trước từ remote) hoặc 'random'
+  targetResults:[1, 2, 4, 5], // Kết quả cài sẵn: 1=Red, 2=Orange, 4=Green, 5=Blue
   rolling:      false,
   results:      [1, 2, 4, 5] // Hiển thị sẵn 4 xúc xắc 4 màu trên bàn
 };
@@ -404,7 +424,9 @@ function saveState(){
       sound: state.sound,
       faceColors: state.faceColors,
       rollDuration: state.rollDuration || 1.0,
-      showHistory: state.showHistory !== undefined ? state.showHistory : true
+      showHistory: state.showHistory !== undefined ? state.showHistory : true,
+      targetMode: state.targetMode || 'target',
+      targetResults: state.targetResults || [1, 2, 4, 5]
     }));
   }catch(e){}
 }
@@ -419,6 +441,8 @@ function loadState(){
       state.faceColors = s.faceColors || [...DEFAULT_FACE_COLORS];
       state.rollDuration = parseFloat(s.rollDuration) || 1.0;
       state.showHistory = s.showHistory !== undefined ? s.showHistory : true;
+      state.targetMode = s.targetMode || 'target';
+      state.targetResults = (s.targetResults && Array.isArray(s.targetResults)) ? s.targetResults : [1, 2, 4, 5];
     }
   }catch(e){}
 }
@@ -757,14 +781,31 @@ function drawDiceResults(w, h){
 /* =====================================================================
    ROLLING ANIMATION (Hỗ trợ tùy chỉnh tốc độ nhanh / chậm)
    ===================================================================== */
-function rollDice(overrideDuration){
+function rollDice(overrideDuration, overrideTargets){
   if(state.rolling) return;
   state.rolling = true;
   btnRoll.disabled = true;
   btnRoll.textContent = '🎲 Rolling...';
 
   const n = state.diceCount;
-  const finalValues = Array.from({length:n}, ()=> Math.floor(Math.random()*6)+1);
+
+  // Xác định kết quả cài sẵn từ remote hoặc ngẫu nhiên
+  let finalValues = [];
+  const targets = (overrideTargets && Array.isArray(overrideTargets) && overrideTargets.length)
+    ? overrideTargets
+    : state.targetResults;
+
+  if(state.targetMode === 'random' || !targets || !targets.length){
+    finalValues = Array.from({length:n}, ()=> Math.floor(Math.random()*6)+1);
+  } else {
+    finalValues = Array.from({length:n}, (_, i)=>{
+      const t = targets[i];
+      if(typeof t === 'number' && t >= 1 && t <= 6) return t;
+      if(typeof t === 'string') return getFaceValueForColor(t, i);
+      return Math.floor(Math.random()*6)+1;
+    });
+  }
+
   const finalRotations = Array.from({length:n}, ()=> (Math.random()-0.5)*0.5);
   state._rotations = finalRotations;
 
@@ -994,9 +1035,21 @@ document.querySelectorAll('.dice-pill').forEach(pill => {
 function setDiceCount(count){
   state.diceCount = count;
   diceCountSel.value = count;
+
+  // Đồng bộ độ dài của targetResults với số lượng xúc xắc
+  if(!state.targetResults || !Array.isArray(state.targetResults)){
+    state.targetResults = [];
+  }
+  while(state.targetResults.length < count){
+    state.targetResults.push((state.targetResults.length % 6) + 1);
+  }
+
   updateDicePillsUI();
-  // Khởi tạo mặt xúc xắc mẫu đẹp mắt
-  state.results = Array.from({length: state.diceCount}, (_, i)=> (i % 6) + 1);
+  // Khởi tạo xúc xắc trên bàn hiển thị theo màu đã cài sẵn
+  state.results = Array.from({length: state.diceCount}, (_, i)=> {
+    const t = state.targetResults[i];
+    return (typeof t === 'number' && t >= 1 && t <= 6) ? t : ((i % 6) + 1);
+  });
   drawStage();
   showResult();
   saveState();
@@ -1294,7 +1347,9 @@ function broadcastCloudState(){
     faceColors: state.faceColors,
     rollDuration: state.rollDuration || 1.0,
     showHistory: state.showHistory,
-    history: rollHistory
+    history: rollHistory,
+    targetResults: state.targetResults,
+    targetMode: state.targetMode
   });
 }
 
@@ -1312,7 +1367,24 @@ if(window.syncService){
       let needRedraw = false;
 
       if(action === 'roll'){
-        rollDice(payload.rollDuration);
+        if(payload.targetResults && Array.isArray(payload.targetResults)){
+          state.targetResults = [...payload.targetResults];
+        }
+        if(payload.targetMode){
+          state.targetMode = payload.targetMode;
+        }
+        rollDice(payload.rollDuration, payload.targetResults);
+        return;
+      }
+
+      if(action === 'set_targets'){
+        if(payload.targets && Array.isArray(payload.targets)){
+          state.targetResults = [...payload.targets];
+        }
+        if(payload.targetMode){
+          state.targetMode = payload.targetMode;
+        }
+        saveState();
         return;
       }
 
@@ -1334,9 +1406,8 @@ if(window.syncService){
       if(action === 'change_dice_count'){
         const cnt = parseInt(payload.diceCount);
         if(cnt >= 1 && cnt <= 6){
-          state.diceCount = cnt;
-          diceCountSel.value = cnt;
-          needRedraw = true;
+          setDiceCount(cnt);
+          return;
         }
       }
 

@@ -51,12 +51,19 @@ Khi đó:
 ---
 
 ## 🎨 DANH SÁCH TÍNH NĂNG
-1. **🖌️ Giao diện đổi màu 1-chạm siêu tốc cho điện thoại (MỚI)**:
-   - **Gọn gàng đúng 6 màu chuẩn xúc xắc**: Đỏ (`#e74c3c`), Cam (`#e67e22`), Vàng (`#f1c40f`), Xanh lá (`#2ecc71`), Xanh dương (`#3498db`), Tím (`#9b59b6`).
-   - Nút bấm to dạng thẻ 3x2 có tên tiếng Việt và chấm màu rõ ràng, không bị bấm nhầm hay vướng víu.
-   - **Bộ màu mẫu 1-chạm**: Cầu vồng (mỗi mặt 1 màu), Toàn Đỏ, Toàn Cam, Toàn Vàng, Toàn Lục, Toàn Lam.
-   - **Tính năng tự nhảy mặt (Auto-advance)**: Chọn Mặt 1 xong tự nhảy sang Mặt 2, 3, 4, 5, 6 — đổi cả bộ xúc xắc chỉ mất 2 giây!
-   - **Nút "Đổi cả 6 mặt cùng lúc"**: 1 chạm đổi toàn bộ xúc xắc sang cùng một màu.
+1. **🎯 CÀI SẴN KẾT QUẢ ROLL TỪ XA QUA REMOTE (MỚI)**:
+   - **Chỉnh số lượng xúc xắc (1 đến 6) tức thì**: Trên remote có 6 nút chọn số xúc xắc to rõ (`1 Die`, `2 Dice`, `3 Dice`, `4 Dice`, `5 Dice`, `6 Dice`), chạm 1 cái là máy tính live đổi số lượng xúc xắc ngay.
+   - **Gán màu kết quả cho từng viên**:
+     - Remote tự động hiển thị thẻ cho từng viên tương ứng (ví dụ 4 viên: Viên 1, Viên 2, Viên 3, Viên 4).
+     - Muốn Viên 1 ra màu gì? Chạm Viên 1 $\rightarrow$ Chạm màu đó (`Red`, `Orange`, `Yellow`, `Green`, `Blue`, `Purple`).
+     - Tự động nhảy (Auto-advance): Chọn xong Viên 1 tự động chuyển sang Viên 2, 3, 4. Chỉ mất 2 giây để gán xong cả bộ.
+     - Nút Combo 1-chạm: `🌈 Rainbow (Cầu vồng)`, `🔴 Toàn Đỏ`, `🟠 Toàn Cam`, `🟡 Toàn Vàng`, `🟢 Toàn Xanh lá`, `🔵 Toàn Xanh dương`, `🟣 Toàn Tím`.
+   - **Hiệu ứng trên Livestream chân thực 100%**:
+     - Khi bấm **🎲 ROLL** (dù bấm trên điện thoại hay người trên máy tính bấm *Go Again !*):
+     - Xúc xắc tung lên, xoay vòng, nảy bật đa va chạm và có tiếng xúc xắc sống động như ngẫu nhiên thật.
+     - **Nhưng khi dừng lại**: Các viên xúc xắc sẽ dừng **CHÍNH XÁC** ở các màu bạn đã chọn trên điện thoại!
+     - Khán giả xem live hoàn toàn không nhận ra kết quả đã được cài trước.
+   - **Nút chuyển chế độ `🎯 Cài sẵn` / `🎲 Ngẫu nhiên`**: Khi muốn một lượt đổ xúc xắc hoàn toàn tự nhiên ngẫu nhiên, chỉ cần chuyển sang `🎲 Ngẫu nhiên`.
 2. **⚡ Tùy chỉnh tốc độ lăn xúc xắc trên điện thoại**:
    - 6 nút chọn nhanh: Cực nhanh (0.4s), Nhanh (0.7s), Chuẩn (1.0s), Chậm (1.8s), Hồi hộp (2.6s), Rất chậm (3.5s).
    - Thanh trượt tùy chỉnh chi tiết từ 0.3s đến 3.5s.

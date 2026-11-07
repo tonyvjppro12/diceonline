@@ -38,12 +38,24 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
 .combo-btn{padding:7px 4px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.05);color:#ccc;font-size:11px;font-weight:600;cursor:pointer;text-align:center;font-family:inherit;transition:all .15s}
 .combo-btn:active{transform:scale(.95);background:rgba(255,255,255,.15);color:#fff}
 
-.face-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
-.face-tab{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;background:#0d101a;border:2px solid rgba(255,255,255,.1);border-radius:10px;cursor:pointer;transition:all .15s;font-family:inherit;color:#fff}
-.face-tab.active{border-color:#3898ec;background:rgba(56,152,236,.22);box-shadow:0 0 10px rgba(56,152,236,.4)}
-.face-tab .dice-pip{font-size:24px;line-height:1;transition:color .2s;text-shadow:0 1px 3px rgba(0,0,0,.5)}
-.face-tab .face-name{font-size:11px;font-weight:700}
-.face-tab-all{grid-column:span 3;padding:7px;background:rgba(255,255,255,.06);font-size:11.5px}
+/* ===== SỐ LƯỢNG XÚC XẮC (DICE COUNT) ===== */
+.dice-count-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
+.dice-cnt-btn{padding:10px 4px;background:#0d101a;border:2px solid rgba(255,255,255,.12);border-radius:10px;color:#cbd5e1;font-weight:700;font-size:13px;cursor:pointer;transition:all .15s;font-family:inherit;text-align:center}
+.dice-cnt-btn:active{transform:scale(.96)}
+.dice-cnt-btn.active{border-color:#28a745;background:rgba(40,167,69,.25);box-shadow:0 0 10px rgba(40,167,69,.35);color:#fff}
+.count-pill-active{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:12px;background:#28a745;color:#fff}
+
+/* ===== CÀI ĐẶT MÀU KẾT QUẢ CHO TỪNG VIÊN (TARGET OUTCOMES) ===== */
+.target-mode-toggle{display:flex;gap:4px;background:#0d101a;padding:2px;border-radius:8px;border:1px solid rgba(255,255,255,.1)}
+.target-mode-btn{padding:4px 9px;border-radius:6px;font-size:11px;font-weight:700;border:none;background:transparent;color:#888;cursor:pointer;transition:all .15s;font-family:inherit}
+.target-mode-btn.active{background:#3898ec;color:#fff}
+
+.die-target-tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px}
+.die-tab{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:#0d101a;border:2px solid rgba(255,255,255,.1);border-radius:10px;cursor:pointer;transition:all .15s;font-family:inherit;color:#fff}
+.die-tab:active{transform:scale(.96)}
+.die-tab.active{border-color:#3898ec;background:rgba(56,152,236,.2);box-shadow:0 0 10px rgba(56,152,236,.35)}
+.die-tab-all{grid-column:span 2;justify-content:center;padding:8px;background:rgba(255,255,255,.05);font-size:12px}
+.die-tab-color-dot{width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.8);box-shadow:0 0 5px rgba(0,0,0,.5);flex-shrink:0}
 
 .color-palette-bar{background:#0d101a;border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,.08)}
 .current-selection-info{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#aaa;margin-bottom:8px}
@@ -140,15 +152,36 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
     <div class="latest-summary" id="latestSummary">--</div>
   </div>
 
-  <!-- CARD ĐỔI 6 MÀU CHUẨN XÚC XẮC -->
+  <!-- CARD 1: SỐ LƯỢNG XÚC XẮC (DICE COUNT - 1 CHẠM) -->
   <div class="card">
-    <h3>
-      <span>🎨 6 Colors: Red, Orange, Yellow, Green, Blue, Purple</span>
-    </h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <h3 style="margin:0"><span>🎲 Số lượng xúc xắc</span></h3>
+      <span class="count-pill-active" id="currentDiceCountLabel">4 Viên</span>
+    </div>
+    <div class="dice-count-grid">
+      <button class="dice-cnt-btn" data-cnt="1" onclick="selectDiceCount(1)">1 Die</button>
+      <button class="dice-cnt-btn" data-cnt="2" onclick="selectDiceCount(2)">2 Dice</button>
+      <button class="dice-cnt-btn" data-cnt="3" onclick="selectDiceCount(3)">3 Dice</button>
+      <button class="dice-cnt-btn active" data-cnt="4" onclick="selectDiceCount(4)">4 Dice</button>
+      <button class="dice-cnt-btn" data-cnt="5" onclick="selectDiceCount(5)">5 Dice</button>
+      <button class="dice-cnt-btn" data-cnt="6" onclick="selectDiceCount(6)">6 Dice</button>
+    </div>
+  </div>
+
+  <!-- CARD 2: CÀI ĐẶT MÀU KẾT QUẢ CHO TỪNG VIÊN -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <h3 style="margin:0"><span>🎯 Màu kết quả khi Roll</span></h3>
+      <div class="target-mode-toggle">
+        <button class="target-mode-btn active" id="btnModeRigged" onclick="setTargetMode('target')">🎯 Cài sẵn</button>
+        <button class="target-mode-btn" id="btnModeRandom" onclick="setTargetMode('random')">🎲 Ngẫu nhiên</button>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#94a3b8;margin:0 0 8px">Chọn màu cho từng viên bên dưới. Khi bấm ROLL, xúc xắc trên Live sẽ dừng <b>đúng các màu này</b>!</p>
 
     <!-- 1-TAP PRESET COMBOS -->
     <div class="combo-presets">
-      <button class="combo-btn" style="grid-column:span 3;background:rgba(56,152,236,.18);border-color:#3898ec" onclick="applyColorCombo('rainbow')">🌈 Rainbow (Mỗi mặt 1 màu)</button>
+      <button class="combo-btn" style="grid-column:span 3;background:rgba(56,152,236,.18);border-color:#3898ec" onclick="applyColorCombo('rainbow')">🌈 Rainbow (Mỗi viên 1 màu)</button>
       <button class="combo-btn" onclick="applyColorCombo('allRed')">🔴 All Red</button>
       <button class="combo-btn" onclick="applyColorCombo('allOrange')">🟠 All Orange</button>
       <button class="combo-btn" onclick="applyColorCombo('allYellow')">🟡 All Yellow</button>
@@ -157,21 +190,21 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
       <button class="combo-btn" onclick="applyColorCombo('allPurple')">🟣 All Purple</button>
     </div>
 
-    <!-- 6 TABS CHỌN MẶT XÚC XẮC -->
-    <div class="face-tabs" id="faceTabs"></div>
+    <!-- TABS CHỌN TỪNG VIÊN XÚC XẮC (VIÊN 1, VIÊN 2, ...) -->
+    <div class="die-target-tabs" id="dieTargetTabs"></div>
 
-    <!-- BẢNG 6 MÀU DUY NHẤT -->
+    <!-- BẢNG 6 MÀU ĐỂ CHỌN CHO VIÊN ĐANG CHỌN -->
     <div class="color-palette-bar">
       <div class="current-selection-info">
-        <span>Đang chọn: <b id="currentFaceLabel">Face 1</b></span>
-        <span style="font-size:10.5px;color:#777">Chạm để đổi màu ⚡</span>
+        <span>Đang gán màu cho: <b id="currentDieLabel">Viên 1</b></span>
+        <span style="font-size:10.5px;color:#3898ec">Chạm màu bên dưới ⚡</span>
       </div>
       <div class="swatch-grid" id="swatchGrid"></div>
 
-      <!-- Tự động nhảy sang mặt kế tiếp -->
+      <!-- Tự động nhảy sang viên kế tiếp -->
       <label class="auto-advance-toggle">
         <input type="checkbox" id="autoAdvanceCheck" checked>
-        <span>⚡ Tự động chuyển sang mặt tiếp theo khi chọn</span>
+        <span>⚡ Tự động chuyển sang Viên tiếp theo khi chọn màu</span>
       </label>
     </div>
   </div>
@@ -215,18 +248,13 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
     </div>
   </div>
 
-  <!-- MODE & COUNT -->
+  <!-- MODE & SOUND -->
   <div class="card">
-    <h3>🎮 Chế độ & Số xúc xắc</h3>
+    <h3>🎮 Chế độ hiển thị & Âm thanh</h3>
     <div class="mode-toggle">
       <button class="mode-btn" data-mode="classic">🎲 6-sided Dice</button>
       <button class="mode-btn active" data-mode="color">🎨 Color Dice</button>
     </div>
-    <label>Số xúc xắc:</label>
-    <select id="rDiceCount">
-      <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-      <option value="4" selected>4 (Chuẩn 4 Color Dice)</option><option value="5">5</option><option value="6">6</option>
-    </select>
     <div class="sound-toggle">
       <input type="checkbox" id="rSound" checked> <span>Bật tiếng roll trên máy live</span>
     </div>
@@ -256,12 +284,12 @@ const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','
 
 /* 6 Màu chuẩn duy nhất của Color Dice */
 const SIX_COLORS = [
-  { name: 'Red', hex: '#e74c3c' },
-  { name: 'Orange', hex: '#e67e22' },
-  { name: 'Yellow', hex: '#f1c40f' },
-  { name: 'Green', hex: '#2ecc71' },
-  { name: 'Blue', hex: '#3498db' },
-  { name: 'Purple', hex: '#9b59b6' }
+  { name: 'Red', hex: '#e74c3c', value: 1 },
+  { name: 'Orange', hex: '#e67e22', value: 2 },
+  { name: 'Yellow', hex: '#f1c40f', value: 3 },
+  { name: 'Green', hex: '#2ecc71', value: 4 },
+  { name: 'Blue', hex: '#3498db', value: 5 },
+  { name: 'Purple', hex: '#9b59b6', value: 6 }
 ];
 
 const THEMES = {
@@ -287,11 +315,12 @@ let settings = {
   diceCount: 4,          // 4 Color Dice mặc định
   mode: 'color',         // Chế độ Color Dice mặc định
   sound: 'on',
-  faceColors: [...DEFAULT_FACE_COLORS],
-  rollDuration: 1.0
+  rollDuration: 1.0,
+  targetMode: 'target',  // 'target' (cài sẵn) hoặc 'random' (ngẫu nhiên)
+  targetDice: [1, 2, 4, 5] // 1=Red, 2=Orange, 4=Green, 5=Blue
 };
 
-let selectedFace = 0; // 0..5 hoặc 'all'
+let selectedDie = 0; // 0..diceCount-1 hoặc 'all'
 
 /* ---- PIN UNLOCK ---- */
 document.getElementById('btnPin').onclick = checkPin;
@@ -313,7 +342,8 @@ function checkPin(){
 }
 
 function initRemote(){
-  buildFaceTabs();
+  updateDiceCountUI();
+  buildDieTargetTabs();
   buildQuickPalette();
   buildThemeGrid();
   initSpeedControls();
@@ -343,12 +373,17 @@ function initRemote(){
       onMessage: (action, payload)=>{
         if(action === 'sync_state'){
           if(payload.theme) settings.theme = payload.theme;
-          if(payload.diceCount) settings.diceCount = payload.diceCount;
+          if(payload.diceCount){
+            settings.diceCount = parseInt(payload.diceCount);
+            updateDiceCountUI();
+          }
           if(payload.mode) settings.mode = payload.mode;
           if(payload.sound) settings.sound = payload.sound;
           if(payload.rollDuration) settings.rollDuration = parseFloat(payload.rollDuration) || 1.0;
-          if(payload.faceColors && Array.isArray(payload.faceColors)){
-            settings.faceColors = [...payload.faceColors];
+          if(payload.targetMode) setTargetMode(payload.targetMode);
+          if(payload.targetResults && Array.isArray(payload.targetResults)){
+            settings.targetDice = [...payload.targetResults];
+            buildDieTargetTabs();
           }
           if(payload.history && Array.isArray(payload.history)){
             remoteHistory = [...payload.history];
@@ -378,115 +413,173 @@ function initRemote(){
 }
 
 /* =====================================================================
-   GIAO DIỆN ĐỔI MÀU 1 CHẠM SIÊU TỐC
+   SỐ LƯỢNG XÚC XẮC (DICE COUNT - 1 CHẠM)
    ===================================================================== */
-function buildFaceTabs(){
-  const container = document.getElementById('faceTabs');
+function selectDiceCount(count){
+  settings.diceCount = count;
+  while(settings.targetDice.length < count){
+    settings.targetDice.push((settings.targetDice.length % 6) + 1);
+  }
+  if(settings.targetDice.length > count){
+    settings.targetDice = settings.targetDice.slice(0, count);
+  }
+  if(selectedDie !== 'all' && selectedDie >= count){
+    selectedDie = 0;
+  }
+  updateDiceCountUI();
+  buildDieTargetTabs();
+
+  if(window.syncService){
+    window.syncService.send('change_dice_count', { diceCount: count });
+    window.syncService.send('set_targets', { targets: settings.targetDice, targetMode: settings.targetMode });
+  }
+}
+
+function updateDiceCountUI(){
+  const badge = document.getElementById('currentDiceCountLabel');
+  if(badge) badge.textContent = `${settings.diceCount} Viên`;
+  document.querySelectorAll('.dice-cnt-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.cnt) === settings.diceCount);
+  });
+}
+
+/* =====================================================================
+   CÀI ĐẶT MÀU KẾT QUẢ CHO TỪNG VIÊN XÚC XẮC
+   ===================================================================== */
+function setTargetMode(mode){
+  settings.targetMode = mode;
+  const btnR = document.getElementById('btnModeRigged');
+  const btnRand = document.getElementById('btnModeRandom');
+  if(btnR) btnR.classList.toggle('active', mode === 'target');
+  if(btnRand) btnRand.classList.toggle('active', mode === 'random');
+  if(window.syncService){
+    window.syncService.send('set_targets', { targets: settings.targetDice, targetMode: settings.targetMode });
+  }
+}
+
+function buildDieTargetTabs(){
+  const container = document.getElementById('dieTargetTabs');
+  if(!container) return;
   container.innerHTML = '';
 
-  for(let i = 0; i < 6; i++){
+  const cnt = settings.diceCount;
+  for(let i = 0; i < cnt; i++){
     const tab = document.createElement('button');
-    tab.className = 'face-tab' + (selectedFace === i ? ' active' : '');
-    tab.onclick = ()=> selectFace(i);
+    tab.className = 'die-tab' + (selectedDie === i ? ' active' : '');
+    tab.onclick = ()=> selectDie(i);
+
+    const val = settings.targetDice[i] || ((i % 6) + 1);
+    const colorObj = SIX_COLORS.find(c => c.value === val) || SIX_COLORS[0];
+    const isYellow = colorObj.name === 'Yellow';
+
     tab.innerHTML = `
-      <span class="dice-pip" id="pipIcon${i}" style="color:${settings.faceColors[i]}">${PIPS[i]}</span>
-      <span class="face-name">Face ${i+1}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="die-tab-color-dot" style="background:${colorObj.hex}"></span>
+        <span style="font-weight:700;font-size:12.5px">Viên ${i+1}</span>
+      </div>
+      <span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;background:${colorObj.hex};${isYellow?'color:#222':'color:#fff'}">
+        ${colorObj.name}
+      </span>
     `;
     container.appendChild(tab);
   }
 
-  // Nút chọn tất cả 6 mặt
+  // Nút chọn tất cả các viên
   const allTab = document.createElement('button');
-  allTab.className = 'face-tab face-tab-all' + (selectedFace === 'all' ? ' active' : '');
-  allTab.onclick = ()=> selectFace('all');
-  allTab.innerHTML = `🎯 <b>Set ALL 6 Faces at once</b>`;
+  allTab.className = 'die-tab die-tab-all' + (selectedDie === 'all' ? ' active' : '');
+  allTab.onclick = ()=> selectDie('all');
+  allTab.innerHTML = `🎯 <b>Chọn TẤT CẢ các viên (${cnt} viên)</b>`;
   container.appendChild(allTab);
+
+  updateCurrentDieLabel();
 }
 
-function selectFace(faceIndex){
-  selectedFace = faceIndex;
-  document.querySelectorAll('.face-tab').forEach((tab, i)=>{
-    if(i === 6){
-      tab.classList.toggle('active', selectedFace === 'all');
+function selectDie(dieIndex){
+  selectedDie = dieIndex;
+  document.querySelectorAll('.die-tab').forEach((tab, i)=>{
+    if(i === settings.diceCount){
+      tab.classList.toggle('active', selectedDie === 'all');
     } else {
-      tab.classList.toggle('active', selectedFace === i);
+      tab.classList.toggle('active', selectedDie === i);
     }
   });
+  updateCurrentDieLabel();
+}
 
-  const label = document.getElementById('currentFaceLabel');
-  if(selectedFace === 'all'){
-    label.textContent = 'ALL 6 FACES';
+function updateCurrentDieLabel(){
+  const lbl = document.getElementById('currentDieLabel');
+  if(!lbl) return;
+  if(selectedDie === 'all'){
+    lbl.textContent = `Tất cả ${settings.diceCount} viên`;
   } else {
-    label.textContent = `Face ${selectedFace + 1}`;
+    lbl.textContent = `Viên ${selectedDie + 1}`;
   }
 }
 
 function buildQuickPalette(){
   const grid = document.getElementById('swatchGrid');
+  if(!grid) return;
   grid.innerHTML = '';
   SIX_COLORS.forEach(item => {
     const btn = document.createElement('button');
     btn.className = 'swatch-btn';
     btn.innerHTML = `<span class="color-circle" style="background:${item.hex}"></span><span>${item.name}</span>`;
-    btn.onclick = ()=> applyColor(item.hex);
+    btn.onclick = ()=> applyColor(item.hex, item.value);
     grid.appendChild(btn);
   });
 }
 
-function applyColor(hex){
+function applyColor(hex, value){
   const autoAdvance = document.getElementById('autoAdvanceCheck').checked;
 
-  if(selectedFace === 'all'){
-    for(let i = 0; i < 6; i++){
-      settings.faceColors[i] = hex;
-      const pip = document.getElementById(`pipIcon${i}`);
-      if(pip) pip.style.color = hex;
-    }
-    if(window.syncService){
-      window.syncService.send('change_all_face_colors', { faceColors: [...settings.faceColors] });
+  if(selectedDie === 'all'){
+    for(let i = 0; i < settings.diceCount; i++){
+      settings.targetDice[i] = value;
     }
   } else {
-    const idx = selectedFace;
-    settings.faceColors[idx] = hex;
-    const pip = document.getElementById(`pipIcon${idx}`);
-    if(pip) pip.style.color = hex;
-
-    if(window.syncService){
-      window.syncService.send('change_face_color', { faceIndex: idx, color: hex });
-    }
-
-    // Tự động nhảy sang mặt kế tiếp (0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 0)
+    settings.targetDice[selectedDie] = value;
     if(autoAdvance){
-      selectFace((idx + 1) % 6);
+      selectedDie = (selectedDie + 1) % settings.diceCount;
     }
+  }
+
+  if(settings.targetMode !== 'target'){
+    setTargetMode('target');
+  }
+
+  buildDieTargetTabs();
+
+  if(window.syncService){
+    window.syncService.send('set_targets', { targets: settings.targetDice, targetMode: settings.targetMode });
   }
 }
 
-/* Áp dụng nhanh bộ màu có sẵn */
 function applyColorCombo(comboType){
+  const cnt = settings.diceCount;
   if(comboType === 'rainbow'){
-    settings.faceColors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
+    settings.targetDice = Array.from({length: cnt}, (_, i) => (i % 6) + 1);
   } else if(comboType === 'allRed'){
-    settings.faceColors = ['#e74c3c','#e74c3c','#e74c3c','#e74c3c','#e74c3c','#e74c3c'];
+    settings.targetDice = Array.from({length: cnt}, () => 1);
   } else if(comboType === 'allOrange'){
-    settings.faceColors = ['#e67e22','#e67e22','#e67e22','#e67e22','#e67e22','#e67e22'];
+    settings.targetDice = Array.from({length: cnt}, () => 2);
   } else if(comboType === 'allYellow'){
-    settings.faceColors = ['#f1c40f','#f1c40f','#f1c40f','#f1c40f','#f1c40f','#f1c40f'];
+    settings.targetDice = Array.from({length: cnt}, () => 3);
   } else if(comboType === 'allGreen'){
-    settings.faceColors = ['#2ecc71','#2ecc71','#2ecc71','#2ecc71','#2ecc71','#2ecc71'];
+    settings.targetDice = Array.from({length: cnt}, () => 4);
   } else if(comboType === 'allBlue'){
-    settings.faceColors = ['#3498db','#3498db','#3498db','#3498db','#3498db','#3498db'];
+    settings.targetDice = Array.from({length: cnt}, () => 5);
   } else if(comboType === 'allPurple'){
-    settings.faceColors = ['#9b59b6','#9b59b6','#9b59b6','#9b59b6','#9b59b6','#9b59b6'];
+    settings.targetDice = Array.from({length: cnt}, () => 6);
   }
 
-  for(let i = 0; i < 6; i++){
-    const pip = document.getElementById(`pipIcon${i}`);
-    if(pip) pip.style.color = settings.faceColors[i];
+  if(settings.targetMode !== 'target'){
+    setTargetMode('target');
   }
+
+  buildDieTargetTabs();
 
   if(window.syncService){
-    window.syncService.send('change_all_face_colors', { faceColors: [...settings.faceColors] });
+    window.syncService.send('set_targets', { targets: settings.targetDice, targetMode: settings.targetMode });
   }
 }
 
@@ -551,10 +644,11 @@ function buildThemeGrid(){
 function applySettingsToUI(){
   document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === settings.theme));
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === settings.mode));
-  const diceCountEl = document.getElementById('rDiceCount');
-  if(diceCountEl) diceCountEl.value = settings.diceCount;
   const soundEl = document.getElementById('rSound');
   if(soundEl) soundEl.checked = (settings.sound === 'on');
+
+  updateDiceCountUI();
+  buildDieTargetTabs();
 
   // Update speed UI
   const slider = document.getElementById('speedSlider');
@@ -569,12 +663,6 @@ function applySettingsToUI(){
       b.classList.toggle('active', Math.abs(bSpeed - d) < 0.05);
     });
   }
-
-  // Update Face colors
-  for(let i = 0; i < 6; i++){
-    const pip = document.getElementById(`pipIcon${i}`);
-    if(pip && settings.faceColors[i]) pip.style.color = settings.faceColors[i];
-  }
 }
 
 /* ---- MODE BUTTONS ---- */
@@ -586,14 +674,6 @@ document.querySelectorAll('.mode-btn').forEach(btn=>{
       window.syncService.send('change_mode', { mode: settings.mode });
     }
   });
-});
-
-/* ---- DICE COUNT ---- */
-document.getElementById('rDiceCount').addEventListener('change', e=>{
-  settings.diceCount = parseInt(e.target.value);
-  if(window.syncService){
-    window.syncService.send('change_dice_count', { diceCount: settings.diceCount });
-  }
 });
 
 /* ---- SOUND TOGGLE ---- */
@@ -758,7 +838,9 @@ document.getElementById('btnRollRemote').addEventListener('click', ()=>{
   if(window.syncService){
     window.syncService.send('roll', {
       time: Date.now(),
-      rollDuration: settings.rollDuration
+      rollDuration: settings.rollDuration,
+      targetResults: settings.targetDice,
+      targetMode: settings.targetMode
     });
   }
 });
