@@ -51,8 +51,18 @@ Khi đó:
 ---
 
 ## 🎨 DANH SÁCH TÍNH NĂNG
-1. **15 Theme bàn đổ**: Blue, Sab-Blue, Green, Sab-Green, Red, Sab-Red, Pink, B&W, Sab-Black, Heaven, Hell, Underwater, Bronze, Silver, Gold.
-2. **Âm thanh tiếng xúc xắc thật**: Giả lập đa va chạm (bounces), cộng hưởng vang mặt bàn (convolver reverb), tiếng thud khi xúc xắc dừng.
-3. **Mục số 5 - Custom Face Colors**: Đổi mã màu Hex cho từng mặt từ 1 đến 6.
-4. **Chế độ 6-sided Dice & Color Dice**.
-5. **Nút Admin ẩn 100%**: Người xem livestream không bao giờ thấy nút Admin.
+1. **🖌️ Giao diện đổi màu 1-chạm siêu tốc cho điện thoại (MỚI)**:
+   - **Không mở popup, không bật bàn phím ảo**: Tất cả là nút tròn to bấm cực nhạy bằng 1 ngón tay.
+   - **Bộ màu mẫu 1-chạm**: Casino (Mặt 1 Đỏ, 2-6 Đen), Cầu vồng, Toàn Đỏ, Toàn Đen, Toàn Xanh, Toàn Trắng.
+   - **Bảng 16 màu phổ biến 1 chạm**: Bấm mặt cần đổi -> bấm màu là xong ngay trong 0.1s.
+   - **Tính năng tự nhảy mặt (Auto-advance)**: Chọn Mặt 1 xong tự nhảy sang Mặt 2, 3, 4, 5, 6 — đổi cả bộ xúc xắc chỉ mất 2 giây!
+   - **Nút "Đổi cả 6 mặt cùng lúc"**: 1 chạm đổi toàn bộ xúc xắc sang cùng một màu.
+2. **⚡ Tùy chỉnh tốc độ lăn xúc xắc trên điện thoại**:
+   - 6 nút chọn nhanh: Cực nhanh (0.4s), Nhanh (0.7s), Chuẩn (1.0s), Chậm (1.8s), Hồi hộp (2.6s), Rất chậm (3.5s).
+   - Thanh trượt tùy chỉnh chi tiết từ 0.3s đến 3.5s.
+   - Hiệu ứng nảy đa va chạm và tiếng xúc xắc tự co dãn theo thời gian thực (lăn chậm thì va chạm nảy nhiều lần, giảm tốc dần hồi hộp).
+3. **15 Theme bàn đổ**: Blue, Sab-Blue, Green, Sab-Green, Red, Sab-Red, Pink, B&W, Sab-Black, Heaven, Hell, Underwater, Bronze, Silver, Gold.
+4. **Âm thanh tiếng xúc xắc thật**: Giả lập đa va chạm (bounces), cộng hưởng vang mặt bàn (convolver reverb), tiếng thud khi xúc xắc dừng.
+5. **Mục số 5 - Custom Face Colors**: Đổi mã màu Hex cho từng mặt từ 1 đến 6.
+6. **Chế độ 6-sided Dice & Color Dice**.
+7. **Nút Admin ẩn 100%**: Người xem livestream không bao giờ thấy nút Admin.

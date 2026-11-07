@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Online-Dice.com – Roll Dice Online</title>
+<title>4 Color Dice — Roll 6-Sided Color Dice | Online-Dice.com</title>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="mqtt.min.js"></script>
 <script>
@@ -49,14 +49,28 @@ body{font-family:'Open Sans',Arial,Helvetica,sans-serif;background:#f4f6f9;color
 .install-link{font-size:12.5px;color:#1e73be;text-decoration:none;border-bottom:1px dashed #1e73be;padding-bottom:1px}
 .install-link:hover{color:#155a9c}
 
+/* ===== PAGE HEADER (CHÍNH XÁC ONLINE-DICE.COM) ===== */
+.page-header{text-align:center;padding:16px 10px 4px;max-width:720px;width:100%}
+.page-title{font-size:27px;font-weight:700;color:#2c3e50;letter-spacing:-.5px;margin-bottom:2px}
+.page-subtitle{font-size:13.5px;color:#7f8c8d;font-weight:400}
+
+/* ===== QUICK DICE COUNT PILLS ===== */
+.dice-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:6px 10px 10px;max-width:720px;width:100%}
+.dice-pill{padding:5px 12px;border:1px solid #d5dbdb;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#555;transition:all .2s;text-decoration:none;font-family:inherit}
+.dice-pill:hover{border-color:#1e73be;color:#1e73be}
+.dice-pill.active{background:#1e73be;color:#fff;border-color:#1e73be;box-shadow:0 2px 6px rgba(30,115,190,.3)}
+
 /* ===== DICE COUNT SELECTOR ===== */
-.dice-count-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:4px 0 10px}
+.dice-count-bar{display:none;align-items:center;justify-content:center;gap:8px;padding:4px 0 10px}
 .dice-count-bar label{font-size:13px;color:#555;font-weight:600}
 .dice-count-bar select{padding:4px 8px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:13px}
 
 /* ===== RESULT ===== */
-.result-display{text-align:center;padding:6px 0 14px;font-size:15px;color:#2c3e50;font-weight:600;min-height:30px}
+.result-display{text-align:center;padding:8px 0 14px;font-size:15px;color:#2c3e50;font-weight:600;min-height:36px}
 .result-display .total{font-size:28px;color:#1e73be}
+.color-badge-list{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin-bottom:4px}
+.color-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 14px;border-radius:16px;color:#fff;font-size:13px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.2);text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.color-summary-text{font-size:13.5px;color:#555;font-weight:600;margin-top:2px}
 
 /* ===== OWNER PANEL ===== */
 /* Owner toggle: HIDDEN by default – only visible via secret trigger */
@@ -124,17 +138,33 @@ footer a{color:#1e73be;text-decoration:none}
   </div>
 </nav>
 
+<!-- ========== PAGE HEADER (ONLINE-DICE.COM) ========== -->
+<div class="page-header">
+  <h1 class="page-title" id="pageTitle">4 Color Dice</h1>
+  <p class="page-subtitle" id="pageSubtitle">Roll 6-Sided Color Dice</p>
+</div>
+
+<!-- ========== QUICK DICE COUNT PILLS ========== -->
+<div class="dice-pills" id="dicePills">
+  <button class="dice-pill" data-count="1">1 Color Die</button>
+  <button class="dice-pill" data-count="2">2 Color Dice</button>
+  <button class="dice-pill" data-count="3">3 Color Dice</button>
+  <button class="dice-pill active" data-count="4">4 Color Dice</button>
+  <button class="dice-pill" data-count="5">5 Color Dice</button>
+  <button class="dice-pill" data-count="6">6 Color Dice</button>
+</div>
+
 <!-- ========== THEME BAR ========== -->
 <div class="theme-bar" id="themeBar"></div>
 
-<!-- ========== DICE COUNT ========== -->
+<!-- ========== DICE COUNT (HIDDEN SELECT FALLBACK) ========== -->
 <div class="dice-count-bar">
   <label for="diceCount">Number of Dice:</label>
   <select id="diceCount">
     <option value="1">1</option>
-    <option value="2" selected>2</option>
+    <option value="2">2</option>
     <option value="3">3</option>
-    <option value="4">4</option>
+    <option value="4" selected>4</option>
     <option value="5">5</option>
     <option value="6">6</option>
   </select>
@@ -212,6 +242,18 @@ footer a{color:#1e73be;text-decoration:none}
         </select>
       </div>
 
+      <!-- 4b. Roll Speed -->
+      <div class="section">
+        <h3>⚡ Tốc độ lăn xúc xắc</h3>
+        <select id="ownerRollSpeed">
+          <option value="0.4">⚡ Cực nhanh (0.4s)</option>
+          <option value="0.7">🚀 Nhanh (0.7s)</option>
+          <option value="1.0" selected>⏱️ Chuẩn (1.0s)</option>
+          <option value="1.8">⏳ Chậm (1.8s)</option>
+          <option value="2.8">🎭 Siêu chậm / Hồi hộp (2.8s)</option>
+        </select>
+      </div>
+
       <!-- 5. Custom Face Colors -->
       <div class="section">
         <h3>5. Custom Dice Face Colors 🎨</h3>
@@ -264,21 +306,46 @@ const THEMES = {
 };
 
 const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
-const COLOR_DICE_FACES    = ['#e74c3c','#3498db','#2ecc71','#f1c40f','#9b59b6','#e67e22'];
+const COLOR_DICE_FACES    = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
+const COLOR_NAMES         = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple'];
 
 let state = {
-  theme:      'Blue',
-  diceCount:  2,
-  mode:       'classic',   // 'classic' | 'color'
-  sound:      'on',
-  faceColors: [...DEFAULT_FACE_COLORS],
-  rolling:    false,
-  results:    []
+  theme:        'Blue',
+  diceCount:    4,           // 4 Color Dice (Chuẩn online-dice.com/roll-color-dice/4/)
+  mode:         'color',      // Chế độ Color Dice
+  sound:        'on',
+  faceColors:   [...DEFAULT_FACE_COLORS],
+  rollDuration: 1.0,         // thời gian lăn tính bằng giây (0.3s - 3.5s)
+  rolling:      false,
+  results:      [1, 2, 4, 5] // Hiển thị sẵn 4 xúc xắc 4 màu trên bàn
 };
 
 /* helpers */
-function saveState(){try{localStorage.setItem('od_state',JSON.stringify({theme:state.theme,diceCount:state.diceCount,mode:state.mode,sound:state.sound,faceColors:state.faceColors}))}catch(e){}}
-function loadState(){try{const s=JSON.parse(localStorage.getItem('od_state'));if(s){state.theme=s.theme||'Blue';state.diceCount=s.diceCount||2;state.mode=s.mode||'classic';state.sound=s.sound||'on';state.faceColors=s.faceColors||[...DEFAULT_FACE_COLORS]}}catch(e){}}
+function saveState(){
+  try{
+    localStorage.setItem('od_state',JSON.stringify({
+      theme: state.theme,
+      diceCount: state.diceCount,
+      mode: state.mode,
+      sound: state.sound,
+      faceColors: state.faceColors,
+      rollDuration: state.rollDuration || 1.0
+    }));
+  }catch(e){}
+}
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem('od_state'));
+    if(s){
+      state.theme = s.theme || 'Blue';
+      state.diceCount = s.diceCount !== undefined ? s.diceCount : 4;
+      state.mode = s.mode || 'color';
+      state.sound = s.sound || 'on';
+      state.faceColors = s.faceColors || [...DEFAULT_FACE_COLORS];
+      state.rollDuration = parseFloat(s.rollDuration) || 1.0;
+    }
+  }catch(e){}
+}
 
 /* =====================================================================
    DOM REFS
@@ -355,57 +422,62 @@ function drawDie(cx, cy, size, value, rotation, isColor){
 
   // body
   if(isColor){
-    ctx.fillStyle = COLOR_DICE_FACES[(value-1) % 6];
+    ctx.fillStyle = state.faceColors[(value-1) % 6] || COLOR_DICE_FACES[(value-1) % 6];
   } else {
     ctx.fillStyle = '#ffffff';
   }
-  ctx.shadowColor = 'rgba(0,0,0,0.4)';
-  ctx.shadowBlur  = size * 0.2;
+  ctx.shadowColor = 'rgba(0,0,0,0.38)';
+  ctx.shadowBlur  = size * 0.22;
   ctx.shadowOffsetX = size*0.04;
-  ctx.shadowOffsetY = size*0.06;
+  ctx.shadowOffsetY = size*0.07;
   ctx.beginPath();
   ctx.roundRect(-half,-half,size,size,r);
   ctx.fill();
   ctx.shadowColor = 'transparent';
 
   // subtle border
-  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+  ctx.strokeStyle = isColor ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.12)';
   ctx.lineWidth = 1;
   ctx.stroke();
 
-  // inner highlight
+  // inner highlight (ánh sáng 3D bevel)
   const ig = ctx.createLinearGradient(-half,-half,half,half);
-  ig.addColorStop(0,'rgba(255,255,255,0.28)');
+  ig.addColorStop(0,'rgba(255,255,255,0.32)');
   ig.addColorStop(0.5,'rgba(255,255,255,0)');
-  ig.addColorStop(1,'rgba(0,0,0,0.06)');
+  ig.addColorStop(1,'rgba(0,0,0,0.12)');
   ctx.fillStyle = ig;
   ctx.beginPath();
   ctx.roundRect(-half,-half,size,size,r);
   ctx.fill();
 
-  // pips
-  const pipR = size * 0.085;
-  let pipColor;
+  // pips / center marker
   if(isColor){
-    // choose contrasting pip color
-    pipColor = '#ffffff';
+    // Chấm tròn tâm màu trắng thanh lịch chuẩn color dice
+    const pipR = size * 0.11;
+    ctx.beginPath();
+    ctx.arc(0, 0, pipR, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, pipR, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.14)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
   } else {
-    // use custom face colors
-    pipColor = state.faceColors[(value-1) % 6] || '#333333';
+    const pipR = size * 0.085;
+    const pipColor = state.faceColors[(value-1) % 6] || '#333333';
+    const positions = getPipPositions(value, size * 0.56);
+    positions.forEach(([px,py])=>{
+      ctx.beginPath();
+      ctx.arc(px, py, pipR, 0, Math.PI*2);
+      ctx.fillStyle = pipColor;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(px+0.5, py+0.5, pipR, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      ctx.fill();
+    });
   }
-
-  const positions = getPipPositions(value, size * 0.56);
-  positions.forEach(([px,py])=>{
-    ctx.beginPath();
-    ctx.arc(px, py, pipR, 0, Math.PI*2);
-    ctx.fillStyle = pipColor;
-    ctx.fill();
-    // pip shadow
-    ctx.beginPath();
-    ctx.arc(px+0.5, py+0.5, pipR, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(0,0,0,0.1)';
-    ctx.fill();
-  });
 
   ctx.restore();
 }
@@ -464,9 +536,9 @@ function drawDiceResults(w, h){
 }
 
 /* =====================================================================
-   ROLLING ANIMATION
+   ROLLING ANIMATION (Hỗ trợ tùy chỉnh tốc độ nhanh / chậm)
    ===================================================================== */
-function rollDice(){
+function rollDice(overrideDuration){
   if(state.rolling) return;
   state.rolling = true;
   btnRoll.disabled = true;
@@ -477,11 +549,13 @@ function rollDice(){
   const finalRotations = Array.from({length:n}, ()=> (Math.random()-0.5)*0.5);
   state._rotations = finalRotations;
 
-  // play sound
-  playRollSound();
+  const durationSec = Math.max(0.2, parseFloat(overrideDuration || state.rollDuration || 1.0));
+  const totalFrames = Math.max(10, Math.round(durationSec * 50)); // ~50fps
+
+  // play sound theo thời lượng
+  playRollSound(durationSec);
 
   let frame = 0;
-  const totalFrames = 28;
 
   function animate(){
     const w = canvas.width / devicePixelRatio;
@@ -495,14 +569,29 @@ function rollDice(){
     const totalW  = n * dieSize + (n-1) * dieSize * 0.3;
     const startX  = (w - totalW) / 2 + dieSize / 2;
 
+    const bounceCount = durationSec > 1.8 ? 3 : (durationSec > 0.7 ? 2 : 1);
+
     for(let i=0; i<n; i++){
       const cx = startX + i * (dieSize * 1.3);
-      // bounce effect
-      const bounce = Math.sin(progress * Math.PI) * (h * 0.15) * (1 - progress);
-      const cy = h / 2 - bounce + (Math.random()-0.5) * (1-progress) * 8;
-      const rot = (1 - progress) * (Math.random()-0.5) * 1.5;
-      const randVal = frame < totalFrames ? Math.floor(Math.random()*6)+1 : finalValues[i];
-      drawDie(cx, cy, dieSize, randVal, rot, state.mode==='color');
+      // bounce effect đa va chạm mượt mà
+      const bounceHeight = (h * 0.16) * Math.pow(1 - progress, 1.4) * Math.abs(Math.sin(progress * Math.PI * bounceCount));
+      const cy = h / 2 - bounceHeight + (Math.random()-0.5) * (1-progress) * 5;
+      const rot = (1 - progress) * (Math.random()-0.5) * (durationSec > 1.5 ? 2.5 : 1.5);
+
+      // Thay đổi mặt xúc xắc: chậm dần về cuối để tạo độ hồi hộp
+      const slowDownStep = Math.max(1, Math.floor(progress * progress * 6));
+      let showVal;
+      if(progress >= 0.9){
+        showVal = finalValues[i];
+      } else if(frame % slowDownStep === 0){
+        showVal = Math.floor(Math.random()*6)+1;
+      } else {
+        showVal = state._lastFrameVals?.[i] || finalValues[i];
+      }
+      if(!state._lastFrameVals) state._lastFrameVals = [];
+      state._lastFrameVals[i] = showVal;
+
+      drawDie(cx, cy, dieSize, showVal, rot, state.mode==='color');
     }
 
     frame++;
@@ -511,6 +600,7 @@ function rollDice(){
     } else {
       state.results = finalValues;
       state.rolling = false;
+      state._lastFrameVals = null;
       btnRoll.disabled = false;
       btnRoll.textContent = '🎲 Go Again !';
       drawStage();
@@ -523,17 +613,39 @@ function rollDice(){
 function showResult(){
   const vals = state.results;
   if(!vals.length) return;
-  const total = vals.reduce((a,b)=>a+b,0);
-  const each = vals.map(v=>`<b>${v}</b>`).join(' + ');
-  if(vals.length === 1){
-    resultEl.innerHTML = `Result: <span class="total">${total}</span>`;
+
+  if(state.mode === 'color'){
+    // Hiển thị kết quả Color Dice chuẩn Online-Dice.com
+    const badgesHtml = vals.map(v => {
+      const color = state.faceColors[(v-1)%6] || COLOR_DICE_FACES[(v-1)%6];
+      const name = COLOR_NAMES[(v-1)%6] || 'Color';
+      return `<span class="color-badge" style="background:${color};">${name}</span>`;
+    }).join(' ');
+
+    const counts = {};
+    vals.forEach(v => {
+      const name = COLOR_NAMES[(v-1)%6] || 'Color';
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    const summaryStr = Object.entries(counts).map(([name, c]) => `${c} ${name}`).join(', ');
+
+    resultEl.innerHTML = `
+      <div class="color-badge-list">${badgesHtml}</div>
+      <div class="color-summary-text">Result: <b>${summaryStr}</b></div>
+    `;
   } else {
-    resultEl.innerHTML = `${each} = <span class="total">${total}</span>`;
+    const total = vals.reduce((a,b)=>a+b,0);
+    const each = vals.map(v=>`<b>${v}</b>`).join(' + ');
+    if(vals.length === 1){
+      resultEl.innerHTML = `Result: <span class="total">${total}</span>`;
+    } else {
+      resultEl.innerHTML = `${each} = <span class="total">${total}</span>`;
+    }
   }
 }
 
 /* =====================================================================
-   SOUND – Realistic dice roll (multiple bounces on hard surface)
+   SOUND – Realistic dice roll (Scale theo tốc độ lăn)
    ===================================================================== */
 let audioCtx;
 function ensureAudioCtx(){
@@ -542,11 +654,13 @@ function ensureAudioCtx(){
   return audioCtx;
 }
 
-function playRollSound(){
+function playRollSound(durationSec){
   if(state.sound==='off') return;
   try{
     const ac = ensureAudioCtx();
     const now = ac.currentTime;
+    const durScale = Math.max(0.3, Math.min(3.5, (durationSec || state.rollDuration || 1.0) / 1.0));
+
     const master = ac.createGain();
     master.gain.value = 0.6;
     master.connect(ac.destination);
@@ -570,16 +684,15 @@ function playRollSound(){
     wetGain.gain.value = 0.4;
     wetGain.connect(convolver);
 
-    // Generate multiple bounce impacts
-    const numBounces = 5 + Math.floor(Math.random()*4);
+    // Số lần nảy tương ứng với thời lượng lăn
+    const numBounces = Math.max(3, Math.round((5 + Math.floor(Math.random()*3)) * Math.sqrt(durScale)));
     let t = 0;
     for(let b=0; b<numBounces; b++){
       const progress = b / numBounces;
       const impactVol = (1 - progress*0.7) * (0.6 + Math.random()*0.4);
-      const dur = 0.015 + Math.random()*0.02;
+      const dur = (0.015 + Math.random()*0.02);
 
-      // Impact noise burst
-      const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+      const buf = ac.createBuffer(1, Math.max(1, Math.floor(ac.sampleRate * dur)), ac.sampleRate);
       const d = buf.getChannelData(0);
       const freq = 200 + Math.random()*600;
       for(let i=0;i<d.length;i++){
@@ -598,13 +711,13 @@ function playRollSound(){
       g.connect(wetGain);
       src.start(now + t);
 
-      // Time between bounces decreases (like real dice settling)
-      t += (0.04 + Math.random()*0.06) * (1 - progress*0.5);
+      // Khoảng cách giữa các lần nảy dãn ra hoặc co lại theo tốc độ
+      t += (0.04 + Math.random()*0.05) * (1 - progress*0.5) * durScale;
     }
 
-    // Final settle sound – soft thud
+    // Tiếng chạm cuối cùng (thud)
     const settleDur = 0.04;
-    const settleBuf = ac.createBuffer(1, ac.sampleRate * settleDur, ac.sampleRate);
+    const settleBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * settleDur), ac.sampleRate);
     const sd = settleBuf.getChannelData(0);
     for(let i=0;i<sd.length;i++){
       const env = Math.pow(1 - i/sd.length, 6);
@@ -617,30 +730,70 @@ function playRollSound(){
     ss.connect(sg);
     sg.connect(dryGain);
     sg.connect(wetGain);
-    ss.start(now + t + 0.02);
+    ss.start(now + t + 0.02 * durScale);
 
   }catch(e){console.log('Sound error:',e)}
 }
 
 /* =====================================================================
-   MODE TOGGLE
+   MODE & DICE PILLS (ONLINE-DICE.COM 4 COLOR DICE UI)
    ===================================================================== */
-btnMode.addEventListener('click', ()=>{
-  state.mode = state.mode==='classic' ? 'color' : 'classic';
-  btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
-  if(state.results.length) drawStage();
-  saveState();
+function updateDicePillsUI(){
+  document.querySelectorAll('.dice-pill').forEach(pill => {
+    const c = parseInt(pill.dataset.count);
+    pill.classList.toggle('active', c === state.diceCount);
+    pill.textContent = state.mode === 'color'
+      ? (c === 1 ? '1 Color Die' : `${c} Color Dice`)
+      : (c === 1 ? '1 Die' : `${c} Dice`);
+  });
+
+  const titleEl = document.getElementById('pageTitle');
+  const subtitleEl = document.getElementById('pageSubtitle');
+  if(titleEl){
+    titleEl.textContent = state.mode === 'color'
+      ? (state.diceCount === 1 ? '1 Color Die' : `${state.diceCount} Color Dice`)
+      : (state.diceCount === 1 ? '1 Die' : `${state.diceCount} Dice`);
+  }
+  if(subtitleEl){
+    subtitleEl.textContent = state.mode === 'color'
+      ? 'Roll 6-Sided Color Dice'
+      : 'Roll 6-Sided Dice Online';
+  }
+  btnMode.textContent = state.mode === 'classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+}
+
+document.querySelectorAll('.dice-pill').forEach(pill => {
+  pill.addEventListener('click', ()=>{
+    const count = parseInt(pill.dataset.count);
+    setDiceCount(count);
+  });
 });
 
-/* =====================================================================
-   DICE COUNT
-   ===================================================================== */
-diceCountSel.addEventListener('change', ()=>{
-  state.diceCount = parseInt(diceCountSel.value);
-  state.results = [];
-  resultEl.innerHTML = '🎲 Press <b>Go Again !</b> to roll';
+function setDiceCount(count){
+  state.diceCount = count;
+  diceCountSel.value = count;
+  updateDicePillsUI();
+  // Khởi tạo mặt xúc xắc mẫu đẹp mắt
+  state.results = Array.from({length: state.diceCount}, (_, i)=> (i % 6) + 1);
   drawStage();
+  showResult();
   saveState();
+  broadcastCloudState();
+}
+
+btnMode.addEventListener('click', ()=>{
+  state.mode = state.mode === 'classic' ? 'color' : 'classic';
+  updateDicePillsUI();
+  if(state.results.length){
+    drawStage();
+    showResult();
+  }
+  saveState();
+  broadcastCloudState();
+});
+
+diceCountSel.addEventListener('change', ()=>{
+  setDiceCount(parseInt(diceCountSel.value));
 });
 
 /* =====================================================================
@@ -772,6 +925,9 @@ function populateOwnerPanel(){
 
   // sound
   document.getElementById('ownerSound').value = state.sound;
+  // roll speed
+  const speedSel = document.getElementById('ownerRollSpeed');
+  if(speedSel) speedSel.value = (state.rollDuration || 1.0).toString();
   // room ID
   const roomInput = document.getElementById('ownerRoomId');
   if(roomInput) roomInput.value = window.syncService ? window.syncService.roomId : 'dice8888';
@@ -830,6 +986,8 @@ document.getElementById('btnSave').addEventListener('click',()=>{
   state.diceCount = parseInt(document.getElementById('ownerDiceCount').value);
   state.mode = document.getElementById('ownerMode').value;
   state.sound = document.getElementById('ownerSound').value;
+  const speedSel = document.getElementById('ownerRollSpeed');
+  if(speedSel) state.rollDuration = parseFloat(speedSel.value) || 1.0;
 
   // face colors
   document.querySelectorAll('#faceColorGrid input[type=color]').forEach(inp=>{
@@ -862,8 +1020,9 @@ document.getElementById('btnSave').addEventListener('click',()=>{
 loadState();
 setTheme(state.theme);
 diceCountSel.value = state.diceCount;
-btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+updateDicePillsUI();
 resizeCanvas();
+showResult();
 
 /* =====================================================================
    CLOUD SYNC (Serverless, No Machine Host Required)
@@ -875,7 +1034,8 @@ function broadcastCloudState(){
     diceCount: state.diceCount,
     mode: state.mode,
     sound: state.sound,
-    faceColors: state.faceColors
+    faceColors: state.faceColors,
+    rollDuration: state.rollDuration || 1.0
   });
 }
 
@@ -893,7 +1053,15 @@ if(window.syncService){
       let needRedraw = false;
 
       if(action === 'roll'){
-        rollDice();
+        rollDice(payload.rollDuration);
+        return;
+      }
+
+      if(action === 'change_roll_speed'){
+        if(payload.rollDuration){
+          state.rollDuration = parseFloat(payload.rollDuration) || 1.0;
+          saveState();
+        }
         return;
       }
 
@@ -954,6 +1122,7 @@ if(window.syncService){
           needRedraw = true;
         }
         if(payload.sound) state.sound = payload.sound;
+        if(payload.rollDuration) state.rollDuration = parseFloat(payload.rollDuration) || 1.0;
       }
 
       if(action === 'request_state'){
@@ -961,7 +1130,9 @@ if(window.syncService){
       }
 
       if(needRedraw){
+        updateDicePillsUI();
         drawStage();
+        showResult();
         saveState();
       }
     }
