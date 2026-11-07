@@ -49,17 +49,13 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
 .current-selection-info{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#aaa;margin-bottom:8px}
 .current-selection-info b{color:#3898ec}
 
-.swatch-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:7px}
-.swatch-btn{aspect-ratio:1;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;transition:transform .12s;box-shadow:0 2px 4px rgba(0,0,0,.4);position:relative}
-.swatch-btn:active{transform:scale(1.25)}
+.swatch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.swatch-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 6px;border-radius:10px;border:2px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);cursor:pointer;transition:all .15s;font-family:inherit;color:#fff;font-weight:700;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.swatch-btn:active{transform:scale(.95);background:rgba(255,255,255,.15)}
+.swatch-btn .color-circle{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.8);box-shadow:0 0 5px rgba(0,0,0,.4);flex-shrink:0}
 
-.auto-advance-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:#aaa;margin-top:8px}
+.auto-advance-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:#aaa;margin-top:10px}
 .auto-advance-toggle input{width:16px;height:16px;accent-color:#3898ec;margin:0}
-
-/* Tùy chỉnh màu chi tiết */
-.custom-hex-box{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.1)}
-.custom-hex-box.show{display:flex;gap:6px;align-items:center}
-.btn-toggle-custom{background:none;border:none;color:#888;font-size:10.5px;cursor:pointer;text-decoration:underline;margin-top:6px;display:inline-block}
 
 /* Speed presets */
 .speed-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
@@ -88,6 +84,27 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
 .room-bar{display:flex;gap:6px;align-items:center}
 .room-bar input{margin-bottom:0;flex:1}
 .room-bar button{padding:7px 12px;background:#1e73be;border:none;border-radius:8px;color:#fff;font-weight:600;font-size:11.5px;cursor:pointer;font-family:inherit}
+
+/* Latest Result Card */
+.latest-card{background:linear-gradient(135deg,#131d2e,#0a111e);border:1.5px solid #3898ec;border-radius:12px;padding:10px 12px;box-shadow:0 4px 14px rgba(56,152,236,.2);margin-bottom:4px}
+.latest-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.latest-tag{font-size:11px;font-weight:800;color:#3898ec;letter-spacing:.5px}
+.latest-time{font-size:11px;color:#8a99a8}
+.latest-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.latest-chip{display:inline-flex;align-items:center;padding:4px 11px;border-radius:14px;color:#fff;font-size:12.5px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.3)}
+.latest-summary{font-size:12px;font-weight:600;color:#cbd5e1}
+
+/* Remote Roll History */
+.hist-count-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#334155;color:#93c5fd}
+.remote-color-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:4px}
+.r-stat-item{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-radius:6px;color:#fff;font-size:11px;font-weight:700}
+.r-hist-item{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;background:#0d101a;border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:12px}
+.r-hist-item-left{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.r-hist-idx{font-size:10.5px;font-weight:800;color:#64748b;min-width:24px}
+.r-hist-time{font-size:10px;color:#777}
+.r-hist-chips{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.r-hist-chip{display:inline-block;padding:2px 7px;border-radius:10px;color:#fff;font-size:10.5px;font-weight:700}
+.r-hist-summary{font-size:11px;color:#94a3b8;font-weight:600;text-align:right}
 </style>
 </head>
 <body>
@@ -113,31 +130,41 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
   <!-- ROLL BUTTON LUÔN Ở ĐẦU -->
   <button class="btn-roll-remote" id="btnRollRemote">🎲 ROLL TRÊN MÁY TÍNH !</button>
 
-  <!-- CARD ĐỔI MÀU SIÊU TỐC 1 CHẠM -->
+  <!-- KẾT QUẢ VỪA RA TRÊN LIVE -->
+  <div class="latest-card" id="latestResultCard" style="display:none">
+    <div class="latest-header">
+      <span class="latest-tag">🎯 KẾT QUẢ VỪA RA</span>
+      <span class="latest-time" id="latestTime">--:--:--</span>
+    </div>
+    <div class="latest-chips" id="latestChips"></div>
+    <div class="latest-summary" id="latestSummary">--</div>
+  </div>
+
+  <!-- CARD ĐỔI 6 MÀU CHUẨN XÚC XẮC -->
   <div class="card">
     <h3>
-      <span>🖌️ Đổi màu 6 mặt (1 chạm)</span>
-      <span style="font-size:10px;color:#888;font-weight:400">Không cần mở bảng màu</span>
+      <span>🎨 6 Colors: Red, Orange, Yellow, Green, Blue, Purple</span>
     </h3>
 
     <!-- 1-TAP PRESET COMBOS -->
     <div class="combo-presets">
-      <button class="combo-btn" onclick="applyColorCombo('casino')">🎲 Casino</button>
-      <button class="combo-btn" onclick="applyColorCombo('rainbow')">🌈 Cầu vồng</button>
-      <button class="combo-btn" onclick="applyColorCombo('allRed')">🔴 Toàn Đỏ</button>
-      <button class="combo-btn" onclick="applyColorCombo('allBlack')">⚫ Toàn Đen</button>
-      <button class="combo-btn" onclick="applyColorCombo('allBlue')">🔵 Toàn Xanh</button>
-      <button class="combo-btn" onclick="applyColorCombo('allWhite')">⚪ Toàn Trắng</button>
+      <button class="combo-btn" style="grid-column:span 3;background:rgba(56,152,236,.18);border-color:#3898ec" onclick="applyColorCombo('rainbow')">🌈 Rainbow (Mỗi mặt 1 màu)</button>
+      <button class="combo-btn" onclick="applyColorCombo('allRed')">🔴 All Red</button>
+      <button class="combo-btn" onclick="applyColorCombo('allOrange')">🟠 All Orange</button>
+      <button class="combo-btn" onclick="applyColorCombo('allYellow')">🟡 All Yellow</button>
+      <button class="combo-btn" onclick="applyColorCombo('allGreen')">🟢 All Green</button>
+      <button class="combo-btn" onclick="applyColorCombo('allBlue')">🔵 All Blue</button>
+      <button class="combo-btn" onclick="applyColorCombo('allPurple')">🟣 All Purple</button>
     </div>
 
     <!-- 6 TABS CHỌN MẶT XÚC XẮC -->
     <div class="face-tabs" id="faceTabs"></div>
 
-    <!-- BẢNG MÀU CHỌN NHANH (16 MÀU) -->
+    <!-- BẢNG 6 MÀU DUY NHẤT -->
     <div class="color-palette-bar">
       <div class="current-selection-info">
-        <span>Đang đổi: <b id="currentFaceLabel">Mặt 1</b></span>
-        <span style="font-size:10.5px;color:#777">Chạm màu để đổi ngay ⚡</span>
+        <span>Đang chọn: <b id="currentFaceLabel">Face 1</b></span>
+        <span style="font-size:10.5px;color:#777">Chạm để đổi màu ⚡</span>
       </div>
       <div class="swatch-grid" id="swatchGrid"></div>
 
@@ -146,16 +173,25 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
         <input type="checkbox" id="autoAdvanceCheck" checked>
         <span>⚡ Tự động chuyển sang mặt tiếp theo khi chọn</span>
       </label>
+    </div>
+  </div>
 
-      <!-- Tùy chỉnh màu mã Hex nếu muốn -->
-      <div>
-        <button class="btn-toggle-custom" onclick="toggleCustomHexBox()">+ Nhập mã Hex hoặc tự pha màu</button>
-        <div class="custom-hex-box" id="customHexBox">
-          <input type="color" id="customColorPicker" style="width:40px;height:36px;padding:0;background:transparent;border:none;cursor:pointer">
-          <input type="text" id="customHexInput" placeholder="#ff0000" maxlength="7" style="flex:1;margin-bottom:0">
-          <button onclick="applyCustomHex()" style="padding:8px 12px;background:#3898ec;border:none;border-radius:8px;color:#fff;font-weight:600;font-size:11.5px;cursor:pointer">Lưu</button>
-        </div>
+  <!-- CARD LỊCH SỬ RA MÀU (ROLL HISTORY) -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <h3 style="margin:0"><span>📜 Lịch sử ra màu</span></h3>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="hist-count-badge" id="rHistCount">0 lần</span>
+        <button type="button" id="rBtnClearHistory" style="padding:4px 9px;font-size:11px;border-radius:4px;background:#e74c3c;color:#fff;border:none;cursor:pointer;font-weight:600">🗑 Xóa</button>
       </div>
+    </div>
+
+    <!-- Thống kê nhanh 6 màu -->
+    <div class="remote-color-stats" id="rColorStats"></div>
+
+    <!-- Danh sách các lượt lắc -->
+    <div class="remote-history-list" id="rHistoryList" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-top:8px">
+      <div style="text-align:center;padding:12px;color:#888;font-size:12px">Chưa có lịch sử lắc</div>
     </div>
   </div>
 
@@ -218,24 +254,14 @@ const OWNER_PIN = '8888';
 const PIPS = ['⚀','⚁','⚂','⚃','⚄','⚅'];
 const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
 
-/* 16 màu phổ biến chọn nhanh */
-const QUICK_PALETTE = [
-  '#e74c3c', // Đỏ tươi
-  '#c0392b', // Đỏ sẫm
-  '#e67e22', // Cam
-  '#f1c40f', // Vàng
-  '#2ecc71', // Xanh lá
-  '#27ae60', // Xanh lục đậm
-  '#1abc9c', // Xanh ngọc
-  '#3498db', // Xanh dương
-  '#2980b9', // Xanh biển
-  '#9b59b6', // Tím
-  '#e91e63', // Hồng cánh sen
-  '#111111', // Đen tuyền
-  '#555555', // Xám đậm
-  '#bdc3c7', // Xám sáng
-  '#ffffff', // Trắng
-  '#ffd700'  // Vàng kim
+/* 6 Màu chuẩn duy nhất của Color Dice */
+const SIX_COLORS = [
+  { name: 'Red', hex: '#e74c3c' },
+  { name: 'Orange', hex: '#e67e22' },
+  { name: 'Yellow', hex: '#f1c40f' },
+  { name: 'Green', hex: '#2ecc71' },
+  { name: 'Blue', hex: '#3498db' },
+  { name: 'Purple', hex: '#9b59b6' }
 ];
 
 const THEMES = {
@@ -291,6 +317,11 @@ function initRemote(){
   buildQuickPalette();
   buildThemeGrid();
   initSpeedControls();
+  loadRemoteHistory();
+  renderRemoteHistory();
+  if(remoteHistory.length > 0){
+    showLatestResultBanner(remoteHistory[0]);
+  }
 
   const rRoom = document.getElementById('rRoomId');
   if(rRoom && window.syncService){
@@ -319,7 +350,27 @@ function initRemote(){
           if(payload.faceColors && Array.isArray(payload.faceColors)){
             settings.faceColors = [...payload.faceColors];
           }
+          if(payload.history && Array.isArray(payload.history)){
+            remoteHistory = [...payload.history];
+            saveRemoteHistory();
+            renderRemoteHistory();
+            if(remoteHistory.length > 0){
+              showLatestResultBanner(remoteHistory[0]);
+            }
+          }
           applySettingsToUI();
+        }
+
+        if(action === 'roll_result'){
+          addRemoteHistoryItem(payload);
+        }
+
+        if(action === 'clear_history'){
+          remoteHistory = [];
+          saveRemoteHistory();
+          renderRemoteHistory();
+          const card = document.getElementById('latestResultCard');
+          if(card) card.style.display = 'none';
         }
       }
     });
@@ -339,16 +390,16 @@ function buildFaceTabs(){
     tab.onclick = ()=> selectFace(i);
     tab.innerHTML = `
       <span class="dice-pip" id="pipIcon${i}" style="color:${settings.faceColors[i]}">${PIPS[i]}</span>
-      <span class="face-name">Mặt ${i+1}</span>
+      <span class="face-name">Face ${i+1}</span>
     `;
     container.appendChild(tab);
   }
 
-  // Nút chọn tất cả cả 6 mặt
+  // Nút chọn tất cả 6 mặt
   const allTab = document.createElement('button');
   allTab.className = 'face-tab face-tab-all' + (selectedFace === 'all' ? ' active' : '');
   allTab.onclick = ()=> selectFace('all');
-  allTab.innerHTML = `🎯 <b>Đổi màu CẢ 6 MẶT cùng lúc</b>`;
+  allTab.innerHTML = `🎯 <b>Set ALL 6 Faces at once</b>`;
   container.appendChild(allTab);
 }
 
@@ -364,21 +415,20 @@ function selectFace(faceIndex){
 
   const label = document.getElementById('currentFaceLabel');
   if(selectedFace === 'all'){
-    label.textContent = 'TẤT CẢ 6 MẶT';
+    label.textContent = 'ALL 6 FACES';
   } else {
-    label.textContent = `Mặt ${selectedFace + 1}`;
+    label.textContent = `Face ${selectedFace + 1}`;
   }
 }
 
 function buildQuickPalette(){
   const grid = document.getElementById('swatchGrid');
   grid.innerHTML = '';
-  QUICK_PALETTE.forEach(color => {
+  SIX_COLORS.forEach(item => {
     const btn = document.createElement('button');
     btn.className = 'swatch-btn';
-    btn.style.backgroundColor = color;
-    btn.title = color;
-    btn.onclick = ()=> applyColor(color);
+    btn.innerHTML = `<span class="color-circle" style="background:${item.hex}"></span><span>${item.name}</span>`;
+    btn.onclick = ()=> applyColor(item.hex);
     grid.appendChild(btn);
   });
 }
@@ -414,20 +464,20 @@ function applyColor(hex){
 
 /* Áp dụng nhanh bộ màu có sẵn */
 function applyColorCombo(comboType){
-  if(comboType === 'casino'){
-    // Mặt 1 Đỏ, Mặt 2-6 Đen tuyền
-    settings.faceColors = ['#e74c3c','#111111','#111111','#111111','#111111','#111111'];
-  } else if(comboType === 'rainbow'){
-    // Cầu vồng 6 màu
+  if(comboType === 'rainbow'){
     settings.faceColors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
   } else if(comboType === 'allRed'){
     settings.faceColors = ['#e74c3c','#e74c3c','#e74c3c','#e74c3c','#e74c3c','#e74c3c'];
-  } else if(comboType === 'allBlack'){
-    settings.faceColors = ['#111111','#111111','#111111','#111111','#111111','#111111'];
+  } else if(comboType === 'allOrange'){
+    settings.faceColors = ['#e67e22','#e67e22','#e67e22','#e67e22','#e67e22','#e67e22'];
+  } else if(comboType === 'allYellow'){
+    settings.faceColors = ['#f1c40f','#f1c40f','#f1c40f','#f1c40f','#f1c40f','#f1c40f'];
+  } else if(comboType === 'allGreen'){
+    settings.faceColors = ['#2ecc71','#2ecc71','#2ecc71','#2ecc71','#2ecc71','#2ecc71'];
   } else if(comboType === 'allBlue'){
-    settings.faceColors = ['#1e73be','#1e73be','#1e73be','#1e73be','#1e73be','#1e73be'];
-  } else if(comboType === 'allWhite'){
-    settings.faceColors = ['#ffffff','#ffffff','#ffffff','#ffffff','#ffffff','#ffffff'];
+    settings.faceColors = ['#3498db','#3498db','#3498db','#3498db','#3498db','#3498db'];
+  } else if(comboType === 'allPurple'){
+    settings.faceColors = ['#9b59b6','#9b59b6','#9b59b6','#9b59b6','#9b59b6','#9b59b6'];
   }
 
   for(let i = 0; i < 6; i++){
@@ -439,21 +489,6 @@ function applyColorCombo(comboType){
     window.syncService.send('change_all_face_colors', { faceColors: [...settings.faceColors] });
   }
 }
-
-function toggleCustomHexBox(){
-  const box = document.getElementById('customHexBox');
-  box.classList.toggle('show');
-}
-
-function applyCustomHex(){
-  const val = document.getElementById('customHexInput').value.trim() || document.getElementById('customColorPicker').value;
-  if(/^#[0-9a-fA-F]{6}$/.test(val)){
-    applyColor(val);
-  }
-}
-document.getElementById('customColorPicker').addEventListener('input', e=>{
-  document.getElementById('customHexInput').value = e.target.value;
-});
 
 /* ---- SPEED CONTROLS ---- */
 function initSpeedControls(){
@@ -569,13 +604,169 @@ document.getElementById('rSound').addEventListener('change', e=>{
   }
 });
 
+/* =====================================================================
+   LỊCH SỬ RA MÀU (REMOTE HISTORY)
+   ===================================================================== */
+let remoteHistory = [];
+
+function loadRemoteHistory(){
+  try {
+    const raw = localStorage.getItem('od_remote_history');
+    if(raw) remoteHistory = JSON.parse(raw) || [];
+  } catch(e){}
+}
+
+function saveRemoteHistory(){
+  try {
+    localStorage.setItem('od_remote_history', JSON.stringify(remoteHistory));
+  } catch(e){}
+}
+
+function addRemoteHistoryItem(record){
+  remoteHistory.unshift(record);
+  if(remoteHistory.length > 60) remoteHistory.pop();
+  saveRemoteHistory();
+  renderRemoteHistory();
+  showLatestResultBanner(record);
+
+  // Phục hồi nút Roll
+  const btnRoll = document.getElementById('btnRollRemote');
+  if(btnRoll){
+    clearTimeout(btnRoll._resetTimer);
+    btnRoll.disabled = false;
+    btnRoll.textContent = '🎲 ROLL TRÊN MÁY TÍNH !';
+  }
+
+  // Rung phản hồi xúc giác
+  try {
+    if(navigator.vibrate) navigator.vibrate([45, 60, 45]);
+  } catch(e){}
+}
+
+function showLatestResultBanner(record){
+  const card = document.getElementById('latestResultCard');
+  const chipsEl = document.getElementById('latestChips');
+  const timeEl = document.getElementById('latestTime');
+  const sumEl = document.getElementById('latestSummary');
+  if(!card || !chipsEl) return;
+
+  card.style.display = 'block';
+  timeEl.textContent = record.time || '--:--:--';
+  sumEl.textContent = record.summary || '';
+
+  if(record.mode === 'color' && record.colors){
+    chipsEl.innerHTML = record.colors.map((col, idx) => {
+      const name = record.names?.[idx] || 'Color';
+      const isYellow = name === 'Yellow' || col.toLowerCase() === '#f1c40f';
+      return `<span class="latest-chip" style="background:${col};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
+    }).join(' ');
+  } else if(record.results){
+    chipsEl.innerHTML = record.results.map(v => `<span class="latest-chip" style="background:#334155">${'⚀⚁⚂⚃⚄⚅'[v-1] || v} ${v}</span>`).join(' ');
+  }
+}
+
+function renderRemoteHistory(){
+  const countEl = document.getElementById('rHistCount');
+  const statsEl = document.getElementById('rColorStats');
+  const listEl = document.getElementById('rHistoryList');
+  if(!countEl || !listEl) return;
+
+  countEl.textContent = `${remoteHistory.length} lần`;
+
+  // Thống kê 6 màu
+  const colorCounts = { 'Red': 0, 'Orange': 0, 'Yellow': 0, 'Green': 0, 'Blue': 0, 'Purple': 0 };
+  remoteHistory.forEach(item => {
+    if(item.names && Array.isArray(item.names)){
+      item.names.forEach(name => {
+        if(colorCounts[name] !== undefined) colorCounts[name]++;
+      });
+    }
+  });
+
+  if(statsEl){
+    const statCards = [
+      { name: 'Red', hex: '#e74c3c' },
+      { name: 'Orange', hex: '#e67e22' },
+      { name: 'Yellow', hex: '#f1c40f' },
+      { name: 'Green', hex: '#2ecc71' },
+      { name: 'Blue', hex: '#3498db' },
+      { name: 'Purple', hex: '#9b59b6' }
+    ].map(c => `
+      <div class="r-stat-item" style="background:${c.hex};${c.name==='Yellow'?'color:#222;text-shadow:none':''}">
+        <span>${c.name}</span>
+        <b>${colorCounts[c.name]}</b>
+      </div>
+    `).join('');
+    statsEl.innerHTML = statCards;
+  }
+
+  if(remoteHistory.length === 0){
+    listEl.innerHTML = '<div style="text-align:center;padding:12px;color:#888;font-size:12px">Chưa có lịch sử lắc</div>';
+    return;
+  }
+
+  listEl.innerHTML = remoteHistory.map(item => {
+    let badgesHtml = '';
+    if(item.mode === 'color' && item.colors){
+      badgesHtml = item.colors.map((col, idx) => {
+        const name = item.names?.[idx] || 'Color';
+        const isYellow = name === 'Yellow' || col.toLowerCase() === '#f1c40f';
+        return `<span class="r-hist-chip" style="background:${col};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
+      }).join(' ');
+    } else if(item.results){
+      badgesHtml = item.results.map(v => `<span class="r-hist-chip" style="background:#334155">${'⚀⚁⚂⚃⚄⚅'[v-1] || v} ${v}</span>`).join(' ');
+    }
+
+    return `
+      <div class="r-hist-item">
+        <div class="r-hist-item-left">
+          <span class="r-hist-idx">#${item.id}</span>
+          <span class="r-hist-time">${item.time}</span>
+          <div class="r-hist-chips">${badgesHtml}</div>
+        </div>
+        <div class="r-hist-summary">${item.summary || ''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function clearRemoteHistory(){
+  remoteHistory = [];
+  saveRemoteHistory();
+  renderRemoteHistory();
+  const card = document.getElementById('latestResultCard');
+  if(card) card.style.display = 'none';
+
+  if(window.syncService){
+    window.syncService.send('clear_history', {});
+  }
+}
+
 /* ---- ROLL BUTTON ---- */
 document.getElementById('btnRollRemote').addEventListener('click', ()=>{
+  const btn = document.getElementById('btnRollRemote');
+  btn.disabled = true;
+  btn.textContent = '🎲 Đang lăn trên Live...';
+
+  // Tự động phục hồi nút sau khoảng thời gian lăn
+  clearTimeout(btn._resetTimer);
+  btn._resetTimer = setTimeout(()=>{
+    btn.disabled = false;
+    btn.textContent = '🎲 ROLL TRÊN MÁY TÍNH !';
+  }, Math.max(1600, (settings.rollDuration || 1.0) * 1000 + 1200));
+
   if(window.syncService){
     window.syncService.send('roll', {
       time: Date.now(),
       rollDuration: settings.rollDuration
     });
+  }
+});
+
+/* ---- CLEAR HISTORY BUTTON ---- */
+document.getElementById('rBtnClearHistory').addEventListener('click', ()=>{
+  if(confirm('Bạn có muốn xóa toàn bộ lịch sử lắc?')){
+    clearRemoteHistory();
   }
 });
 

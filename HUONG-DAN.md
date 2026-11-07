@@ -52,9 +52,9 @@ Khi đó:
 
 ## 🎨 DANH SÁCH TÍNH NĂNG
 1. **🖌️ Giao diện đổi màu 1-chạm siêu tốc cho điện thoại (MỚI)**:
-   - **Không mở popup, không bật bàn phím ảo**: Tất cả là nút tròn to bấm cực nhạy bằng 1 ngón tay.
-   - **Bộ màu mẫu 1-chạm**: Casino (Mặt 1 Đỏ, 2-6 Đen), Cầu vồng, Toàn Đỏ, Toàn Đen, Toàn Xanh, Toàn Trắng.
-   - **Bảng 16 màu phổ biến 1 chạm**: Bấm mặt cần đổi -> bấm màu là xong ngay trong 0.1s.
+   - **Gọn gàng đúng 6 màu chuẩn xúc xắc**: Đỏ (`#e74c3c`), Cam (`#e67e22`), Vàng (`#f1c40f`), Xanh lá (`#2ecc71`), Xanh dương (`#3498db`), Tím (`#9b59b6`).
+   - Nút bấm to dạng thẻ 3x2 có tên tiếng Việt và chấm màu rõ ràng, không bị bấm nhầm hay vướng víu.
+   - **Bộ màu mẫu 1-chạm**: Cầu vồng (mỗi mặt 1 màu), Toàn Đỏ, Toàn Cam, Toàn Vàng, Toàn Lục, Toàn Lam.
    - **Tính năng tự nhảy mặt (Auto-advance)**: Chọn Mặt 1 xong tự nhảy sang Mặt 2, 3, 4, 5, 6 — đổi cả bộ xúc xắc chỉ mất 2 giây!
    - **Nút "Đổi cả 6 mặt cùng lúc"**: 1 chạm đổi toàn bộ xúc xắc sang cùng một màu.
 2. **⚡ Tùy chỉnh tốc độ lăn xúc xắc trên điện thoại**:
@@ -66,3 +66,12 @@ Khi đó:
 5. **Mục số 5 - Custom Face Colors**: Đổi mã màu Hex cho từng mặt từ 1 đến 6.
 6. **Chế độ 6-sided Dice & Color Dice**.
 7. **Nút Admin ẩn 100%**: Người xem livestream không bao giờ thấy nút Admin.
+8. **📜 Lịch sử ra màu & Thống kê 6 màu (MỚI)**:
+   - **Bảng lịch sử trên màn hình Live (`index.html`)**: Hiển thị thứ tự lượt `#1, #2...`, thời gian chính xác, các chip màu đã ra kèm tổng kết (ví dụ: `1 Red, 2 Green, 1 Blue`).
+   - **Thanh thống kê tỷ lệ 6 màu**: Đếm dồn số lần xuất hiện của Red, Orange, Yellow, Green, Blue, Purple theo thời gian thực để người xem live theo dõi cầu màu.
+   - **Màn hình Remote trên điện thoại (`remote.html`)**:
+     - Khung **🎯 KẾT QUẢ VỪA RA** nổi bật ngay dưới nút ROLL, cập nhật tức thì khi xúc xắc dừng.
+     - Tự động rung điện thoại (haptic vibration) phản hồi khi có kết quả.
+     - Lịch sử đầy đủ các lượt lắc kèm 6 ô thống kê mini và nút **🗑 Xóa lịch sử** 1-chạm.
+   - **Đồng bộ 2 chiều qua Cloud**: Lắc trên máy tính hay điện thoại thì cả 2 thiết bị đều cập nhật lịch sử đồng thời.
+   - **Tùy chọn ẩn/hiện trên Live**: Trong Admin Panel mục 7 có ô checkbox cho phép streamer bật/tắt hiển thị lịch sử trên màn hình livestream tùy ý.

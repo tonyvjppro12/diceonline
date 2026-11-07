@@ -72,6 +72,28 @@ body{font-family:'Open Sans',Arial,Helvetica,sans-serif;background:#f4f6f9;color
 .color-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 14px;border-radius:16px;color:#fff;font-size:13px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.2);text-shadow:0 1px 2px rgba(0,0,0,.3)}
 .color-summary-text{font-size:13.5px;color:#555;font-weight:600;margin-top:2px}
 
+/* ===== ROLL HISTORY (Chuẩn Online-Dice.com) ===== */
+.history-section{width:100%;max-width:720px;margin:8px auto 28px;padding:0 10px}
+.history-card{background:#ffffff;border:1px solid #e5e5e5;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.04);overflow:hidden}
+.history-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:#fbfbfb;border-bottom:1px solid #ebebeb}
+.history-title{font-size:14.5px;font-weight:700;color:#2c3e50;display:flex;align-items:center;gap:7px}
+.history-count{font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;background:#eef2f7;color:#1e73be}
+.btn-clear-hist{background:#fff;border:1px solid #ddd;color:#666;padding:4px 10px;border-radius:5px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.btn-clear-hist:hover{background:#fdf2f2;color:#e74c3c;border-color:#e74c3c}
+.history-stats-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 16px;background:#f8f9fa;border-bottom:1px solid #ebebeb;font-size:11.5px}
+.history-stat-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;color:#fff;font-weight:700;font-size:11px;box-shadow:0 1px 3px rgba(0,0,0,.15);text-shadow:0 1px 1px rgba(0,0,0,.2)}
+.history-list{max-height:260px;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px}
+.history-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fcfdfe;border:1px solid #edf0f5;border-radius:8px;font-size:13px;transition:background .15s}
+.history-item:hover{background:#f4f7fb}
+.history-item-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hist-idx{font-size:11.5px;font-weight:800;color:#8a99a8;min-width:32px}
+.hist-time{font-size:11px;color:#95a5a6;font-variant-numeric:tabular-nums}
+.hist-badges{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.hist-chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:12px;color:#fff;font-size:11.5px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.15);text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.history-item-right{text-align:right}
+.hist-summary{font-size:12px;color:#555;font-weight:600}
+.history-empty{text-align:center;padding:24px 10px;color:#95a5a6;font-size:13px;font-style:italic}
+
 /* ===== OWNER PANEL ===== */
 /* Owner toggle: HIDDEN by default – only visible via secret trigger */
 .owner-toggle{position:fixed;bottom:16px;right:16px;height:44px;padding:0 16px;border-radius:22px;background:#2c3e50;color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);display:none;align-items:center;justify-content:center;gap:6px;z-index:200;transition:all .25s;font-family:inherit;opacity:0}
@@ -187,6 +209,26 @@ footer a{color:#1e73be;text-decoration:none}
   <a href="#" class="install-link" onclick="return false">📲 Install app – Fewer ads, instant access.</a>
 </div>
 
+<!-- ========== ROLL HISTORY SECTION ========== -->
+<div class="history-section" id="historySection">
+  <div class="history-card">
+    <div class="history-header">
+      <div class="history-title">
+        <span>📜</span>
+        <span>Roll History</span>
+        <span class="history-count" id="historyCount">0 rolls</span>
+      </div>
+      <div class="history-actions">
+        <button class="btn-clear-hist" id="btnClearHistory" title="Clear history">🗑 Clear</button>
+      </div>
+    </div>
+    <div class="history-stats-bar" id="historyStatsBar"></div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">No rolls yet. Press <b>Go Again !</b> to roll the dice.</div>
+    </div>
+  </div>
+</div>
+
 <!-- ========== OWNER BUTTON ========== -->
 <button class="owner-toggle" id="ownerToggle" title="Owner Panel">⚙ Admin</button>
 
@@ -254,10 +296,10 @@ footer a{color:#1e73be;text-decoration:none}
         </select>
       </div>
 
-      <!-- 5. Custom Face Colors -->
+      <!-- 5. 6 Dice Colors -->
       <div class="section">
-        <h3>5. Custom Dice Face Colors 🎨</h3>
-        <p style="font-size:12px;color:#888;margin-bottom:8px">Đổi mã Hex cho từng mặt xúc xắc (1–6) để khớp bộ xúc xắc thật của bạn.</p>
+        <h3>5. 6 Dice Colors (Red, Orange, Yellow, Green, Blue, Purple)</h3>
+        <p style="font-size:12px;color:#888;margin-bottom:8px">Chọn màu cho từng mặt từ 1–6.</p>
         <div class="face-color-grid" id="faceColorGrid"></div>
       </div>
 
@@ -268,6 +310,18 @@ footer a{color:#1e73be;text-decoration:none}
         <input type="text" id="ownerRoomId" value="dice8888" placeholder="dice8888" style="font-weight:700;letter-spacing:1px">
         <p style="font-size:11.5px;color:#666;margin:4px 0 6px">Trạng thái Cloud: <b id="cloudStatusText" style="color:#28a745">● Đang kết nối...</b></p>
         <p style="font-size:11px;color:#777">Mở <b>remote.html</b> trên điện thoại với cùng mã phòng này để điều khiển tức thì từ xa mà không cần bật server!</p>
+      </div>
+
+      <!-- 7. Roll History Settings -->
+      <div class="section">
+        <h3>7. Lịch sử ra màu (Roll History) 📜</h3>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:13px">
+          <input type="checkbox" id="ownerShowHistory" checked style="width:16px;height:16px">
+          Hiển thị bảng Lịch sử trên màn hình Live
+        </label>
+        <div style="margin-top:10px">
+          <button type="button" id="ownerBtnClearHistory" style="padding:6px 14px;font-size:12px;background:#e74c3c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600">🗑 Xóa toàn bộ lịch sử</button>
+        </div>
       </div>
 
       <button class="btn-save" id="btnSave">💾 Save Settings</button>
@@ -309,6 +363,25 @@ const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','
 const COLOR_DICE_FACES    = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
 const COLOR_NAMES         = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple'];
 
+const HEX_TO_NAME = {
+  '#e74c3c': 'Red',
+  '#e67e22': 'Orange',
+  '#f1c40f': 'Yellow',
+  '#2ecc71': 'Green',
+  '#3498db': 'Blue',
+  '#9b59b6': 'Purple'
+};
+
+function getColorName(hex, fallbackIndex){
+  if(hex && HEX_TO_NAME[hex.toLowerCase()]){
+    return HEX_TO_NAME[hex.toLowerCase()];
+  }
+  return COLOR_NAMES[fallbackIndex] || 'Color';
+}
+
+let rollCounter = 0;
+let rollHistory = [];
+
 let state = {
   theme:        'Blue',
   diceCount:    4,           // 4 Color Dice (Chuẩn online-dice.com/roll-color-dice/4/)
@@ -316,6 +389,7 @@ let state = {
   sound:        'on',
   faceColors:   [...DEFAULT_FACE_COLORS],
   rollDuration: 1.0,         // thời gian lăn tính bằng giây (0.3s - 3.5s)
+  showHistory:  true,        // hiển thị bảng lịch sử
   rolling:      false,
   results:      [1, 2, 4, 5] // Hiển thị sẵn 4 xúc xắc 4 màu trên bàn
 };
@@ -329,7 +403,8 @@ function saveState(){
       mode: state.mode,
       sound: state.sound,
       faceColors: state.faceColors,
-      rollDuration: state.rollDuration || 1.0
+      rollDuration: state.rollDuration || 1.0,
+      showHistory: state.showHistory !== undefined ? state.showHistory : true
     }));
   }catch(e){}
 }
@@ -343,8 +418,152 @@ function loadState(){
       state.sound = s.sound || 'on';
       state.faceColors = s.faceColors || [...DEFAULT_FACE_COLORS];
       state.rollDuration = parseFloat(s.rollDuration) || 1.0;
+      state.showHistory = s.showHistory !== undefined ? s.showHistory : true;
     }
   }catch(e){}
+}
+
+function loadHistory(){
+  try {
+    const raw = localStorage.getItem('od_history');
+    if(raw){
+      rollHistory = JSON.parse(raw) || [];
+      if(rollHistory.length > 0){
+        rollCounter = rollHistory[0].id || rollHistory.length;
+      }
+    }
+  }catch(e){}
+}
+
+function saveHistory(){
+  try {
+    localStorage.setItem('od_history', JSON.stringify(rollHistory));
+  }catch(e){}
+}
+
+function addRollToHistory(results){
+  rollCounter++;
+  const d = new Date();
+  const timeStr = [
+    String(d.getHours()).padStart(2,'0'),
+    String(d.getMinutes()).padStart(2,'0'),
+    String(d.getSeconds()).padStart(2,'0')
+  ].join(':');
+
+  let record = {
+    id: rollCounter,
+    time: timeStr,
+    mode: state.mode,
+    diceCount: state.diceCount,
+    results: [...results]
+  };
+
+  if(state.mode === 'color'){
+    const colors = results.map(v => state.faceColors[(v-1)%6] || DEFAULT_FACE_COLORS[(v-1)%6]);
+    const names = colors.map((col, idx) => getColorName(col, (results[idx]-1)%6));
+    const counts = {};
+    names.forEach(name => { counts[name] = (counts[name] || 0) + 1; });
+    const summary = Object.entries(counts).map(([name, c]) => `${c} ${name}`).join(', ');
+
+    record.colors = colors;
+    record.names = names;
+    record.summary = summary;
+  } else {
+    const total = results.reduce((a,b)=>a+b, 0);
+    record.total = total;
+    record.summary = `Total: ${total}`;
+  }
+
+  rollHistory.unshift(record);
+  if(rollHistory.length > 60) rollHistory.pop();
+  saveHistory();
+  renderHistoryUI();
+
+  if(window.syncService){
+    window.syncService.send('roll_result', record);
+  }
+}
+
+function clearHistory(){
+  rollHistory = [];
+  rollCounter = 0;
+  saveHistory();
+  renderHistoryUI();
+  if(window.syncService){
+    window.syncService.send('clear_history', {});
+  }
+}
+
+function renderHistoryUI(){
+  const listEl = document.getElementById('historyList');
+  const countEl = document.getElementById('historyCount');
+  const statsEl = document.getElementById('historyStatsBar');
+  const sectionEl = document.getElementById('historySection');
+  if(!listEl) return;
+
+  if(sectionEl){
+    sectionEl.style.display = state.showHistory ? 'block' : 'none';
+  }
+
+  countEl.textContent = `${rollHistory.length} ${rollHistory.length === 1 ? 'roll' : 'rolls'}`;
+
+  // Thống kê 6 màu
+  const colorCounts = { 'Red': 0, 'Orange': 0, 'Yellow': 0, 'Green': 0, 'Blue': 0, 'Purple': 0 };
+  rollHistory.forEach(item => {
+    if(item.names && Array.isArray(item.names)){
+      item.names.forEach(name => {
+        if(colorCounts[name] !== undefined) colorCounts[name]++;
+      });
+    }
+  });
+
+  if(statsEl){
+    const statPills = [
+      { name: 'Red', hex: '#e74c3c' },
+      { name: 'Orange', hex: '#e67e22' },
+      { name: 'Yellow', hex: '#f1c40f' },
+      { name: 'Green', hex: '#2ecc71' },
+      { name: 'Blue', hex: '#3498db' },
+      { name: 'Purple', hex: '#9b59b6' }
+    ].map(c => `
+      <span class="history-stat-pill" style="background:${c.hex};${c.name==='Yellow'?'color:#222;text-shadow:none':''}">
+        ${c.name}: <b>${colorCounts[c.name]}</b>
+      </span>
+    `).join(' ');
+
+    statsEl.innerHTML = `<span style="font-weight:700;color:#555;margin-right:2px">📊 Stats:</span> ${statPills}`;
+  }
+
+  if(rollHistory.length === 0){
+    listEl.innerHTML = '<div class="history-empty">No rolls yet. Press <b>Go Again !</b> to roll the dice.</div>';
+    return;
+  }
+
+  listEl.innerHTML = rollHistory.map(item => {
+    let badgesHtml = '';
+    if(item.mode === 'color' && item.colors){
+      badgesHtml = item.colors.map((col, idx) => {
+        const name = item.names?.[idx] || 'Color';
+        const isYellow = name === 'Yellow' || col.toLowerCase() === '#f1c40f';
+        return `<span class="hist-chip" style="background:${col};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
+      }).join(' ');
+    } else if(item.results){
+      badgesHtml = item.results.map(v => `<span class="hist-chip" style="background:#2c3e50">${'⚀⚁⚂⚃⚄⚅'[v-1] || v} ${v}</span>`).join(' ');
+    }
+
+    return `
+      <div class="history-item">
+        <div class="history-item-left">
+          <span class="hist-idx">#${item.id}</span>
+          <span class="hist-time">${item.time}</span>
+          <div class="hist-badges">${badgesHtml}</div>
+        </div>
+        <div class="history-item-right">
+          <span class="hist-summary">${item.summary || ''}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 /* =====================================================================
@@ -605,6 +824,7 @@ function rollDice(overrideDuration){
       btnRoll.textContent = '🎲 Go Again !';
       drawStage();
       showResult();
+      addRollToHistory(finalValues);
     }
   }
   animate();
@@ -617,14 +837,16 @@ function showResult(){
   if(state.mode === 'color'){
     // Hiển thị kết quả Color Dice chuẩn Online-Dice.com
     const badgesHtml = vals.map(v => {
-      const color = state.faceColors[(v-1)%6] || COLOR_DICE_FACES[(v-1)%6];
-      const name = COLOR_NAMES[(v-1)%6] || 'Color';
-      return `<span class="color-badge" style="background:${color};">${name}</span>`;
+      const color = state.faceColors[(v-1)%6] || DEFAULT_FACE_COLORS[(v-1)%6];
+      const name = getColorName(color, (v-1)%6);
+      const isYellow = name === 'Yellow' || color.toLowerCase() === '#f1c40f';
+      return `<span class="color-badge" style="background:${color};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
     }).join(' ');
 
     const counts = {};
     vals.forEach(v => {
-      const name = COLOR_NAMES[(v-1)%6] || 'Color';
+      const color = state.faceColors[(v-1)%6] || DEFAULT_FACE_COLORS[(v-1)%6];
+      const name = getColorName(color, (v-1)%6);
       counts[name] = (counts[name] || 0) + 1;
     });
     const summaryStr = Object.entries(counts).map(([name, c]) => `${c} ${name}`).join(', ');
@@ -931,6 +1153,17 @@ function populateOwnerPanel(){
   // room ID
   const roomInput = document.getElementById('ownerRoomId');
   if(roomInput) roomInput.value = window.syncService ? window.syncService.roomId : 'dice8888';
+  // show history
+  const histCheck = document.getElementById('ownerShowHistory');
+  if(histCheck) histCheck.checked = (state.showHistory !== false);
+  const btnOwnerClear = document.getElementById('ownerBtnClearHistory');
+  if(btnOwnerClear){
+    btnOwnerClear.onclick = ()=>{
+      if(confirm('Bạn có chắc muốn xóa toàn bộ lịch sử lắc?')){
+        clearHistory();
+      }
+    };
+  }
   // face colors
   buildFaceColorGrid();
 
@@ -941,29 +1174,36 @@ function populateOwnerPanel(){
 function buildFaceColorGrid(){
   const grid = document.getElementById('faceColorGrid');
   grid.innerHTML = '';
+  const SIX_OPTS = [
+    { name: 'Red', hex: '#e74c3c' },
+    { name: 'Orange', hex: '#e67e22' },
+    { name: 'Yellow', hex: '#f1c40f' },
+    { name: 'Green', hex: '#2ecc71' },
+    { name: 'Blue', hex: '#3498db' },
+    { name: 'Purple', hex: '#9b59b6' }
+  ];
+
   for(let i=0;i<6;i++){
     const item = document.createElement('div');
     item.className='face-color-item';
     const dots = '⚀⚁⚂⚃⚄⚅'[i];
+    const cur = (state.faceColors[i] || SIX_OPTS[i].hex).toLowerCase();
+
+    let opts = SIX_OPTS.map(c => `
+      <option value="${c.hex}" ${c.hex.toLowerCase() === cur ? 'selected' : ''}>${c.name}</option>
+    `).join('');
+
     item.innerHTML=`
       <span>${dots} Face ${i+1}</span>
-      <input type="color" value="${state.faceColors[i]}" data-face="${i}">
-      <input type="text" value="${state.faceColors[i]}" data-face-text="${i}" maxlength="7" style="text-align:center;font-size:11px;padding:3px">
+      <select data-face="${i}" style="padding:4px;font-size:12px;font-weight:600">
+        ${opts}
+      </select>
     `;
-    // sync color & text + LIVE PREVIEW
-    const colorInput = item.querySelector('input[type=color]');
-    const textInput  = item.querySelector('input[type=text]');
-    colorInput.addEventListener('input',()=>{
-      textInput.value = colorInput.value;
-      state.faceColors[parseInt(colorInput.dataset.face)] = colorInput.value;
+
+    const sel = item.querySelector('select');
+    sel.addEventListener('change',()=>{
+      state.faceColors[i] = sel.value;
       livePreview();
-    });
-    textInput.addEventListener('input',()=>{
-      if(/^#[0-9a-fA-F]{6}$/.test(textInput.value)){
-        colorInput.value = textInput.value;
-        state.faceColors[parseInt(textInput.dataset.faceText)] = textInput.value;
-        livePreview();
-      }
     });
     grid.appendChild(item);
   }
@@ -989,16 +1229,24 @@ document.getElementById('btnSave').addEventListener('click',()=>{
   const speedSel = document.getElementById('ownerRollSpeed');
   if(speedSel) state.rollDuration = parseFloat(speedSel.value) || 1.0;
 
-  // face colors
-  document.querySelectorAll('#faceColorGrid input[type=color]').forEach(inp=>{
-    const i = parseInt(inp.dataset.face);
-    state.faceColors[i] = inp.value;
+  // face colors (6 colors only)
+  document.querySelectorAll('#faceColorGrid select').forEach(sel=>{
+    const i = parseInt(sel.dataset.face);
+    state.faceColors[i] = sel.value;
   });
 
   // room ID
   const roomInput = document.getElementById('ownerRoomId');
   if(roomInput && window.syncService){
     window.syncService.setRoomId(roomInput.value.trim());
+  }
+
+  // show history
+  const histCheck = document.getElementById('ownerShowHistory');
+  if(histCheck){
+    state.showHistory = histCheck.checked;
+    const sec = document.getElementById('historySection');
+    if(sec) sec.style.display = state.showHistory ? 'block' : 'none';
   }
 
   // apply
@@ -1014,15 +1262,24 @@ document.getElementById('btnSave').addEventListener('click',()=>{
   closePanel();
 });
 
+// Clear history button on stream page
+document.getElementById('btnClearHistory').addEventListener('click',()=>{
+  if(confirm('Bạn có muốn xóa toàn bộ lịch sử ra màu?')){
+    clearHistory();
+  }
+});
+
 /* =====================================================================
    INIT
    ===================================================================== */
 loadState();
+loadHistory();
 setTheme(state.theme);
 diceCountSel.value = state.diceCount;
 updateDicePillsUI();
 resizeCanvas();
 showResult();
+renderHistoryUI();
 
 /* =====================================================================
    CLOUD SYNC (Serverless, No Machine Host Required)
@@ -1035,7 +1292,9 @@ function broadcastCloudState(){
     mode: state.mode,
     sound: state.sound,
     faceColors: state.faceColors,
-    rollDuration: state.rollDuration || 1.0
+    rollDuration: state.rollDuration || 1.0,
+    showHistory: state.showHistory,
+    history: rollHistory
   });
 }
 
@@ -1127,6 +1386,14 @@ if(window.syncService){
 
       if(action === 'request_state'){
         broadcastCloudState();
+      }
+
+      if(action === 'clear_history'){
+        rollHistory = [];
+        rollCounter = 0;
+        saveHistory();
+        renderHistoryUI();
+        return;
       }
 
       if(needRedraw){
