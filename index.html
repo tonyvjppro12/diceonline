@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online-Dice.com – Roll Dice Online</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="mqtt.min.js"></script>
+<script>
+if(typeof mqtt === 'undefined'){
+  document.write('<script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"><\/script>');
+}
+</script>
+<script src="sync-service.js"></script>
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',Arial,Helvetica,sans-serif;background:#f4f6f9;color:#2c3e50;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+
+/* ===== HEADER / NAVBAR ===== */
+.navbar{width:100%;background:#ffffff;border-bottom:1px solid #e5e5e5;display:flex;align-items:center;justify-content:center;padding:10px 20px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.logo-wrap{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.logo-dice{display:flex;gap:4px}
+.logo-die{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:14px;box-shadow:1px 1px 3px rgba(0,0,0,.25)}
+.logo-die.red{background:#e74c3c}
+.logo-die.green{background:#27ae60}
+.logo-die.yellow{background:#f1c40f;color:#333}
+.logo-text{font-size:22px;font-weight:700;color:#2c3e50;letter-spacing:-.5px}
+.logo-text span{color:#1e73be}
+
+/* ===== THEME SELECTOR ===== */
+.theme-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:12px 10px;max-width:740px;width:100%}
+.theme-btn{padding:5px 11px;border:1px solid #ccc;border-radius:14px;font-size:11.5px;cursor:pointer;background:#fff;color:#555;transition:all .2s;font-family:inherit}
+.theme-btn:hover{border-color:#1e73be;color:#1e73be}
+.theme-btn.active{background:#1e73be;color:#fff;border-color:#1e73be}
+
+/* ===== DICE STAGE (CANVAS AREA) ===== */
+.stage-wrap{width:100%;max-width:720px;margin:0 auto;padding:0 10px}
+.stage{position:relative;width:100%;aspect-ratio:16/10;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.18)}
+.stage canvas{width:100%;height:100%;display:block}
+
+/* ===== CONTROLS ===== */
+.controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;padding:16px 10px;max-width:720px;width:100%}
+.btn-roll{padding:12px 36px;border:none;border-radius:6px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .15s;color:#fff;background:#28a745;box-shadow:0 3px 8px rgba(40,167,69,.35)}
+.btn-roll:hover{filter:brightness(1.08)}
+.btn-roll:active{filter:brightness(.95)}
+.btn-mode{padding:12px 22px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;color:#fff;background:#ff7f00;box-shadow:0 3px 8px rgba(255,127,0,.3);transition:filter .15s}
+.btn-mode:hover{filter:brightness(1.08)}
+.install-link{font-size:12.5px;color:#1e73be;text-decoration:none;border-bottom:1px dashed #1e73be;padding-bottom:1px}
+.install-link:hover{color:#155a9c}
+
+/* ===== DICE COUNT SELECTOR ===== */
+.dice-count-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:4px 0 10px}
+.dice-count-bar label{font-size:13px;color:#555;font-weight:600}
+.dice-count-bar select{padding:4px 8px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:13px}
+
+/* ===== RESULT ===== */
+.result-display{text-align:center;padding:6px 0 14px;font-size:15px;color:#2c3e50;font-weight:600;min-height:30px}
+.result-display .total{font-size:28px;color:#1e73be}
+
+/* ===== OWNER PANEL ===== */
+/* Owner toggle: HIDDEN by default – only visible via secret trigger */
+.owner-toggle{position:fixed;bottom:16px;right:16px;height:44px;padding:0 16px;border-radius:22px;background:#2c3e50;color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);display:none;align-items:center;justify-content:center;gap:6px;z-index:200;transition:all .25s;font-family:inherit;opacity:0}
+.owner-toggle.visible{display:flex;animation:fadeInAdmin .3s forwards}
+.owner-toggle:hover{background:#1e73be;transform:scale(1.05)}
+@keyframes fadeInAdmin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Owner overlay: sidebar style – không che bàn xúc xắc */
+.owner-overlay{display:none;position:fixed;top:0;right:0;bottom:0;width:320px;z-index:300;transform:translateX(100%);transition:transform .3s ease}
+.owner-overlay.show{display:block;transform:translateX(0)}
+
+.owner-panel{background:#fff;width:100%;height:100%;padding:20px 18px;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,.2);border-left:1px solid #e5e5e5}
+.owner-panel h2{font-size:16px;color:#2c3e50;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.owner-panel h2 .lock{font-size:20px}
+.owner-panel .section{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #eee}
+.owner-panel .section:last-child{border-bottom:none;margin-bottom:0}
+.owner-panel .section h3{font-size:14px;color:#1e73be;margin-bottom:8px}
+.owner-panel label{display:block;font-size:13px;color:#555;margin-bottom:4px}
+.owner-panel input[type=text],
+.owner-panel input[type=password],
+.owner-panel input[type=color],
+.owner-panel select{width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:13px;margin-bottom:6px}
+.owner-panel input[type=color]{height:38px;padding:2px;cursor:pointer}
+.owner-panel .btn-save{padding:8px 20px;background:#28a745;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-family:inherit;font-size:13px}
+.owner-panel .btn-save:hover{filter:brightness(1.1)}
+.owner-panel .btn-close{position:absolute;top:10px;right:14px;background:none;border:none;font-size:22px;cursor:pointer;color:#999}
+.pin-gate{text-align:center}
+.pin-gate input{text-align:center;letter-spacing:8px;font-size:22px;max-width:180px;margin:0 auto 10px}
+.pin-gate .btn-pin{padding:8px 28px;background:#1e73be;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-family:inherit}
+.pin-error{color:#e74c3c;font-size:12px;margin-top:4px;display:none}
+
+/* face color grid */
+.face-color-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.face-color-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.face-color-item span{font-size:12px;font-weight:600;color:#555}
+.face-color-item input[type=color]{width:52px;height:34px}
+
+/* ===== FOOTER ===== */
+footer{padding:20px 10px;text-align:center;font-size:11.5px;color:#999;margin-top:auto}
+footer a{color:#1e73be;text-decoration:none}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:500px){
+  .logo-text{font-size:17px}
+  .logo-die{width:22px;height:22px;font-size:11px}
+  .btn-roll{padding:10px 26px;font-size:15px}
+  .btn-mode{padding:10px 16px;font-size:12.5px}
+  .owner-overlay{width:280px}
+  .owner-panel{padding:16px 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar">
+  <div class="logo-wrap" onclick="location.reload()">
+    <div class="logo-dice">
+      <div class="logo-die red">⚄</div>
+      <div class="logo-die green">⚂</div>
+      <div class="logo-die yellow">⚅</div>
+    </div>
+    <div class="logo-text">ONLINE-DICE<span>.COM</span></div>
+  </div>
+</nav>
+
+<!-- ========== THEME BAR ========== -->
+<div class="theme-bar" id="themeBar"></div>
+
+<!-- ========== DICE COUNT ========== -->
+<div class="dice-count-bar">
+  <label for="diceCount">Number of Dice:</label>
+  <select id="diceCount">
+    <option value="1">1</option>
+    <option value="2" selected>2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+  </select>
+</div>
+
+<!-- ========== CANVAS STAGE ========== -->
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <canvas id="diceCanvas"></canvas>
+  </div>
+</div>
+
+<!-- ========== RESULT ========== -->
+<div class="result-display" id="resultDisplay">🎲 Press <b>Go Again !</b> to roll</div>
+
+<!-- ========== CONTROLS ========== -->
+<div class="controls">
+  <button class="btn-roll" id="btnRoll">🎲 Go Again !</button>
+  <button class="btn-mode" id="btnMode">🎨 Color Dice</button>
+  <a href="#" class="install-link" onclick="return false">📲 Install app – Fewer ads, instant access.</a>
+</div>
+
+<!-- ========== OWNER BUTTON ========== -->
+<button class="owner-toggle" id="ownerToggle" title="Owner Panel">⚙ Admin</button>
+
+<!-- ========== OWNER OVERLAY ========== -->
+<div class="owner-overlay" id="ownerOverlay">
+  <div class="owner-panel" style="position:relative">
+    <button class="btn-close" id="ownerClose">&times;</button>
+
+    <!-- PIN GATE -->
+    <div id="pinGate" class="pin-gate">
+      <h2><span class="lock">🔒</span> Owner Panel</h2>
+      <p style="font-size:13px;color:#777;margin-bottom:14px">Enter PIN to access settings</p>
+      <input type="password" id="pinInput" maxlength="4" placeholder="••••">
+      <br>
+      <button class="btn-pin" id="btnPin">Unlock</button>
+      <div class="pin-error" id="pinError">❌ Wrong PIN. Try again.</div>
+    </div>
+
+    <!-- PANEL CONTENT (hidden until PIN ok) -->
+    <div id="panelContent" style="display:none">
+      <h2><span class="lock">🔓</span> Owner Panel</h2>
+
+      <!-- 1. Theme -->
+      <div class="section">
+        <h3>1. Default Theme</h3>
+        <select id="ownerTheme"></select>
+      </div>
+
+      <!-- 2. Default dice count -->
+      <div class="section">
+        <h3>2. Default Dice Count</h3>
+        <select id="ownerDiceCount">
+          <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        </select>
+      </div>
+
+      <!-- 3. Default mode -->
+      <div class="section">
+        <h3>3. Default Mode</h3>
+        <select id="ownerMode">
+          <option value="classic">6-sided Dice</option>
+          <option value="color">Color Dice</option>
+        </select>
+      </div>
+
+      <!-- 4. Sound -->
+      <div class="section">
+        <h3>4. Roll Sound</h3>
+        <select id="ownerSound">
+          <option value="on">On</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
+
+      <!-- 5. Custom Face Colors -->
+      <div class="section">
+        <h3>5. Custom Dice Face Colors 🎨</h3>
+        <p style="font-size:12px;color:#888;margin-bottom:8px">Đổi mã Hex cho từng mặt xúc xắc (1–6) để khớp bộ xúc xắc thật của bạn.</p>
+        <div class="face-color-grid" id="faceColorGrid"></div>
+      </div>
+
+      <!-- 6. Cloud Sync (Không cần máy chủ) -->
+      <div class="section">
+        <h3>6. Cloud Sync (Điều khiển từ xa không cần server) ☁️</h3>
+        <label>Mã phòng bí mật (Room ID):</label>
+        <input type="text" id="ownerRoomId" value="dice8888" placeholder="dice8888" style="font-weight:700;letter-spacing:1px">
+        <p style="font-size:11.5px;color:#666;margin:4px 0 6px">Trạng thái Cloud: <b id="cloudStatusText" style="color:#28a745">● Đang kết nối...</b></p>
+        <p style="font-size:11px;color:#777">Mở <b>remote.html</b> trên điện thoại với cùng mã phòng này để điều khiển tức thì từ xa mà không cần bật server!</p>
+      </div>
+
+      <button class="btn-save" id="btnSave">💾 Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  Online-Dice Clone &copy; 2026 &mdash; Built for demonstration purposes.
+</footer>
+
+<!-- ===================================================================== -->
+<script>
+/* =====================================================================
+   CONFIG & STATE
+   ===================================================================== */
+const OWNER_PIN = '8888';
+
+const THEMES = {
+  'Blue':       {g1:'#2980b9',g2:'#154360'},
+  'Sab-Blue':   {g1:'#5dade2',g2:'#1a5276'},
+  'Green':      {g1:'#27ae60',g2:'#0e3d20'},
+  'Sab-Green':  {g1:'#58d68d',g2:'#145a32'},
+  'Red':        {g1:'#e74c3c',g2:'#641e16'},
+  'Sab-Red':    {g1:'#ec7063',g2:'#78281f'},
+  'Pink':       {g1:'#e91e90',g2:'#6c1248'},
+  'B&W':        {g1:'#bdc3c7',g2:'#2c3e50'},
+  'Sab-Black':  {g1:'#555555',g2:'#111111'},
+  'Heaven':     {g1:'#87ceeb',g2:'#f0e68c'},
+  'Hell':       {g1:'#8b0000',g2:'#1a0000'},
+  'Underwater': {g1:'#006994',g2:'#00293d'},
+  'Bronze':     {g1:'#cd7f32',g2:'#4a2c0a'},
+  'Silver':     {g1:'#c0c0c0',g2:'#404040'},
+  'Gold':       {g1:'#ffd700',g2:'#6b4f00'}
+};
+
+const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
+const COLOR_DICE_FACES    = ['#e74c3c','#3498db','#2ecc71','#f1c40f','#9b59b6','#e67e22'];
+
+let state = {
+  theme:      'Blue',
+  diceCount:  2,
+  mode:       'classic',   // 'classic' | 'color'
+  sound:      'on',
+  faceColors: [...DEFAULT_FACE_COLORS],
+  rolling:    false,
+  results:    []
+};
+
+/* helpers */
+function saveState(){try{localStorage.setItem('od_state',JSON.stringify({theme:state.theme,diceCount:state.diceCount,mode:state.mode,sound:state.sound,faceColors:state.faceColors}))}catch(e){}}
+function loadState(){try{const s=JSON.parse(localStorage.getItem('od_state'));if(s){state.theme=s.theme||'Blue';state.diceCount=s.diceCount||2;state.mode=s.mode||'classic';state.sound=s.sound||'on';state.faceColors=s.faceColors||[...DEFAULT_FACE_COLORS]}}catch(e){}}
+
+/* =====================================================================
+   DOM REFS
+   ===================================================================== */
+const canvas   = document.getElementById('diceCanvas');
+const ctx      = canvas.getContext('2d');
+const stageEl  = document.getElementById('stage');
+const btnRoll  = document.getElementById('btnRoll');
+const btnMode  = document.getElementById('btnMode');
+const resultEl = document.getElementById('resultDisplay');
+const diceCountSel = document.getElementById('diceCount');
+
+/* =====================================================================
+   THEME BAR
+   ===================================================================== */
+(function buildThemeBar(){
+  const bar = document.getElementById('themeBar');
+  Object.keys(THEMES).forEach(name=>{
+    const b = document.createElement('button');
+    b.className = 'theme-btn';
+    b.textContent = name;
+    b.dataset.theme = name;
+    b.onclick = ()=> setTheme(name);
+    bar.appendChild(b);
+  });
+})();
+
+function setTheme(name){
+  state.theme = name;
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===name));
+  drawStage();
+  saveState();
+}
+
+/* =====================================================================
+   CANVAS SIZING
+   ===================================================================== */
+function resizeCanvas(){
+  const rect = stageEl.getBoundingClientRect();
+  canvas.width  = rect.width  * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  drawStage();
+}
+window.addEventListener('resize', resizeCanvas);
+
+/* =====================================================================
+   DRAW HELPERS
+   ===================================================================== */
+function drawBackground(w,h){
+  const t = THEMES[state.theme] || THEMES['Blue'];
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0, t.g1);
+  grad.addColorStop(1, t.g2);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,w,h);
+
+  // inset vignette
+  const vig = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.25, w/2,h/2,Math.max(w,h)*0.75);
+  vig.addColorStop(0,'rgba(0,0,0,0)');
+  vig.addColorStop(1,'rgba(0,0,0,0.35)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0,0,w,h);
+}
+
+/* Draw a single die at (cx,cy) with given size and face value 1-6 */
+function drawDie(cx, cy, size, value, rotation, isColor){
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+
+  const half = size / 2;
+  const r = size * 0.14;
+
+  // body
+  if(isColor){
+    ctx.fillStyle = COLOR_DICE_FACES[(value-1) % 6];
+  } else {
+    ctx.fillStyle = '#ffffff';
+  }
+  ctx.shadowColor = 'rgba(0,0,0,0.4)';
+  ctx.shadowBlur  = size * 0.2;
+  ctx.shadowOffsetX = size*0.04;
+  ctx.shadowOffsetY = size*0.06;
+  ctx.beginPath();
+  ctx.roundRect(-half,-half,size,size,r);
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+
+  // subtle border
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // inner highlight
+  const ig = ctx.createLinearGradient(-half,-half,half,half);
+  ig.addColorStop(0,'rgba(255,255,255,0.28)');
+  ig.addColorStop(0.5,'rgba(255,255,255,0)');
+  ig.addColorStop(1,'rgba(0,0,0,0.06)');
+  ctx.fillStyle = ig;
+  ctx.beginPath();
+  ctx.roundRect(-half,-half,size,size,r);
+  ctx.fill();
+
+  // pips
+  const pipR = size * 0.085;
+  let pipColor;
+  if(isColor){
+    // choose contrasting pip color
+    pipColor = '#ffffff';
+  } else {
+    // use custom face colors
+    pipColor = state.faceColors[(value-1) % 6] || '#333333';
+  }
+
+  const positions = getPipPositions(value, size * 0.56);
+  positions.forEach(([px,py])=>{
+    ctx.beginPath();
+    ctx.arc(px, py, pipR, 0, Math.PI*2);
+    ctx.fillStyle = pipColor;
+    ctx.fill();
+    // pip shadow
+    ctx.beginPath();
+    ctx.arc(px+0.5, py+0.5, pipR, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+    ctx.fill();
+  });
+
+  ctx.restore();
+}
+
+function getPipPositions(v, spread){
+  const s = spread / 2;
+  const pips = {
+    1: [[0,0]],
+    2: [[-s,-s],[s,s]],
+    3: [[-s,-s],[0,0],[s,s]],
+    4: [[-s,-s],[s,-s],[-s,s],[s,s]],
+    5: [[-s,-s],[s,-s],[0,0],[-s,s],[s,s]],
+    6: [[-s,-s],[s,-s],[-s,0],[s,0],[-s,s],[s,s]]
+  };
+  return pips[v] || pips[1];
+}
+
+/* =====================================================================
+   DRAW STAGE (static or with results)
+   ===================================================================== */
+function drawStage(){
+  const w = canvas.width / devicePixelRatio;
+  const h = canvas.height / devicePixelRatio;
+  ctx.clearRect(0,0,w,h);
+  drawBackground(w,h);
+
+  if(state.results.length > 0 && !state.rolling){
+    drawDiceResults(w, h);
+  }
+}
+
+function drawDiceResults(w, h){
+  const n = state.results.length;
+  // Tính size linh hoạt – hỗ trợ cả preview 6 viên
+  const maxPerRow = Math.min(n, w < 400 ? 3 : 6);
+  const rows = Math.ceil(n / maxPerRow);
+  const dieSize = Math.min(
+    (w * 0.85) / (maxPerRow * 1.3),
+    (h * 0.8) / (rows * 1.4),
+    110
+  );
+
+  for(let i = 0; i < n; i++){
+    const row = Math.floor(i / maxPerRow);
+    const col = i % maxPerRow;
+    const colsInRow = Math.min(maxPerRow, n - row * maxPerRow);
+    const rowW = colsInRow * dieSize * 1.3 - dieSize * 0.3;
+    const startX = (w - rowW) / 2 + dieSize / 2;
+    const totalH = rows * dieSize * 1.4 - dieSize * 0.4;
+    const startY = (h - totalH) / 2 + dieSize / 2;
+
+    const cx = startX + col * (dieSize * 1.3);
+    const cy = startY + row * (dieSize * 1.4);
+    drawDie(cx, cy, dieSize, state.results[i], state._rotations?.[i] || 0, state.mode==='color');
+  }
+}
+
+/* =====================================================================
+   ROLLING ANIMATION
+   ===================================================================== */
+function rollDice(){
+  if(state.rolling) return;
+  state.rolling = true;
+  btnRoll.disabled = true;
+  btnRoll.textContent = '🎲 Rolling...';
+
+  const n = state.diceCount;
+  const finalValues = Array.from({length:n}, ()=> Math.floor(Math.random()*6)+1);
+  const finalRotations = Array.from({length:n}, ()=> (Math.random()-0.5)*0.5);
+  state._rotations = finalRotations;
+
+  // play sound
+  playRollSound();
+
+  let frame = 0;
+  const totalFrames = 28;
+
+  function animate(){
+    const w = canvas.width / devicePixelRatio;
+    const h = canvas.height / devicePixelRatio;
+    ctx.clearRect(0,0,w,h);
+    drawBackground(w,h);
+
+    const progress = frame / totalFrames;
+    const maxSize = Math.min(w / (n * 1.1 + 0.5), h * 0.55, 120);
+    const dieSize = Math.max(maxSize, 40);
+    const totalW  = n * dieSize + (n-1) * dieSize * 0.3;
+    const startX  = (w - totalW) / 2 + dieSize / 2;
+
+    for(let i=0; i<n; i++){
+      const cx = startX + i * (dieSize * 1.3);
+      // bounce effect
+      const bounce = Math.sin(progress * Math.PI) * (h * 0.15) * (1 - progress);
+      const cy = h / 2 - bounce + (Math.random()-0.5) * (1-progress) * 8;
+      const rot = (1 - progress) * (Math.random()-0.5) * 1.5;
+      const randVal = frame < totalFrames ? Math.floor(Math.random()*6)+1 : finalValues[i];
+      drawDie(cx, cy, dieSize, randVal, rot, state.mode==='color');
+    }
+
+    frame++;
+    if(frame <= totalFrames){
+      requestAnimationFrame(animate);
+    } else {
+      state.results = finalValues;
+      state.rolling = false;
+      btnRoll.disabled = false;
+      btnRoll.textContent = '🎲 Go Again !';
+      drawStage();
+      showResult();
+    }
+  }
+  animate();
+}
+
+function showResult(){
+  const vals = state.results;
+  if(!vals.length) return;
+  const total = vals.reduce((a,b)=>a+b,0);
+  const each = vals.map(v=>`<b>${v}</b>`).join(' + ');
+  if(vals.length === 1){
+    resultEl.innerHTML = `Result: <span class="total">${total}</span>`;
+  } else {
+    resultEl.innerHTML = `${each} = <span class="total">${total}</span>`;
+  }
+}
+
+/* =====================================================================
+   SOUND – Realistic dice roll (multiple bounces on hard surface)
+   ===================================================================== */
+let audioCtx;
+function ensureAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playRollSound(){
+  if(state.sound==='off') return;
+  try{
+    const ac = ensureAudioCtx();
+    const now = ac.currentTime;
+    const master = ac.createGain();
+    master.gain.value = 0.6;
+    master.connect(ac.destination);
+
+    // Convolver for table resonance
+    const convLen = ac.sampleRate * 0.3;
+    const convBuf = ac.createBuffer(1, convLen, ac.sampleRate);
+    const convData = convBuf.getChannelData(0);
+    for(let i=0;i<convLen;i++){
+      convData[i] = (Math.random()*2-1) * Math.pow(1 - i/convLen, 3) * 0.15;
+    }
+    const convolver = ac.createConvolver();
+    convolver.buffer = convBuf;
+    convolver.connect(master);
+
+    const dryGain = ac.createGain();
+    dryGain.gain.value = 0.7;
+    dryGain.connect(master);
+
+    const wetGain = ac.createGain();
+    wetGain.gain.value = 0.4;
+    wetGain.connect(convolver);
+
+    // Generate multiple bounce impacts
+    const numBounces = 5 + Math.floor(Math.random()*4);
+    let t = 0;
+    for(let b=0; b<numBounces; b++){
+      const progress = b / numBounces;
+      const impactVol = (1 - progress*0.7) * (0.6 + Math.random()*0.4);
+      const dur = 0.015 + Math.random()*0.02;
+
+      // Impact noise burst
+      const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      const freq = 200 + Math.random()*600;
+      for(let i=0;i<d.length;i++){
+        const env = Math.pow(1 - i/d.length, 4);
+        const noise = (Math.random()*2-1) * 0.5;
+        const tone = Math.sin(2*Math.PI*freq*i/ac.sampleRate) * 0.5;
+        d[i] = (noise + tone) * env;
+      }
+
+      const src = ac.createBufferSource();
+      src.buffer = buf;
+      const g = ac.createGain();
+      g.gain.value = impactVol;
+      src.connect(g);
+      g.connect(dryGain);
+      g.connect(wetGain);
+      src.start(now + t);
+
+      // Time between bounces decreases (like real dice settling)
+      t += (0.04 + Math.random()*0.06) * (1 - progress*0.5);
+    }
+
+    // Final settle sound – soft thud
+    const settleDur = 0.04;
+    const settleBuf = ac.createBuffer(1, ac.sampleRate * settleDur, ac.sampleRate);
+    const sd = settleBuf.getChannelData(0);
+    for(let i=0;i<sd.length;i++){
+      const env = Math.pow(1 - i/sd.length, 6);
+      sd[i] = (Math.random()*2-1) * env * 0.3 + Math.sin(2*Math.PI*150*i/ac.sampleRate) * env * 0.4;
+    }
+    const ss = ac.createBufferSource();
+    ss.buffer = settleBuf;
+    const sg = ac.createGain();
+    sg.gain.value = 0.8;
+    ss.connect(sg);
+    sg.connect(dryGain);
+    sg.connect(wetGain);
+    ss.start(now + t + 0.02);
+
+  }catch(e){console.log('Sound error:',e)}
+}
+
+/* =====================================================================
+   MODE TOGGLE
+   ===================================================================== */
+btnMode.addEventListener('click', ()=>{
+  state.mode = state.mode==='classic' ? 'color' : 'classic';
+  btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+  if(state.results.length) drawStage();
+  saveState();
+});
+
+/* =====================================================================
+   DICE COUNT
+   ===================================================================== */
+diceCountSel.addEventListener('change', ()=>{
+  state.diceCount = parseInt(diceCountSel.value);
+  state.results = [];
+  resultEl.innerHTML = '🎲 Press <b>Go Again !</b> to roll';
+  drawStage();
+  saveState();
+});
+
+/* =====================================================================
+   ROLL BUTTON + KEYBOARD
+   ===================================================================== */
+btnRoll.addEventListener('click', rollDice);
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space' && !e.repeat && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='SELECT'){
+    e.preventDefault();
+    rollDice();
+  }
+});
+
+/* =====================================================================
+   OWNER PANEL
+   ===================================================================== */
+/* =====================================================================
+   OWNER PANEL – SECRET ACCESS
+   Cách mở (người xem stream KHÔNG biết):
+     1. Click logo 5 lần liên tiếp (trong 3 giây)
+     2. Hoặc nhấn Ctrl + Shift + F12
+   Panel tự ẩn sau khi đóng.
+   ===================================================================== */
+const ownerToggle  = document.getElementById('ownerToggle');
+const ownerOverlay = document.getElementById('ownerOverlay');
+const ownerClose   = document.getElementById('ownerClose');
+const pinGate      = document.getElementById('pinGate');
+const panelContent = document.getElementById('panelContent');
+const pinInput     = document.getElementById('pinInput');
+const btnPin       = document.getElementById('btnPin');
+const pinError     = document.getElementById('pinError');
+
+/* --- Secret trigger 1: click logo 5 lần trong 3 giây --- */
+let logoClicks = 0;
+let logoTimer  = null;
+document.querySelector('.logo-wrap').addEventListener('click', e => {
+  e.stopPropagation();
+  logoClicks++;
+  if(logoClicks === 1){
+    logoTimer = setTimeout(()=>{ logoClicks = 0; }, 3000);
+  }
+  if(logoClicks >= 5){
+    logoClicks = 0;
+    clearTimeout(logoTimer);
+    showOwnerButton();
+  }
+});
+
+/* --- Secret trigger 2: Ctrl + Shift + F12 --- */
+document.addEventListener('keydown', e => {
+  if(e.ctrlKey && e.shiftKey && e.key === 'F12'){
+    e.preventDefault();
+    showOwnerButton();
+  }
+});
+
+function showOwnerButton(){
+  ownerToggle.classList.add('visible');
+  // auto-hide nút sau 15 giây nếu không click
+  clearTimeout(ownerToggle._hideTimer);
+  ownerToggle._hideTimer = setTimeout(()=>{
+    if(!ownerOverlay.classList.contains('show')){
+      ownerToggle.classList.remove('visible');
+    }
+  }, 15000);
+}
+
+ownerToggle.addEventListener('click',()=>{
+  clearTimeout(ownerToggle._hideTimer);
+  ownerOverlay.classList.add('show');
+});
+ownerClose.addEventListener('click',closePanel);
+
+/* Click bên ngoài sidebar để đóng */
+document.addEventListener('click', e => {
+  if(ownerOverlay.classList.contains('show') &&
+     !ownerOverlay.contains(e.target) &&
+     e.target !== ownerToggle){
+    closePanel();
+  }
+});
+
+function closePanel(){
+  ownerOverlay.classList.remove('show');
+  ownerToggle.classList.remove('visible');   // ẩn nút Admin luôn
+  pinGate.style.display='block';
+  panelContent.style.display='none';
+  pinInput.value='';
+  pinError.style.display='none';
+}
+
+btnPin.addEventListener('click',checkPin);
+pinInput.addEventListener('keydown',e=>{if(e.key==='Enter')checkPin()});
+
+function checkPin(){
+  if(pinInput.value===OWNER_PIN){
+    pinGate.style.display='none';
+    panelContent.style.display='block';
+    populateOwnerPanel();
+  } else {
+    pinError.style.display='block';
+    pinInput.value='';
+    pinInput.focus();
+  }
+}
+
+function populateOwnerPanel(){
+  // theme select + live preview
+  const ts = document.getElementById('ownerTheme');
+  ts.innerHTML='';
+  Object.keys(THEMES).forEach(name=>{
+    const o=document.createElement('option');o.value=name;o.textContent=name;
+    if(name===state.theme)o.selected=true;
+    ts.appendChild(o);
+  });
+  ts.addEventListener('change',()=>{ setTheme(ts.value); livePreview(); });
+
+  // dice count
+  document.getElementById('ownerDiceCount').value = state.diceCount;
+
+  // mode + live preview
+  const modeSelect = document.getElementById('ownerMode');
+  modeSelect.value = state.mode;
+  modeSelect.addEventListener('change',()=>{
+    state.mode = modeSelect.value;
+    btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+    livePreview();
+  });
+
+  // sound
+  document.getElementById('ownerSound').value = state.sound;
+  // room ID
+  const roomInput = document.getElementById('ownerRoomId');
+  if(roomInput) roomInput.value = window.syncService ? window.syncService.roomId : 'dice8888';
+  // face colors
+  buildFaceColorGrid();
+
+  // Hiện preview ngay khi mở panel
+  livePreview();
+}
+
+function buildFaceColorGrid(){
+  const grid = document.getElementById('faceColorGrid');
+  grid.innerHTML = '';
+  for(let i=0;i<6;i++){
+    const item = document.createElement('div');
+    item.className='face-color-item';
+    const dots = '⚀⚁⚂⚃⚄⚅'[i];
+    item.innerHTML=`
+      <span>${dots} Face ${i+1}</span>
+      <input type="color" value="${state.faceColors[i]}" data-face="${i}">
+      <input type="text" value="${state.faceColors[i]}" data-face-text="${i}" maxlength="7" style="text-align:center;font-size:11px;padding:3px">
+    `;
+    // sync color & text + LIVE PREVIEW
+    const colorInput = item.querySelector('input[type=color]');
+    const textInput  = item.querySelector('input[type=text]');
+    colorInput.addEventListener('input',()=>{
+      textInput.value = colorInput.value;
+      state.faceColors[parseInt(colorInput.dataset.face)] = colorInput.value;
+      livePreview();
+    });
+    textInput.addEventListener('input',()=>{
+      if(/^#[0-9a-fA-F]{6}$/.test(textInput.value)){
+        colorInput.value = textInput.value;
+        state.faceColors[parseInt(textInput.dataset.faceText)] = textInput.value;
+        livePreview();
+      }
+    });
+    grid.appendChild(item);
+  }
+}
+
+/* ---- LIVE PREVIEW: hiện 6 mặt xúc xắc trên bàn khi đang chỉnh ---- */
+function livePreview(){
+  // Tự đặt 6 viên xúc xắc (mặt 1–6) lên bàn để thấy màu ngay
+  state.results = [1,2,3,4,5,6];
+  state._rotations = [0,0,0,0,0,0];
+  const savedCount = state.diceCount;
+  state.diceCount = 6;
+  drawStage();
+  state.diceCount = savedCount;
+  resultEl.innerHTML = '🔍 <b>Live Preview</b> – đang xem trước màu sắc';
+}
+
+document.getElementById('btnSave').addEventListener('click',()=>{
+  state.theme = document.getElementById('ownerTheme').value;
+  state.diceCount = parseInt(document.getElementById('ownerDiceCount').value);
+  state.mode = document.getElementById('ownerMode').value;
+  state.sound = document.getElementById('ownerSound').value;
+
+  // face colors
+  document.querySelectorAll('#faceColorGrid input[type=color]').forEach(inp=>{
+    const i = parseInt(inp.dataset.face);
+    state.faceColors[i] = inp.value;
+  });
+
+  // room ID
+  const roomInput = document.getElementById('ownerRoomId');
+  if(roomInput && window.syncService){
+    window.syncService.setRoomId(roomInput.value.trim());
+  }
+
+  // apply
+  setTheme(state.theme);
+  diceCountSel.value = state.diceCount;
+  btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+  state.results = [];
+  resultEl.innerHTML = '🎲 Press <b>Go Again !</b> to roll';
+  drawStage();
+  saveState();
+  broadcastCloudState();
+  pushToServer();   // optional local server fallback
+  closePanel();
+});
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+loadState();
+setTheme(state.theme);
+diceCountSel.value = state.diceCount;
+btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+resizeCanvas();
+
+/* =====================================================================
+   CLOUD SYNC (Serverless, No Machine Host Required)
+   ===================================================================== */
+function broadcastCloudState(){
+  if(!window.syncService) return;
+  window.syncService.send('sync_state', {
+    theme: state.theme,
+    diceCount: state.diceCount,
+    mode: state.mode,
+    sound: state.sound,
+    faceColors: state.faceColors
+  });
+}
+
+if(window.syncService){
+  window.syncService.init({
+    role: 'host',
+    onStatus: (status, text)=>{
+      const statusEl = document.getElementById('cloudStatusText');
+      if(statusEl){
+        statusEl.textContent = '● ' + text;
+        statusEl.style.color = (status === 'connected') ? '#28a745' : (status === 'connecting' ? '#ff7f00' : '#e74c3c');
+      }
+    },
+    onMessage: (action, payload)=>{
+      let needRedraw = false;
+
+      if(action === 'roll'){
+        rollDice();
+        return;
+      }
+
+      if(action === 'change_theme'){
+        if(payload.theme && THEMES[payload.theme]){
+          setTheme(payload.theme);
+          needRedraw = true;
+        }
+      }
+
+      if(action === 'change_dice_count'){
+        const cnt = parseInt(payload.diceCount);
+        if(cnt >= 1 && cnt <= 6){
+          state.diceCount = cnt;
+          diceCountSel.value = cnt;
+          needRedraw = true;
+        }
+      }
+
+      if(action === 'change_mode'){
+        if(payload.mode){
+          state.mode = payload.mode;
+          btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+          needRedraw = true;
+        }
+      }
+
+      if(action === 'change_sound'){
+        if(payload.sound) state.sound = payload.sound;
+      }
+
+      if(action === 'change_face_color'){
+        const idx = parseInt(payload.faceIndex);
+        if(idx >= 0 && idx < 6 && payload.color){
+          state.faceColors[idx] = payload.color;
+          needRedraw = true;
+        }
+      }
+
+      if(action === 'change_all_face_colors' || action === 'sync_state'){
+        if(payload.faceColors && Array.isArray(payload.faceColors)){
+          state.faceColors = [...payload.faceColors];
+          needRedraw = true;
+        }
+        if(payload.theme && THEMES[payload.theme]){
+          state.theme = payload.theme;
+          setTheme(payload.theme);
+          needRedraw = true;
+        }
+        if(payload.diceCount){
+          state.diceCount = parseInt(payload.diceCount);
+          diceCountSel.value = state.diceCount;
+          needRedraw = true;
+        }
+        if(payload.mode){
+          state.mode = payload.mode;
+          btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+          needRedraw = true;
+        }
+        if(payload.sound) state.sound = payload.sound;
+      }
+
+      if(action === 'request_state'){
+        broadcastCloudState();
+      }
+
+      if(needRedraw){
+        drawStage();
+        saveState();
+      }
+    }
+  });
+}
+
+/* Optional local server sync fallback (nếu người dùng có bật local server) */
+function pushToServer(){
+  fetch('/api/settings',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      theme: state.theme,
+      diceCount: state.diceCount,
+      mode: state.mode,
+      sound: state.sound,
+      faceColors: state.faceColors,
+      rollCmd: 0
+    })
+  }).catch(()=>{});
+}
+
+</script>
+</body>
+</html>

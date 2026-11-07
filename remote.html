@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🎲 Dice Remote Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="mqtt.min.js"></script>
+<script>
+if(typeof mqtt === 'undefined'){
+  document.write('<script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"><\/script>');
+}
+</script>
+<script src="sync-service.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',sans-serif;background:#13151f;color:#eee;min-height:100vh;padding:14px;display:flex;flex-direction:column;gap:14px}
+
+.header{text-align:center;padding:8px 0}
+.header h1{font-size:18px;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px}
+.header .subtitle{font-size:12px;color:#888;margin-top:2px}
+.status-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;margin-top:6px;padding:5px 14px;border-radius:20px;background:rgba(255,255,255,.08);font-weight:600}
+.status-pill .dot{width:8px;height:8px;border-radius:50%;background:#ff7f00}
+.status-pill.connected .dot{background:#28a745;box-shadow:0 0 8px #28a745}
+.status-pill.error .dot{background:#e74c3c}
+
+.card{background:#1c2033;border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,.08);box-shadow:0 3px 12px rgba(0,0,0,.25)}
+.card h3{font-size:13.5px;color:#3898ec;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
+label{display:block;font-size:11.5px;color:#aaa;margin-bottom:3px;font-weight:600}
+select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:#0d1120;color:#fff;font-family:inherit;font-size:13px;margin-bottom:8px}
+select option{background:#0d1120}
+
+.face-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.face-item{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);padding:7px;border-radius:8px}
+.face-item .pip-icon{font-size:22px}
+.face-item input[type=color]{width:40px;height:34px;border:2px solid rgba(255,255,255,.2);border-radius:6px;cursor:pointer;background:transparent;padding:0}
+.face-item input[type=text]{width:72px;text-align:center;font-size:11px;margin-bottom:0;padding:5px}
+
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.theme-btn{padding:8px 4px;border:2px solid transparent;border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;color:#fff;text-align:center;transition:all .15s;font-weight:600}
+.theme-btn:active{transform:scale(.95)}
+.theme-btn.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,.4)}
+
+.mode-toggle{display:flex;gap:8px;margin-bottom:8px}
+.mode-btn{flex:1;padding:10px;border:2px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.05);color:#ccc;font-size:12.5px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;font-family:inherit}
+.mode-btn.active{border-color:#1e73be;background:rgba(30,115,190,.25);color:#fff}
+
+.btn-roll-remote{width:100%;padding:16px;border:none;border-radius:12px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit;color:#fff;background:linear-gradient(135deg,#28a745,#20c997);box-shadow:0 4px 16px rgba(40,167,69,.4);transition:all .15s;margin-top:4px}
+.btn-roll-remote:active{transform:scale(.97);filter:brightness(.9)}
+
+.sound-toggle{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#aaa;margin-top:4px}
+.sound-toggle input{width:18px;height:18px;accent-color:#1e73be}
+
+.pin-gate{text-align:center;padding:40px 16px}
+.pin-gate h2{font-size:20px;margin-bottom:14px}
+.pin-gate input{text-align:center;letter-spacing:10px;font-size:26px;max-width:180px;background:#0d1120;border:2px solid rgba(255,255,255,.18);border-radius:10px;color:#fff;padding:10px;margin-bottom:12px;width:100%}
+.pin-gate .btn-unlock{padding:12px 36px;background:#1e73be;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.pin-error{color:#e74c3c;font-size:13px;margin-top:8px;display:none}
+
+.room-bar{display:flex;gap:6px;align-items:center}
+.room-bar input{margin-bottom:0;flex:1}
+.room-bar button{padding:8px 12px;background:#1e73be;border:none;border-radius:8px;color:#fff;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+
+<!-- PIN GATE -->
+<div id="pinGate" class="pin-gate">
+  <h2>🔒 Remote Control</h2>
+  <p style="font-size:13px;color:#888;margin-bottom:14px">Nhập PIN để mở điều khiển bí mật</p>
+  <input type="password" id="pinInput" maxlength="4" placeholder="••••" autofocus>
+  <br>
+  <button class="btn-unlock" id="btnPin">Unlock</button>
+  <div class="pin-error" id="pinError">❌ Sai PIN</div>
+</div>
+
+<!-- MAIN REMOTE (hidden until PIN) -->
+<div id="mainRemote" style="display:none">
+
+  <div class="header">
+    <h1>🎲 Dice Remote Control</h1>
+    <div class="subtitle">Điều khiển Cloud tức thì (Serverless)</div>
+    <div class="status-pill" id="statusPill"><span class="dot"></span> <span id="statusText">Đang kết nối Cloud...</span></div>
+  </div>
+
+  <!-- ROLL BUTTON -->
+  <button class="btn-roll-remote" id="btnRollRemote">🎲 ROLL TRÊN MÁY TÍNH !</button>
+
+  <!-- ROOM ID -->
+  <div class="card">
+    <h3>☁️ Mã phòng (Room ID)</h3>
+    <div class="room-bar">
+      <input type="text" id="rRoomId" placeholder="dice8888">
+      <button id="btnChangeRoom">Đổi phòng</button>
+    </div>
+    <p style="font-size:11px;color:#777;margin-top:4px">Phải khớp với mã phòng trên máy livestream</p>
+  </div>
+
+  <!-- MODE & COUNT -->
+  <div class="card">
+    <h3>🎮 Chế độ & Số xúc xắc</h3>
+    <div class="mode-toggle">
+      <button class="mode-btn active" data-mode="classic">🎲 6-sided Dice</button>
+      <button class="mode-btn" data-mode="color">🎨 Color Dice</button>
+    </div>
+    <label>Số xúc xắc:</label>
+    <select id="rDiceCount">
+      <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
+      <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+    </select>
+    <div class="sound-toggle">
+      <input type="checkbox" id="rSound" checked> <span>Bật tiếng roll trên máy live</span>
+    </div>
+  </div>
+
+  <!-- THEME -->
+  <div class="card">
+    <h3>🎨 Theme bàn xúc xắc</h3>
+    <div class="theme-grid" id="themeGrid"></div>
+  </div>
+
+  <!-- FACE COLORS -->
+  <div class="card">
+    <h3>🖌️ Màu 6 mặt xúc xắc</h3>
+    <p style="font-size:11px;color:#777;margin-bottom:8px">Đổi màu chấm (Classic) hoặc màu mặt (Color Dice)</p>
+    <div class="face-grid" id="faceGrid"></div>
+  </div>
+
+</div>
+
+<script>
+const OWNER_PIN = '8888';
+const PIPS = '⚀⚁⚂⚃⚄⚅';
+const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
+
+const THEMES = {
+  'Blue':       {g1:'#2980b9',g2:'#154360'},
+  'Sab-Blue':   {g1:'#5dade2',g2:'#1a5276'},
+  'Green':      {g1:'#27ae60',g2:'#0e3d20'},
+  'Sab-Green':  {g1:'#58d68d',g2:'#145a32'},
+  'Red':        {g1:'#e74c3c',g2:'#641e16'},
+  'Sab-Red':    {g1:'#ec7063',g2:'#78281f'},
+  'Pink':       {g1:'#e91e90',g2:'#6c1248'},
+  'B&W':        {g1:'#bdc3c7',g2:'#2c3e50'},
+  'Sab-Black':  {g1:'#555555',g2:'#111111'},
+  'Heaven':     {g1:'#87ceeb',g2:'#f0e68c'},
+  'Hell':       {g1:'#8b0000',g2:'#1a0000'},
+  'Underwater': {g1:'#006994',g2:'#00293d'},
+  'Bronze':     {g1:'#cd7f32',g2:'#4a2c0a'},
+  'Silver':     {g1:'#c0c0c0',g2:'#404040'},
+  'Gold':       {g1:'#ffd700',g2:'#6b4f00'}
+};
+
+let settings = {
+  theme: 'Blue',
+  diceCount: 2,
+  mode: 'classic',
+  sound: 'on',
+  faceColors: [...DEFAULT_FACE_COLORS]
+};
+
+/* ---- PIN UNLOCK ---- */
+document.getElementById('btnPin').onclick = checkPin;
+document.getElementById('pinInput').addEventListener('keydown', e => { if(e.key === 'Enter') checkPin(); });
+
+function checkPin(){
+  if(document.getElementById('pinInput').value === OWNER_PIN){
+    document.getElementById('pinGate').style.display = 'none';
+    const main = document.getElementById('mainRemote');
+    main.style.display = 'flex';
+    main.style.flexDirection = 'column';
+    main.style.gap = '12px';
+    initRemote();
+  } else {
+    document.getElementById('pinError').style.display = 'block';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  }
+}
+
+function initRemote(){
+  buildThemeGrid();
+  buildFaceGrid();
+
+  const rRoom = document.getElementById('rRoomId');
+  if(rRoom && window.syncService){
+    rRoom.value = window.syncService.roomId;
+  }
+
+  // Khởi tạo Cloud Sync qua WebSocket
+  if(window.syncService){
+    window.syncService.init({
+      role: 'remote',
+      onStatus: (status, text)=>{
+        const pill = document.getElementById('statusPill');
+        const stText = document.getElementById('statusText');
+        if(pill && stText){
+          stText.textContent = text;
+          pill.className = 'status-pill ' + status;
+        }
+      },
+      onMessage: (action, payload)=>{
+        if(action === 'sync_state'){
+          if(payload.theme) settings.theme = payload.theme;
+          if(payload.diceCount) settings.diceCount = payload.diceCount;
+          if(payload.mode) settings.mode = payload.mode;
+          if(payload.sound) settings.sound = payload.sound;
+          if(payload.faceColors && Array.isArray(payload.faceColors)){
+            settings.faceColors = [...payload.faceColors];
+          }
+          applySettingsToUI();
+        }
+      }
+    });
+  }
+}
+
+/* ---- BUILD THEME GRID ---- */
+function buildThemeGrid(){
+  const grid = document.getElementById('themeGrid');
+  grid.innerHTML = '';
+  Object.entries(THEMES).forEach(([name, t])=>{
+    const btn = document.createElement('button');
+    btn.className = 'theme-btn' + (name === settings.theme ? ' active' : '');
+    btn.textContent = name;
+    btn.dataset.theme = name;
+    btn.style.background = `linear-gradient(135deg,${t.g1},${t.g2})`;
+    btn.onclick = ()=>{
+      settings.theme = name;
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === name));
+      if(window.syncService){
+        window.syncService.send('change_theme', { theme: name });
+      }
+    };
+    grid.appendChild(btn);
+  });
+}
+
+/* ---- BUILD FACE COLOR GRID ---- */
+function buildFaceGrid(){
+  const grid = document.getElementById('faceGrid');
+  grid.innerHTML = '';
+  for(let i = 0; i < 6; i++){
+    const item = document.createElement('div');
+    item.className = 'face-item';
+    item.innerHTML = `
+      <span class="pip-icon">${PIPS[i]}</span>
+      <input type="color" value="${settings.faceColors[i]}" data-i="${i}">
+      <input type="text" value="${settings.faceColors[i]}" data-i="${i}" maxlength="7">
+    `;
+    const cInp = item.querySelector('input[type=color]');
+    const tInp = item.querySelector('input[type=text]');
+
+    cInp.addEventListener('input', ()=>{
+      tInp.value = cInp.value;
+      const idx = parseInt(cInp.dataset.i);
+      settings.faceColors[idx] = cInp.value;
+      if(window.syncService){
+        window.syncService.send('change_face_color', { faceIndex: idx, color: cInp.value });
+      }
+    });
+
+    tInp.addEventListener('input', ()=>{
+      if(/^#[0-9a-fA-F]{6}$/.test(tInp.value)){
+        cInp.value = tInp.value;
+        const idx = parseInt(tInp.dataset.i);
+        settings.faceColors[idx] = tInp.value;
+        if(window.syncService){
+          window.syncService.send('change_face_color', { faceIndex: idx, color: tInp.value });
+        }
+      }
+    });
+
+    grid.appendChild(item);
+  }
+}
+
+function applySettingsToUI(){
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === settings.theme));
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === settings.mode));
+  const diceCountEl = document.getElementById('rDiceCount');
+  if(diceCountEl) diceCountEl.value = settings.diceCount;
+  const soundEl = document.getElementById('rSound');
+  if(soundEl) soundEl.checked = (settings.sound === 'on');
+
+  const items = document.querySelectorAll('#faceGrid .face-item');
+  items.forEach((item, i)=>{
+    const c = item.querySelector('input[type=color]');
+    const t = item.querySelector('input[type=text]');
+    if(c && settings.faceColors[i]){
+      c.value = settings.faceColors[i];
+      t.value = settings.faceColors[i];
+    }
+  });
+}
+
+/* ---- MODE BUTTONS ---- */
+document.querySelectorAll('.mode-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    settings.mode = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === settings.mode));
+    if(window.syncService){
+      window.syncService.send('change_mode', { mode: settings.mode });
+    }
+  });
+});
+
+/* ---- DICE COUNT ---- */
+document.getElementById('rDiceCount').addEventListener('change', e=>{
+  settings.diceCount = parseInt(e.target.value);
+  if(window.syncService){
+    window.syncService.send('change_dice_count', { diceCount: settings.diceCount });
+  }
+});
+
+/* ---- SOUND TOGGLE ---- */
+document.getElementById('rSound').addEventListener('change', e=>{
+  settings.sound = e.target.checked ? 'on' : 'off';
+  if(window.syncService){
+    window.syncService.send('change_sound', { sound: settings.sound });
+  }
+});
+
+/* ---- ROLL BUTTON ---- */
+document.getElementById('btnRollRemote').addEventListener('click', ()=>{
+  if(window.syncService){
+    window.syncService.send('roll', { time: Date.now() });
+  }
+});
+
+/* ---- CHANGE ROOM BUTTON ---- */
+document.getElementById('btnChangeRoom').addEventListener('click', ()=>{
+  const rRoom = document.getElementById('rRoomId').value.trim();
+  if(rRoom && window.syncService){
+    window.syncService.setRoomId(rRoom);
+  }
+});
+
+</script>
+</body>
+</html>
