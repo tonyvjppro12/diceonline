@@ -102,19 +102,31 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
 .latest-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .latest-tag{font-size:11px;font-weight:800;color:#3898ec;letter-spacing:.5px}
 .latest-time{font-size:11px;color:#8a99a8}
-.latest-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.latest-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;align-items:center}
 .latest-chip{display:inline-flex;align-items:center;padding:4px 11px;border-radius:14px;color:#fff;font-size:12.5px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.3)}
 .latest-summary{font-size:12px;font-weight:600;color:#cbd5e1}
+
+/* 3D Colored Dice Cubes in Remote */
+.r-dice-cube{width:25px;height:25px;border-radius:6.5px;border:2px solid #ffffff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.45);position:relative;flex-shrink:0;cursor:default;transition:transform .1s}
+.r-dice-cube:hover{transform:scale(1.12)}
+.r-dice-cube-dot{width:6.5px;height:6.5px;border-radius:50%;background:#ffffff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.r-dice-cube.classic{background:#ffffff !important;color:#111827;font-weight:900;font-size:14px;line-height:1;border-color:#cbd5e1}
+
+/* Latest Result Banner Dice Cubes */
+.latest-dice-cube{width:38px;height:38px;border-radius:10px;border:2.5px solid #ffffff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.4),inset 0 1px 2px rgba(255,255,255,.5);position:relative;flex-shrink:0;transition:transform .15s}
+.latest-dice-cube:hover{transform:translateY(-2px) scale(1.06)}
+.latest-dice-cube-dot{width:9.5px;height:9.5px;border-radius:50%;background:#ffffff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.latest-dice-cube.classic{background:#ffffff !important;color:#111827;font-weight:900;font-size:20px;line-height:1;border-color:#cbd5e1}
 
 /* Remote Roll History */
 .hist-count-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:#334155;color:#93c5fd}
 .remote-color-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:4px}
 .r-stat-item{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-radius:6px;color:#fff;font-size:11px;font-weight:700}
 .r-hist-item{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;background:#0d101a;border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:12px}
-.r-hist-item-left{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.r-hist-idx{font-size:10.5px;font-weight:800;color:#64748b;min-width:24px}
-.r-hist-time{font-size:10px;color:#777}
-.r-hist-chips{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.r-hist-item-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.r-hist-idx{font-size:11px;font-weight:800;color:#93c5fd;min-width:24px}
+.r-hist-time{font-size:10.5px;color:#94a3b8}
+.r-hist-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .r-hist-chip{display:inline-block;padding:2px 7px;border-radius:10px;color:#fff;font-size:10.5px;font-weight:700}
 .r-hist-summary{font-size:11px;color:#94a3b8;font-weight:600;text-align:right}
 </style>
@@ -173,8 +185,8 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <h3 style="margin:0"><span>🎯 Màu kết quả khi Roll</span></h3>
       <div class="target-mode-toggle">
-        <button class="target-mode-btn active" id="btnModeRigged" onclick="setTargetMode('target')">🎯 Cài sẵn</button>
-        <button class="target-mode-btn" id="btnModeRandom" onclick="setTargetMode('random')">🎲 Ngẫu nhiên</button>
+        <button class="target-mode-btn" id="btnModeRigged" onclick="setTargetMode('target')">🎯 Cài sẵn</button>
+        <button class="target-mode-btn active" id="btnModeRandom" onclick="setTargetMode('random')">🎲 Ngẫu nhiên (Tất cả màu)</button>
       </div>
     </div>
     <p style="font-size:11px;color:#94a3b8;margin:0 0 8px">Chọn màu cho từng viên bên dưới. Khi bấm ROLL, xúc xắc trên Live sẽ dừng <b>đúng các màu này</b>!</p>
@@ -308,15 +320,86 @@ function setOwnerPin(pin){
 const PIPS = ['⚀','⚁','⚂','⚃','⚄','⚅'];
 const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
 
-/* 6 Màu chuẩn duy nhất của Color Dice */
+/* 6 Màu chuẩn duy nhất của Color Dice (Khớp 100% web chính) */
 const SIX_COLORS = [
-  { name: 'Red', hex: '#e74c3c', value: 1 },
-  { name: 'Orange', hex: '#e67e22', value: 2 },
-  { name: 'Yellow', hex: '#f1c40f', value: 3 },
-  { name: 'Green', hex: '#2ecc71', value: 4 },
-  { name: 'Blue', hex: '#3498db', value: 5 },
-  { name: 'Purple', hex: '#9b59b6', value: 6 }
+  { name: 'Red',    hex: '#e60000', value: 1 },
+  { name: 'Orange', hex: '#ff7700', value: 2 },
+  { name: 'Yellow', hex: '#ffcc00', value: 3 },
+  { name: 'Green',  hex: '#00a651', value: 4 },
+  { name: 'Blue',   hex: '#0072ce', value: 5 },
+  { name: 'Purple', hex: '#7a0099', value: 6 }
 ];
+
+const COLOR_HEX_MAP = {
+  'red':     '#e60000',
+  'orange':  '#ff7700',
+  'yellow':  '#ffcc00',
+  'green':   '#00a651',
+  'blue':    '#0072ce',
+  'purple':  '#7a0099',
+  '#e60000': 'Red',
+  '#ff7700': 'Orange',
+  '#ffcc00': 'Yellow',
+  '#00a651': 'Green',
+  '#0072ce': 'Blue',
+  '#7a0099': 'Purple',
+  '#e74c3c': 'Red',
+  '#e67e22': 'Orange',
+  '#f1c40f': 'Yellow',
+  '#2ecc71': 'Green',
+  '#3498db': 'Blue',
+  '#9b59b6': 'Purple',
+  '1': '#e60000',
+  '2': '#ff7700',
+  '3': '#ffcc00',
+  '4': '#00a651',
+  '5': '#0072ce',
+  '6': '#7a0099'
+};
+
+function normalizeHex(val) {
+  if (!val) return '#e60000';
+  const str = val.toString().trim();
+  if (str.startsWith('#')) {
+    if (str.toLowerCase() === '#e74c3c') return '#e60000';
+    if (str.toLowerCase() === '#e67e22') return '#ff7700';
+    if (str.toLowerCase() === '#f1c40f') return '#ffcc00';
+    if (str.toLowerCase() === '#2ecc71') return '#00a651';
+    if (str.toLowerCase() === '#3498db') return '#0072ce';
+    if (str.toLowerCase() === '#9b59b6') return '#7a0099';
+    return str;
+  }
+  if (COLOR_HEX_MAP[str.toLowerCase()]) {
+    return COLOR_HEX_MAP[str.toLowerCase()];
+  }
+  return '#e60000';
+}
+
+function getColorName(hex) {
+  if (!hex) return 'Red';
+  const h = hex.toString().toLowerCase();
+  if (COLOR_HEX_MAP[h]) return COLOR_HEX_MAP[h];
+  if (h.includes('e60000') || h.includes('e74c3c')) return 'Red';
+  if (h.includes('ff7700') || h.includes('e67e22')) return 'Orange';
+  if (h.includes('ffcc00') || h.includes('f1c40f')) return 'Yellow';
+  if (h.includes('00a651') || h.includes('2ecc71')) return 'Green';
+  if (h.includes('0072ce') || h.includes('3498db')) return 'Blue';
+  if (h.includes('7a0099') || h.includes('9b59b6')) return 'Purple';
+  return 'Color';
+}
+
+function generateResultsSummary(results, isClassic){
+  if (!results || !results.length) return '';
+  if (isClassic) {
+    return 'Tổng: ' + results.reduce((acc, v) => acc + (parseInt(v) || 0), 0);
+  }
+  const counts = {};
+  results.forEach(val => {
+    const name = getColorName(val);
+    counts[name] = (counts[name] || 0) + 1;
+  });
+  return Object.entries(counts).map(([name, c]) => `${c} ${name}`).join(', ');
+}
 
 const THEMES = {
   'Blue':       {g1:'#2980b9',g2:'#154360'},
@@ -337,13 +420,13 @@ const THEMES = {
 };
 
 let settings = {
-  theme: 'Blue',
+  theme: 'Sab-Blue',
   diceCount: 4,          // 4 Color Dice mặc định
   mode: 'color',         // Chế độ Color Dice mặc định
   sound: 'on',
   rollDuration: 1.0,
-  targetMode: 'target',  // 'target' (cài sẵn) hoặc 'random' (ngẫu nhiên)
-  targetDice: [1, 2, 4, 5] // 1=Red, 2=Orange, 4=Green, 5=Blue
+  targetMode: 'random',  // 'random' (ngẫu nhiên tất cả màu) hoặc 'target' (cài sẵn)
+  targetDice: []
 };
 
 let selectedDie = 0; // 0..diceCount-1 hoặc 'all'
@@ -476,8 +559,15 @@ function selectDiceCount(count){
   buildDieTargetTabs();
 
   if(window.syncService){
-    window.syncService.send('change_dice_count', { diceCount: count });
-    window.syncService.send('set_targets', { targets: settings.targetDice, targetMode: settings.targetMode });
+    window.syncService.send('change_dice_count', { 
+      diceCount: count,
+      targetMode: settings.targetMode,
+      targets: settings.targetMode === 'target' ? settings.targetDice : []
+    });
+    window.syncService.send('set_targets', { 
+      targets: settings.targetMode === 'target' ? settings.targetDice : [], 
+      targetMode: settings.targetMode 
+    });
   }
 }
 
@@ -499,7 +589,10 @@ function setTargetMode(mode){
   if(btnR) btnR.classList.toggle('active', mode === 'target');
   if(btnRand) btnRand.classList.toggle('active', mode === 'random');
   if(window.syncService){
-    window.syncService.send('set_targets', { targets: settings.targetDice, targetMode: settings.targetMode });
+    window.syncService.send('set_targets', { 
+      targets: mode === 'target' ? settings.targetDice : [], 
+      targetMode: mode 
+    });
   }
 }
 
@@ -778,16 +871,27 @@ function showLatestResultBanner(record){
 
   card.style.display = 'block';
   timeEl.textContent = record.time || '--:--:--';
-  sumEl.textContent = record.summary || '';
 
-  if(record.mode === 'color' && record.colors){
-    chipsEl.innerHTML = record.colors.map((col, idx) => {
-      const name = record.names?.[idx] || 'Color';
-      const isYellow = name === 'Yellow' || col.toLowerCase() === '#f1c40f';
-      return `<span class="latest-chip" style="background:${col};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
+  const results = record.results || record.colors || [];
+  const isClassic = record.mode === 'classic' || (results.length > 0 && typeof results[0] === 'number' && results[0] >= 1 && results[0] <= 6 && record.mode !== 'color');
+
+  sumEl.textContent = record.summary || generateResultsSummary(results, isClassic);
+
+  if (!isClassic && results.length > 0) {
+    chipsEl.innerHTML = results.map(col => {
+      const hex = normalizeHex(col);
+      const name = getColorName(hex);
+      return `
+        <div class="latest-dice-cube" style="background-color: ${hex};" title="${name}">
+          <div class="latest-dice-cube-dot"></div>
+        </div>
+      `;
     }).join(' ');
-  } else if(record.results){
-    chipsEl.innerHTML = record.results.map(v => `<span class="latest-chip" style="background:#334155">${'⚀⚁⚂⚃⚄⚅'[v-1] || v} ${v}</span>`).join(' ');
+  } else if (results.length > 0) {
+    chipsEl.innerHTML = results.map(num => {
+      const val = parseInt(num) || 1;
+      return `<div class="latest-dice-cube classic" title="Số ${val}">${'⚀⚁⚂⚃⚄⚅'[val - 1] || val}</div>`;
+    }).join(' ');
   }
 }
 
@@ -802,8 +906,10 @@ function renderRemoteHistory(){
   // Thống kê 6 màu
   const colorCounts = { 'Red': 0, 'Orange': 0, 'Yellow': 0, 'Green': 0, 'Blue': 0, 'Purple': 0 };
   remoteHistory.forEach(item => {
-    if(item.names && Array.isArray(item.names)){
-      item.names.forEach(name => {
+    const list = item.results || item.colors || [];
+    if (Array.isArray(list)) {
+      list.forEach(val => {
+        const name = getColorName(val);
         if(colorCounts[name] !== undefined) colorCounts[name]++;
       });
     }
@@ -811,12 +917,12 @@ function renderRemoteHistory(){
 
   if(statsEl){
     const statCards = [
-      { name: 'Red', hex: '#e74c3c' },
-      { name: 'Orange', hex: '#e67e22' },
-      { name: 'Yellow', hex: '#f1c40f' },
-      { name: 'Green', hex: '#2ecc71' },
-      { name: 'Blue', hex: '#3498db' },
-      { name: 'Purple', hex: '#9b59b6' }
+      { name: 'Red',    hex: '#e60000' },
+      { name: 'Orange', hex: '#ff7700' },
+      { name: 'Yellow', hex: '#ffcc00' },
+      { name: 'Green',  hex: '#00a651' },
+      { name: 'Blue',   hex: '#0072ce' },
+      { name: 'Purple', hex: '#7a0099' }
     ].map(c => `
       <div class="r-stat-item" style="background:${c.hex};${c.name==='Yellow'?'color:#222;text-shadow:none':''}">
         <span>${c.name}</span>
@@ -831,26 +937,47 @@ function renderRemoteHistory(){
     return;
   }
 
-  listEl.innerHTML = remoteHistory.map(item => {
-    let badgesHtml = '';
-    if(item.mode === 'color' && item.colors){
-      badgesHtml = item.colors.map((col, idx) => {
-        const name = item.names?.[idx] || 'Color';
-        const isYellow = name === 'Yellow' || col.toLowerCase() === '#f1c40f';
-        return `<span class="r-hist-chip" style="background:${col};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
-      }).join(' ');
-    } else if(item.results){
-      badgesHtml = item.results.map(v => `<span class="r-hist-chip" style="background:#334155">${'⚀⚁⚂⚃⚄⚅'[v-1] || v} ${v}</span>`).join(' ');
+  listEl.innerHTML = remoteHistory.map((item, index) => {
+    // Determine roll index number (#1, #2, #3, ...)
+    const rollNum = item.id || (remoteHistory.length - index);
+    const timeStr = item.time || '';
+
+    // Render dice cubes
+    let diceCubesHtml = '';
+    const results = item.results || item.colors || [];
+    const isClassic = item.mode === 'classic' || (results.length > 0 && typeof results[0] === 'number' && results[0] >= 1 && results[0] <= 6 && item.mode !== 'color');
+
+    if (!isClassic && results.length > 0) {
+      diceCubesHtml = results.map(col => {
+        const hex = normalizeHex(col);
+        const name = getColorName(hex);
+        return `
+          <div class="r-dice-cube" style="background-color: ${hex};" title="${name}">
+            <div class="r-dice-cube-dot"></div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      diceCubesHtml = results.map(num => {
+        const val = parseInt(num) || 1;
+        return `
+          <div class="r-dice-cube classic" title="Số ${val}">
+            ${'⚀⚁⚂⚃⚄⚅'[val - 1] || val}
+          </div>
+        `;
+      }).join('');
     }
+
+    const summaryStr = item.summary || generateResultsSummary(results, isClassic);
 
     return `
       <div class="r-hist-item">
         <div class="r-hist-item-left">
-          <span class="r-hist-idx">#${item.id}</span>
-          <span class="r-hist-time">${item.time}</span>
-          <div class="r-hist-chips">${badgesHtml}</div>
+          <span class="r-hist-idx">#${rollNum}</span>
+          <span class="r-hist-time">${timeStr}</span>
+          <div class="r-hist-chips">${diceCubesHtml}</div>
         </div>
-        <div class="r-hist-summary">${item.summary || ''}</div>
+        <div class="r-hist-summary">${summaryStr}</div>
       </div>
     `;
   }).join('');
@@ -885,7 +1012,7 @@ document.getElementById('btnRollRemote').addEventListener('click', ()=>{
     window.syncService.send('roll', {
       time: Date.now(),
       rollDuration: settings.rollDuration,
-      targetResults: settings.targetDice,
+      targetResults: settings.targetMode === 'target' ? settings.targetDice : [],
       targetMode: settings.targetMode
     });
   }

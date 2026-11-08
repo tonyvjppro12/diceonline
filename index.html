@@ -129,8 +129,9 @@
       align-items: flex-end;
       gap: 10px;
       width: 100%;
-      max-width: 780px;
-      height: 335px;
+      max-width: 860px;
+      height: calc(100vh - 20px);
+      max-height: 560px;
       margin-bottom: 0px;
       z-index: 10;
     }
@@ -146,13 +147,26 @@
       flex-direction: column;
       position: relative;
       overflow: hidden;
+      height: 100%;
     }
 
     /* Left and Right Streamer Cards */
     .streamers-card {
-      width: 215px;
-      height: 335px;
+      width: 228px;
+      height: 100%;
       padding: 8px 9px 4px 9px;
+      overflow-y: auto;
+    }
+    .streamers-card::-webkit-scrollbar {
+      width: 4px;
+    }
+    .streamers-card::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+    }
+    .streamers-card::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.35);
+      border-radius: 10px;
     }
 
     .card-header-title {
@@ -274,12 +288,61 @@
        CENTER CARD (ROLL COLOR DICE)
        ========================================================= */
     .center-roller-card {
-      width: 320px;
-      height: 335px;
-      padding: 9px 12px 6px 12px;
+      width: 345px;
+      height: 100%;
+      padding: 9px 12px 8px 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    .center-roller-card::-webkit-scrollbar {
+      width: 5px;
+    }
+    .center-roller-card::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+    }
+    .center-roller-card::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.35);
+      border-radius: 10px;
+    }
+
+    /* GO AGAIN ! Button */
+    .btn-go-again {
+      width: 100%;
+      background: linear-gradient(180deg, #ffd000 0%, #ffba00 100%);
+      color: #ffffff;
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 9px;
+      padding: 10px 16px;
+      margin-top: 10px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      text-shadow: 0 1px 3px rgba(160, 110, 0, 0.5);
+      transition: transform 0.1s, filter 0.15s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .btn-go-again:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    }
+    .btn-go-again:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
     .center-card-header {
@@ -539,6 +602,396 @@
       width: 11px;
       height: 11px;
       opacity: 0.6;
+    }
+
+    /* =========================================================
+       NEW STREAMER WIDGETS (COUNTER, STREAK, APP, ANTI-BAN)
+       ========================================================= */
+    .center-extra-widgets {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    /* Counter Box [-1 -10 | 0 | +1 +10] */
+    .counter-box {
+      width: 100%;
+      max-width: 290px;
+      background: rgba(255, 255, 255, 0.22);
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 14px;
+      margin-bottom: 9px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .counter-side {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .counter-step-btn {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 1px 4px;
+      line-height: 1.1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+      transition: transform 0.1s, opacity 0.1s;
+    }
+    .counter-step-btn:hover {
+      transform: scale(1.15);
+      opacity: 0.9;
+    }
+    .counter-val {
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Roll Streak Pill */
+    .streak-pill {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 7px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    /* Users Online Pill */
+    .users-online-pill {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 6px;
+      padding: 4px 14px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .online-green-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #00e676;
+      box-shadow: 0 0 6px rgba(0, 230, 118, 0.8);
+      display: inline-block;
+    }
+
+    /* Install App Card */
+    .install-app-card {
+      width: 100%;
+      max-width: 280px;
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      border-radius: 20px;
+      padding: 9px 16px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.08);
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .install-app-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    .install-app-title {
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.6px;
+      line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
+    .install-app-subtitle {
+      font-size: 11px;
+      font-style: italic;
+      color: #eef6ff;
+      margin-top: 2px;
+    }
+
+    /* Possible Colors Card */
+    .possible-colors-card {
+      width: 100%;
+      max-width: 290px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 10px;
+      line-height: 1.4;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    /* Chances Link */
+    .chances-link-wrap {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .chances-link {
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    }
+    .chances-link:hover {
+      color: #d6ecff;
+    }
+
+    /* Anti-Ban Mode Row */
+    .anti-ban-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .anti-ban-label {
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.4px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    }
+    .switch-toggle {
+      position: relative;
+      display: inline-block;
+      width: 42px;
+      height: 24px;
+    }
+    .switch-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider-toggle {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #374151;
+      transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 24px;
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+    }
+    .slider-toggle:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2.5px;
+      background-color: white;
+      transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .switch-toggle input:checked + .slider-toggle {
+      background-color: #10b981;
+    }
+    .switch-toggle input:checked + .slider-toggle:before {
+      transform: translateX(18px);
+    }
+
+    /* =========================================================
+       YOUR LAST 20 ROLLS COMPONENT (EMBEDDED & MODAL)
+       ========================================================= */
+    .last20-card {
+      width: 100%;
+      max-width: 295px;
+      background: linear-gradient(180deg, #1aa6ff 0%, #0084ee 100%);
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 6px;
+      box-shadow: 0 6px 20px rgba(0, 60, 150, 0.35);
+      color: #ffffff;
+      text-align: left;
+    }
+    .last20-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 10px;
+    }
+    .last20-title {
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      color: #ffffff;
+      text-transform: uppercase;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    }
+    .last20-close-btn {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.25);
+      border: none;
+      color: #ffffff;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .last20-close-btn:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .last20-stats-box {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .last20-section-label {
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 11.5px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .last20-stats-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .last20-stat-pill {
+      background: #ffffff;
+      border-radius: 6px;
+      padding: 3px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+    .last20-stat-mini-die {
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .last20-stat-mini-dot {
+      width: 3.5px;
+      height: 3.5px;
+      border-radius: 50%;
+      background: #ffffff;
+    }
+    .last20-stat-count {
+      font-size: 11.5px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .last20-streak-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .last20-streak-pill {
+      background: #ffffff;
+      border-radius: 6px;
+      padding: 3px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+
+    .last20-roll-section {
+      margin-bottom: 10px;
+    }
+    .last20-roll-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 0;
+    }
+    .last20-roll-idx {
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 900;
+      color: #ffffff;
+      min-width: 18px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    }
+    .last20-dice-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .last20-die {
+      width: 27px;
+      height: 27px;
+      border: 2px solid #ffffff;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .last20-die-dot {
+      width: 6.5px;
+      height: 6.5px;
+      border-radius: 50%;
+      background: #ffffff;
+    }
+
+    .last20-previous-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .last20-prev-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.4);
     }
 
     /* =========================================================
@@ -829,15 +1282,13 @@
           <!-- Streamer 1 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_left_1.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_left10_1.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
                 <span class="streamer-name">DEETS GAMING</span>
-                <span class="verified-badge">
-                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
               </div>
               <span class="streamer-handle">@deets_gaming</span>
             </div>
@@ -846,32 +1297,28 @@
           <!-- Streamer 2 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_left_2.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_left10_2.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
-                <span class="streamer-name">WAVY</span>
-                <span class="verified-badge">
-                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </span>
+                <span class="streamer-name">RIP_GUUH</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
               </div>
-              <span class="streamer-handle">@its.will1am</span>
+              <span class="streamer-handle">@rip_guuhyt</span>
             </div>
           </div>
 
           <!-- Streamer 3 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_left_3.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_left10_3.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
                 <span class="streamer-name">MELIODASGBS</span>
-                <span class="verified-badge">
-                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
               </div>
               <span class="streamer-handle">@meliodasgbs</span>
             </div>
@@ -880,68 +1327,104 @@
           <!-- Streamer 4 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_left_4.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_left10_4.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
-                <span class="streamer-name">YAGUIN</span>
-                <span class="verified-badge">
-                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </span>
+                <span class="streamer-name">RIKKYWRLD</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
               </div>
-              <span class="streamer-handle">@yagu1n3</span>
+              <span class="streamer-handle">@rikkywrld</span>
             </div>
           </div>
 
           <!-- Streamer 5 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_left_5.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_left10_5.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
-                <span class="streamer-name">RIP_GUUH</span>
-                <span class="verified-badge">
-                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </span>
+                <span class="streamer-name">VLX</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
               </div>
-              <span class="streamer-handle">@rip_guuhyt</span>
+              <span class="streamer-handle">@sabvlx</span>
             </div>
           </div>
 
           <!-- Streamer 6 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_left_6.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_left10_6.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
-                <span class="streamer-name">KENZSTREAM</span>
-                <span class="verified-badge">
-                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </span>
+                <span class="streamer-name">YAGUIN</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
               </div>
-              <span class="streamer-handle">@donsszznn</span>
+              <span class="streamer-handle">@yagu1n3</span>
             </div>
           </div>
 
           <!-- Streamer 7 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_left_7.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_left10_7.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
-                <span class="streamer-name">FLAY</span>
-                <span class="verified-badge">
-                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </span>
+                <span class="streamer-name">WAVY</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
               </div>
-              <span class="streamer-handle">@ps99game</span>
+              <span class="streamer-handle">@its.will1am</span>
+            </div>
+          </div>
+
+          <!-- Streamer 8 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left10_8.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">O SHAOLIN</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
+              </div>
+              <span class="streamer-handle">@oshaolin2</span>
+            </div>
+          </div>
+
+          <!-- Streamer 9 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left10_9.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">KENZSTREAM</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
+              </div>
+              <span class="streamer-handle">@donsszznn</span>
+            </div>
+          </div>
+
+          <!-- Streamer 10 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left10_10.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">MOPTRADES</span>
+              </div>
+              <span class="streamer-handle">@moptrades3</span>
             </div>
           </div>
 
@@ -1000,17 +1483,94 @@
           <span>⏱</span> Verify History
         </button>
 
-        <!-- Ad Creative Cloud Box -->
-        <div class="ad-card-banner">
-          <div class="ad-left-text">
-            <div class="ad-main-title">Save 60% on<br>Creative Cloud Pro.</div>
-            <div class="ad-sub-terms">Ends 13 November. First year only.<br>Terms apply.</div>
-            <button class="ad-cta-btn" onclick="window.open('https://www.adobe.com', '_blank')">Learn more</button>
+        <!-- Ad Banner (FxPro) -->
+        <div class="ad-card-banner" id="adBannerWrap" style="padding: 0; overflow: hidden; background: #0b0e14; border-radius: 9px; cursor: pointer; border: 1px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center;" onclick="window.open('https://www.fxpro.com', '_blank')">
+          <img src="assets/ad_fxpro.png" alt="FxPro Trade" style="width: 100%; height: auto; display: block; object-fit: contain;">
+        </div>
+
+        <!-- GO AGAIN ! Button -->
+        <button class="btn-go-again" id="btnGoAgain">GO AGAIN !</button>
+
+        <!-- Extra Gaming Widgets (Counter, Streak, Online, App, Anti-Ban, History) -->
+        <div class="center-extra-widgets">
+          
+          <!-- Counter Box [-1 -10 | 0 | +1 +10] -->
+          <div class="counter-box">
+            <div class="counter-side counter-left">
+              <button class="counter-step-btn" id="btnCountMinus1">-1</button>
+              <button class="counter-step-btn" id="btnCountMinus10">-10</button>
+            </div>
+            <div class="counter-val" id="counterValDisplay" title="Nhấp đúp để đặt lại về 0">0</div>
+            <div class="counter-side counter-right">
+              <button class="counter-step-btn" id="btnCountPlus1">+1</button>
+              <button class="counter-step-btn" id="btnCountPlus10">+10</button>
+            </div>
           </div>
-          <div class="ad-right-visual">
-            <img src="assets/ad_graphic.png" class="ad-graphic-image" alt="Creative Cloud">
-            <svg class="ad-info-icon" viewBox="0 0 20 20" fill="#6b7280"><circle cx="10" cy="10" r="9" stroke="#6b7280" stroke-width="2" fill="none"/><text x="10" y="14" font-size="11" font-weight="bold" text-anchor="middle" fill="#6b7280">i</text></svg>
+
+          <!-- Roll Streak Pill -->
+          <div class="streak-pill" id="streakPill">
+            Roll Streak: <span id="streakCount">10</span> ⚡ 🎲 (Charged dice)
           </div>
+
+          <!-- Users Online Pill -->
+          <div class="users-online-pill">
+            <span class="online-green-dot"></span>
+            Users online: <span id="usersOnlineCount">589</span>
+          </div>
+
+          <!-- Install App Card -->
+          <div class="install-app-card" id="installAppCard">
+            <div class="install-app-title">INSTALL APP</div>
+            <div class="install-app-subtitle">Fewer ads, instant access.</div>
+          </div>
+
+          <!-- Possible Colors Card -->
+          <div class="possible-colors-card">
+            Possible colors are: 
+            <span style="color: #ff2222; font-weight: 800;">Red</span>, 
+            <span style="color: #ff9900; font-weight: 800;">Orange</span>, 
+            <span style="color: #ffdd00; font-weight: 800; text-shadow: 0 1px 1px rgba(0,0,0,0.3);">Yellow</span>, 
+            <span style="color: #00e676; font-weight: 800;">Green</span>, 
+            <span style="color: #0070f3; font-weight: 800;">Blue</span> and 
+            <span style="color: #b026ff; font-weight: 800;">Purple</span>.
+          </div>
+
+          <!-- Chances of Winning Link -->
+          <div class="chances-link-wrap">
+            <a href="#" class="chances-link" id="chancesLink">See your chances of winning →</a>
+          </div>
+
+          <!-- Anti-Ban Mode Switch -->
+          <div class="anti-ban-row">
+            <span class="anti-ban-label">Anti-Ban Mode</span>
+            <label class="switch-toggle">
+              <input type="checkbox" id="antiBanToggle">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <!-- Embedded YOUR LAST 20 ROLLS -->
+          <div class="last20-card" id="embeddedLast20Card">
+            <div class="last20-header">
+              <span class="last20-title">YOUR LAST 20 ROLLS</span>
+              <button class="last20-close-btn" id="closeEmbeddedLast20" title="Hide">✖</button>
+            </div>
+            <div class="last20-stats-box">
+              <div class="last20-section-label">STATS:</div>
+              <div class="last20-stats-badges" id="last20StatsBadges"></div>
+              <div class="last20-section-label" style="margin-top: 8px;">LONGEST STREAK:</div>
+              <div class="last20-streak-wrap" id="last20StreakWrap"></div>
+            </div>
+            <div class="last20-roll-section">
+              <div class="last20-section-label" style="margin-bottom: 6px;">THIS ROLL:</div>
+              <div class="last20-roll-row latest-roll-row" id="thisRollRow"></div>
+            </div>
+            <div class="last20-roll-section">
+              <div class="last20-section-label" style="margin-bottom: 6px;">PREVIOUS ROLLS:</div>
+              <div class="last20-previous-list" id="previousRollsList"></div>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -1023,49 +1583,35 @@
           <!-- Streamer 1 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_right_1.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_right10_1.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
-                <span class="streamer-name">LJUNIORTT</span>
+                <span class="streamer-name">MRPROFITER</span>
               </div>
-              <span class="streamer-handle">@ljuniortt</span>
+              <span class="streamer-handle">@mrprofiter</span>
             </div>
           </div>
 
           <!-- Streamer 2 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_right_2.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_right10_2.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
-                <span class="streamer-name">3XBLAZE</span>
+                <span class="streamer-name">FALLINSINZ</span>
               </div>
-              <span class="streamer-handle">@3xblaze</span>
+              <span class="streamer-handle">@sinzdice</span>
             </div>
           </div>
 
           <!-- Streamer 3 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_right_3.png" class="streamer-avatar" alt="Avatar">
-              <span class="live-pill">Live</span>
-            </div>
-            <div class="streamer-info">
-              <div class="streamer-name-row">
-                <span class="streamer-name">ECLIPSEFR</span>
-              </div>
-              <span class="streamer-handle">@eclipseisbackfr</span>
-            </div>
-          </div>
-
-          <!-- Streamer 4 -->
-          <div class="streamer-row">
-            <div class="avatar-wrapper">
-              <img src="assets/avatar_right_4.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_right10_3.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
@@ -1076,24 +1622,38 @@
             </div>
           </div>
 
-          <!-- Streamer 5 -->
+          <!-- Streamer 4 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_right_5.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_right10_4.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
-                <span class="streamer-name">SUGGAR</span>
+                <span class="streamer-name">3XBLAZE</span>
               </div>
-              <span class="streamer-handle">@suggar420</span>
+              <span class="streamer-handle">@3xblaze</span>
+            </div>
+          </div>
+
+          <!-- Streamer 5 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right10_5.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">ECLIPSEFR</span>
+              </div>
+              <span class="streamer-handle">@eclipseisbackfr</span>
             </div>
           </div>
 
           <!-- Streamer 6 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_right_6.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_right10_6.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
@@ -1107,17 +1667,60 @@
           <!-- Streamer 7 -->
           <div class="streamer-row">
             <div class="avatar-wrapper">
-              <img src="assets/avatar_right_7.png" class="streamer-avatar" alt="Avatar">
+              <img src="assets/avatar_right10_7.png" class="streamer-avatar" alt="Avatar">
               <span class="live-pill">Live</span>
             </div>
             <div class="streamer-info">
               <div class="streamer-name-row">
                 <span class="streamer-name">FREXX</span>
-                <span class="verified-badge">
-                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
               </div>
               <span class="streamer-handle">@frexx150</span>
+            </div>
+          </div>
+
+          <!-- Streamer 8 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right10_8.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">VINYYWS</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
+              </div>
+              <span class="streamer-handle">@vinyyws</span>
+            </div>
+          </div>
+
+          <!-- Streamer 9 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right10_9.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">XNSZN</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
+              </div>
+              <span class="streamer-handle">@twitch.xnszn</span>
+            </div>
+          </div>
+
+          <!-- Streamer 10 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right10_10.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">XOTIC</span>
+                <span class="verified-badge"><svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
+              </div>
+              <span class="streamer-handle">@xotictt22</span>
             </div>
           </div>
 
@@ -1128,47 +1731,63 @@
 
   </div>
 
-  <!-- ==================== MODAL: VERIFY HISTORY ==================== -->
+  <!-- ==================== MODAL: YOUR LAST 20 ROLLS ==================== -->
   <div class="modal-backdrop" id="verifyHistoryModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title">⏱ Provably Fair & Roll History</div>
-        <button class="modal-close-btn" id="closeVerifyModal">✕</button>
+    <div class="last20-card" style="max-width: 360px; max-height: 88vh; overflow-y: auto; padding: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.4);">
+      <div class="last20-header">
+        <span class="last20-title">YOUR LAST 20 ROLLS</span>
+        <button class="last20-close-btn" id="closeVerifyModal">✖</button>
       </div>
-      <div class="modal-body">
-        
-        <div style="margin-bottom: 12px; font-weight: 700; color: #1e293b;">
-          Color Distribution Statistics (<span id="totalRollsCount">0</span> rolls total):
-        </div>
+      <div class="last20-stats-box">
+        <div class="last20-section-label">STATS:</div>
+        <div class="last20-stats-badges" id="modalLast20StatsBadges"></div>
+        <div class="last20-section-label" style="margin-top: 8px;">LONGEST STREAK:</div>
+        <div class="last20-streak-wrap" id="modalLast20StreakWrap"></div>
+      </div>
+      <div class="last20-roll-section">
+        <div class="last20-section-label" style="margin-bottom: 6px;">THIS ROLL:</div>
+        <div class="last20-roll-row latest-roll-row" id="modalThisRollRow"></div>
+      </div>
+      <div class="last20-roll-section">
+        <div class="last20-section-label" style="margin-bottom: 6px;">PREVIOUS ROLLS:</div>
+        <div class="last20-previous-list" id="modalPreviousRollsList"></div>
+      </div>
+    </div>
+  </div>
 
-        <div class="stats-color-grid" id="statsColorGrid">
-          <!-- Filled by JS -->
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; margin-bottom:6px;">
-          <div style="font-weight: 700; color: #1e293b;">Recent Rolls:</div>
-          <button id="clearHistoryBtn" style="background:transparent; border:none; color:#dc2626; font-size:11.5px; font-weight:700; cursor:pointer;">Clear Log</button>
-        </div>
-
-        <div style="max-height: 240px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <table class="history-log-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Roll ID</th>
-                <th>Results</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody">
-              <!-- Filled by JS -->
-            </tbody>
-          </table>
-        </div>
-
-        <div style="margin-top: 14px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; color: #64748b;">
-          <strong>Provably Fair Seed:</strong> Each roll generates a SHA-256 verifiable hash ID. The seed ensures unbiased outcome generation on the Online-Dice network.
-        </div>
-
+  <!-- ==================== MODAL: CHANCES OF WINNING ==================== -->
+  <div class="modal-backdrop" id="chancesModal">
+    <div class="last20-card" style="max-width: 380px; max-height: 88vh; overflow-y: auto; padding: 18px; box-shadow: 0 15px 40px rgba(0,0,0,0.4);">
+      <div class="last20-header">
+        <span class="last20-title">CHANCES OF WINNING</span>
+        <button class="last20-close-btn" id="closeChancesModal">✖</button>
+      </div>
+      <div style="font-size: 11.5px; opacity: 0.95; margin-bottom: 12px; line-height: 1.4;">
+        Probability table for 4 6-sided Color Dice (Red, Orange, Yellow, Green, Blue, Purple):
+      </div>
+      <div style="background: rgba(255, 255, 255, 0.18); border-radius: 10px; padding: 10px; border: 1px solid rgba(255,255,255,0.3);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <td style="padding: 7px 4px;"><strong>4 of Same Color</strong> (Jackpot)</td>
+            <td style="text-align: right; font-weight: 800; color: #ffeb3b;">0.46% (1 in 216)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <td style="padding: 7px 4px;"><strong>3 of Same Color</strong></td>
+            <td style="text-align: right; font-weight: 800;">9.26% (1 in 10.8)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <td style="padding: 7px 4px;"><strong>2 Pairs</strong></td>
+            <td style="text-align: right; font-weight: 800;">6.94% (1 in 14.4)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <td style="padding: 7px 4px;"><strong>1 Pair</strong></td>
+            <td style="text-align: right; font-weight: 800;">55.56% (1 in 1.8)</td>
+          </tr>
+          <tr>
+            <td style="padding: 7px 4px;"><strong>All Different Colors</strong></td>
+            <td style="text-align: right; font-weight: 800;">27.78% (1 in 3.6)</td>
+          </tr>
+        </table>
       </div>
     </div>
   </div>
@@ -1330,35 +1949,47 @@
        CONSTANTS & STATE
        ========================================================= */
     const SIX_COLORS = [
-      { name: 'Green',  hex: '#00a651' },
       { name: 'Red',    hex: '#e60000' },
-      { name: 'Purple', hex: '#7a0099' },
-      { name: 'Blue',   hex: '#0072ce' },
       { name: 'Orange', hex: '#ff7700' },
-      { name: 'Yellow', hex: '#ffcc00' }
+      { name: 'Yellow', hex: '#ffcc00' },
+      { name: 'Green',  hex: '#00a651' },
+      { name: 'Blue',   hex: '#0072ce' },
+      { name: 'Purple', hex: '#7a0099' }
     ];
 
     const COLOR_HEX_MAP = {
-      'green':   '#00a651',
       'red':     '#e60000',
-      'purple':  '#7a0099',
-      'blue':    '#0072ce',
       'orange':  '#ff7700',
       'yellow':  '#ffcc00',
+      'green':   '#00a651',
+      'blue':    '#0072ce',
+      'purple':  '#7a0099',
+      '#e60000': '#e60000',
+      '#ff7700': '#ff7700',
+      '#ffcc00': '#ffcc00',
+      '#00a651': '#00a651',
+      '#0072ce': '#0072ce',
+      '#7a0099': '#7a0099',
       '#e74c3c': '#e60000',
       '#e67e22': '#ff7700',
       '#f1c40f': '#ffcc00',
       '#2ecc71': '#00a651',
       '#3498db': '#0072ce',
-      '#9b59b6': '#7a0099'
+      '#9b59b6': '#7a0099',
+      '1': '#e60000',
+      '2': '#ff7700',
+      '3': '#ffcc00',
+      '4': '#00a651',
+      '5': '#0072ce',
+      '6': '#7a0099'
     };
 
     const state = {
       diceCount: 4,
       mode: 'color',        // 'color' or 'classic'
       theme: 'SAB-BLU',
-      diceResults: ['#00a651', '#00a651', '#e60000', '#7a0099'],
-      classicResults: [4, 4, 1, 6],
+      diceResults: ['#e60000', '#ffcc00', '#7a0099', '#00a651'],
+      classicResults: [1, 2, 6, 3],
       targetResults: [],    // predetermined target colors or numbers
       seedId: 'eBI525zQG2',
       isRolling: false,
@@ -1377,6 +2008,20 @@
       return false;
     }
 
+    /* Initial Demo Seed History (Matches user screenshot: Red x8 🏆, Green x8, Purple x7, Orange x7, Yellow x4, Blue x3, Streak Red x3 🔥) */
+    const DEMO_SEED_HISTORY = [
+      { time: '09:05:12', seed: 'eBI525zQG2', mode: 'color', results: ['#e60000', '#ffcc00', '#7a0099', '#00a651'] }, // 1. Red, Yellow, Purple, Green
+      { time: '09:04:48', seed: 'kP912aXm3L', mode: 'color', results: ['#e60000', '#ffcc00', '#0072ce', '#00a651'] }, // 2. Red, Yellow, Blue, Green
+      { time: '09:04:20', seed: 'vR498bNc7K', mode: 'color', results: ['#ff7700', '#7a0099', '#7a0099', '#0072ce'] }, // 3. Orange, Purple, Purple, Blue
+      { time: '09:03:55', seed: 'tM231zQp9W', mode: 'color', results: ['#00a651', '#00a651', '#e60000', '#7a0099'] }, // 4. Green, Green, Red, Purple
+      { time: '09:03:30', seed: 'hL771vBc2P', mode: 'color', results: ['#ff7700', '#00a651', '#e60000', '#ff7700'] }, // 5. Orange, Green, Red, Orange
+      { time: '09:03:02', seed: 'xJ882kMm5R', mode: 'color', results: ['#ffcc00', '#00a651', '#00a651', '#e60000'] }, // 6. Yellow, Green, Green, Red
+      { time: '09:02:41', seed: 'qB119wTt8X', mode: 'color', results: ['#ff7700', '#7a0099', '#ff7700', '#ffcc00'] }, // 7. Orange, Purple, Orange, Yellow
+      { time: '09:02:18', seed: 'zN553yPp1Q', mode: 'color', results: ['#ff7700', '#0072ce', '#e60000', '#7a0099'] }, // 8. Orange, Blue, Red, Purple
+      { time: '09:01:50', seed: 'wE334rKk6Y', mode: 'color', results: ['#00a651'] },                                     // 9. Green
+      { time: '09:01:22', seed: 'pL662mJj4T', mode: 'color', results: ['#e60000', '#e60000', '#7a0099', '#ff7700'] }  // 10. Red, Red, Purple, Orange
+    ];
+
     /* History Persistence */
     function loadHistory() {
       try {
@@ -1385,7 +2030,9 @@
       } catch(e) {
         state.history = [];
       }
-      if (!Array.isArray(state.history)) state.history = [];
+      if (!Array.isArray(state.history) || state.history.length === 0) {
+        state.history = [...DEMO_SEED_HISTORY];
+      }
     }
     function saveHistory() {
       try {
@@ -1574,13 +2221,14 @@
           if (state.mode === 'color') {
             // Check if there is a target predetermined color
             let target = state.targetResults[i];
-            if (target) {
-              // Normalize color hex/name
-              const lower = target.toLowerCase();
-              if (COLOR_HEX_MAP[lower]) target = COLOR_HEX_MAP[lower];
-              newResults.push(target);
+            if (target !== null && target !== undefined && target !== '') {
+              // Normalize color hex/name/number
+              const lower = target.toString().toLowerCase();
+              let finalColor = COLOR_HEX_MAP[lower] || target;
+              newResults.push(finalColor);
             } else {
-              // Random color from the 6 allowed
+              // 100% natural random selection from all 6 colors on the web
+              // Regardless of rolling 1, 2, 3, 4, 5, or 6 dice!
               const randChoice = SIX_COLORS[Math.floor(Math.random() * SIX_COLORS.length)].hex;
               newResults.push(randChoice);
             }
@@ -1610,13 +2258,21 @@
 
         // Record history
         const rollRecord = {
+          id: state.history.length + 1,
           time: new Date().toLocaleTimeString(),
           seed: state.seedId,
           mode: state.mode,
-          results: state.mode === 'color' ? [...state.diceResults] : [...state.classicResults]
+          results: state.mode === 'color' ? [...state.diceResults] : [...state.classicResults],
+          colors: state.mode === 'color' ? [...state.diceResults] : []
         };
         state.history.unshift(rollRecord);
         saveHistory();
+
+        // Increment roll streak and update Last 20 Rolls
+        rollStreak++;
+        localStorage.setItem('od_roll_streak', rollStreak.toString());
+        if (streakCountEl) streakCountEl.textContent = rollStreak;
+        renderLast20RollsUI();
 
         state.isRolling = false;
 
@@ -1644,68 +2300,213 @@
     }
 
     /* =========================================================
-       VERIFY HISTORY MODAL
+       COUNTER, STREAK, USERS ONLINE, ANTI-BAN, CHANCES
        ========================================================= */
-    function openVerifyHistory() {
-      // Calculate color stats
-      const counts = {};
-      SIX_COLORS.forEach(c => counts[c.hex] = 0);
-      let totalDiceSeen = 0;
+    let counterValue = parseInt(localStorage.getItem('od_score_counter') || '0');
+    let rollStreak = parseInt(localStorage.getItem('od_roll_streak') || '10');
+    let onlineUsers = 589;
 
-      state.history.forEach(rec => {
+    const counterValDisplay = document.getElementById('counterValDisplay');
+    const streakCountEl     = document.getElementById('streakCount');
+    const usersOnlineCount  = document.getElementById('usersOnlineCount');
+    const antiBanToggle     = document.getElementById('antiBanToggle');
+    const chancesModal      = document.getElementById('chancesModal');
+    const chancesLink       = document.getElementById('chancesLink');
+    const closeChancesModal = document.getElementById('closeChancesModal');
+    const installAppCard    = document.getElementById('installAppCard');
+    const closeEmbeddedLast20 = document.getElementById('closeEmbeddedLast20');
+    const embeddedLast20Card = document.getElementById('embeddedLast20Card');
+
+    function updateCounterUI() {
+      if (counterValDisplay) counterValDisplay.textContent = counterValue;
+      localStorage.setItem('od_score_counter', counterValue.toString());
+    }
+
+    document.getElementById('btnCountMinus1')?.addEventListener('click', (e) => { e.stopPropagation(); counterValue -= 1; updateCounterUI(); });
+    document.getElementById('btnCountMinus10')?.addEventListener('click', (e) => { e.stopPropagation(); counterValue -= 10; updateCounterUI(); });
+    document.getElementById('btnCountPlus1')?.addEventListener('click', (e) => { e.stopPropagation(); counterValue += 1; updateCounterUI(); });
+    document.getElementById('btnCountPlus10')?.addEventListener('click', (e) => { e.stopPropagation(); counterValue += 10; updateCounterUI(); });
+    counterValDisplay?.addEventListener('dblclick', () => { counterValue = 0; updateCounterUI(); });
+
+    // Initial Streak & Users Online
+    if (streakCountEl) streakCountEl.textContent = rollStreak;
+    if (usersOnlineCount) usersOnlineCount.textContent = onlineUsers;
+    setInterval(() => {
+      onlineUsers += (Math.floor(Math.random() * 5) - 2);
+      if (onlineUsers < 575) onlineUsers = 579;
+      if (onlineUsers > 615) onlineUsers = 608;
+      if (usersOnlineCount) usersOnlineCount.textContent = onlineUsers;
+    }, 8000);
+
+    // Anti-Ban Toggle
+    if (antiBanToggle) {
+      antiBanToggle.checked = localStorage.getItem('od_anti_ban') === '1';
+      antiBanToggle.addEventListener('change', (e) => {
+        localStorage.setItem('od_anti_ban', e.target.checked ? '1' : '0');
+      });
+    }
+
+    // Install App Action
+    installAppCard?.addEventListener('click', () => {
+      alert('Online-Dice: App mode active with instant launch and fewer ads!');
+    });
+
+    // GO AGAIN ! Button (One-click instant roll matching screenshot)
+    const btnGoAgain = document.getElementById('btnGoAgain');
+    btnGoAgain?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      rollDice();
+    });
+
+    // Chances of Winning Modal
+    chancesLink?.addEventListener('click', (e) => {
+      e.preventDefault();
+      chancesModal?.classList.add('active');
+    });
+    closeChancesModal?.addEventListener('click', () => {
+      chancesModal?.classList.remove('active');
+    });
+    chancesModal?.addEventListener('click', (e) => {
+      if (e.target === chancesModal) chancesModal.classList.remove('active');
+    });
+
+    closeEmbeddedLast20?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (embeddedLast20Card) {
+        embeddedLast20Card.style.display = embeddedLast20Card.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+
+    /* =========================================================
+       YOUR LAST 20 ROLLS (STATS, STREAK, THIS ROLL, PREVIOUS)
+       ========================================================= */
+    function renderLast20RollsUI() {
+      const history = state.history.slice(0, 20);
+
+      // Color frequencies across last 20 rolls
+      const colorStats = {
+        '#e60000': { name: 'Red', hex: '#e60000', count: 0 },
+        '#00a651': { name: 'Green', hex: '#00a651', count: 0 },
+        '#7a0099': { name: 'Purple', hex: '#7a0099', count: 0 },
+        '#ff7700': { name: 'Orange', hex: '#ff7700', count: 0 },
+        '#ffcc00': { name: 'Yellow', hex: '#ffcc00', count: 0 },
+        '#0072ce': { name: 'Blue', hex: '#0072ce', count: 0 }
+      };
+
+      history.forEach(rec => {
         if (rec.mode === 'color' && Array.isArray(rec.results)) {
-          rec.results.forEach(h => {
-            if (counts[h] !== undefined) counts[h]++;
-            totalDiceSeen++;
+          rec.results.forEach(col => {
+            const hex = COLOR_HEX_MAP[col.toLowerCase()] || col;
+            if (colorStats[hex]) colorStats[hex].count++;
           });
         }
       });
 
-      totalRollsCount.textContent = state.history.length;
+      // Sorted by count descending
+      const sortedStats = Object.values(colorStats).sort((a, b) => b.count - a.count);
+      const topCount = sortedStats[0]?.count || 0;
 
-      // Render stats grid
-      statsColorGrid.innerHTML = '';
-      SIX_COLORS.forEach(c => {
-        const count = counts[c.hex] || 0;
-        const pct = totalDiceSeen > 0 ? Math.round((count / totalDiceSeen) * 100) : 0;
-
-        const card = document.createElement('div');
-        card.className = 'stat-color-card';
-        card.innerHTML = `
-          <div class="stat-color-dot" style="background-color: ${c.hex};"></div>
-          <div class="stat-color-info">
-            <div class="stat-color-name">${c.name}</div>
-            <div class="stat-color-count">${count} (${pct}%)</div>
+      let statsBadgesHtml = sortedStats.map(c => {
+        const isTrophy = c.count === topCount && c.count > 0;
+        return `
+          <div class="last20-stat-pill">
+            <div class="last20-stat-mini-die" style="background-color: ${c.hex};">
+              <div class="last20-stat-mini-dot"></div>
+            </div>
+            <span class="last20-stat-count" style="color: ${c.hex === '#ffcc00' ? '#b45309' : c.hex};">x${c.count}</span>
+            ${isTrophy ? '<span style="font-size:11px;">🏆</span>' : ''}
           </div>
         `;
-        statsColorGrid.appendChild(card);
-      });
+      }).join('');
 
-      // Render history table
-      historyTableBody.innerHTML = '';
-      state.history.slice(0, 30).forEach(rec => {
-        const tr = document.createElement('tr');
-        
-        let miniList = '<div class="mini-dice-list">';
-        if (rec.mode === 'color') {
+      // Longest streak
+      let currentStreakColor = null;
+      let currentStreakLen = 0;
+      let maxStreakColor = '#e60000';
+      let maxStreakLen = 3;
+
+      history.forEach(rec => {
+        if (rec.mode === 'color' && Array.isArray(rec.results)) {
           rec.results.forEach(col => {
-            miniList += `<div class="mini-die-dot" style="background-color: ${col};"></div>`;
-          });
-        } else {
-          rec.results.forEach(num => {
-            miniList += `<span style="font-weight:700; padding:1px 5px; background:#e2e8f0; border-radius:4px;">${num}</span>`;
+            const hex = COLOR_HEX_MAP[col.toLowerCase()] || col;
+            if (hex === currentStreakColor) {
+              currentStreakLen++;
+            } else {
+              currentStreakColor = hex;
+              currentStreakLen = 1;
+            }
+            if (currentStreakLen > maxStreakLen) {
+              maxStreakLen = currentStreakLen;
+              maxStreakColor = currentStreakColor;
+            }
           });
         }
-        miniList += '</div>';
-
-        tr.innerHTML = `
-          <td style="white-space:nowrap;">${rec.time}</td>
-          <td style="font-family:monospace; font-weight:700;">${rec.seed}</td>
-          <td>${miniList}</td>
-        `;
-        historyTableBody.appendChild(tr);
       });
 
+      let streakBadgeHtml = `
+        <div class="last20-streak-pill">
+          <div class="last20-stat-mini-die" style="background-color: ${maxStreakColor};">
+            <div class="last20-stat-mini-dot"></div>
+          </div>
+          <span class="last20-stat-count" style="color: ${maxStreakColor};">x${maxStreakLen}</span>
+          <span style="font-size:11px;">🔥</span>
+        </div>
+      `;
+
+      // 1. THIS ROLL
+      const roll1 = history[0];
+      let thisRollHtml = '<div class="last20-roll-idx">1.</div><div class="last20-dice-group">';
+      if (roll1 && roll1.results) {
+        roll1.results.forEach(col => {
+          const hex = COLOR_HEX_MAP[col.toLowerCase()] || col;
+          thisRollHtml += `
+            <div class="last20-die" style="background-color: ${hex};">
+              <div class="last20-die-dot"></div>
+            </div>
+          `;
+        });
+      }
+      thisRollHtml += '</div>';
+
+      // 2. to 20. PREVIOUS ROLLS
+      let previousRollsHtml = '';
+      for (let idx = 1; idx < history.length; idx++) {
+        const rec = history[idx];
+        previousRollsHtml += `<div class="last20-prev-row"><div class="last20-roll-idx">${idx + 1}.</div><div class="last20-dice-group">`;
+        if (rec.results) {
+          rec.results.forEach(col => {
+            const hex = COLOR_HEX_MAP[col.toLowerCase()] || col;
+            previousRollsHtml += `
+              <div class="last20-die" style="background-color: ${hex};">
+                <div class="last20-die-dot"></div>
+              </div>
+            `;
+          });
+        }
+        previousRollsHtml += '</div></div>';
+      }
+
+      // Populate elements
+      ['last20StatsBadges', 'modalLast20StatsBadges'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = statsBadgesHtml;
+      });
+      ['last20StreakWrap', 'modalLast20StreakWrap'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = streakBadgeHtml;
+      });
+      ['thisRollRow', 'modalThisRollRow'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = thisRollHtml;
+      });
+      ['previousRollsList', 'modalPreviousRollsList'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = previousRollsHtml;
+      });
+    }
+
+    function openVerifyHistory() {
+      renderLast20RollsUI();
       verifyModal.classList.add('active');
     }
 
@@ -1715,15 +2516,6 @@
     });
     verifyModal.addEventListener('click', (e) => {
       if (e.target === verifyModal) verifyModal.classList.remove('active');
-    });
-
-    clearHistoryBtn.addEventListener('click', () => {
-      if (confirm('Xác nhận xóa sạch lịch sử roll?')) {
-        state.history = [];
-        saveHistory();
-        openVerifyHistory();
-        broadcastSyncState();
-      }
     });
 
     /* =========================================================
@@ -1894,10 +2686,7 @@
     diceCountSelect.addEventListener('change', (e) => {
       const count = parseInt(e.target.value);
       state.diceCount = count;
-      // Adjust target results size if needed
-      if (state.targetResults.length > count) {
-        state.targetResults = state.targetResults.slice(0, count);
-      }
+      state.targetResults = [];
       renderDiceStage();
       updateAdminTargetPickers();
       broadcastSyncState();
@@ -1948,19 +2737,22 @@
           if (action === 'request_state') {
             broadcastSyncState();
           } else if (action === 'set_targets') {
-            if (Array.isArray(payload.targets)) {
+            if (payload.targetMode === 'random') {
+              state.targetResults = [];
+            } else if (Array.isArray(payload.targets)) {
               state.targetResults = payload.targets;
-              updateAdminTargetPickers();
             }
+            updateAdminTargetPickers();
           } else if (action === 'change_dice_count') {
-            if (payload.count) {
-              const c = parseInt(payload.count);
-              if (c >= 1 && c <= 6) {
-                state.diceCount = c;
-                diceCountSelect.value = c.toString();
-                renderDiceStage();
-                updateAdminTargetPickers();
+            const count = parseInt(payload.count || payload.diceCount);
+            if (count >= 1 && count <= 6) {
+              state.diceCount = count;
+              diceCountSelect.value = count.toString();
+              if (payload.targetMode === 'random') {
+                state.targetResults = [];
               }
+              renderDiceStage();
+              updateAdminTargetPickers();
             }
           } else if (action === 'change_mode') {
             if (payload.mode) {
@@ -1974,6 +2766,11 @@
               applyTheme(payload.theme);
             }
           } else if (action === 'roll') {
+            if (payload.targetMode === 'target' && Array.isArray(payload.targetResults) && payload.targetResults.length > 0) {
+              state.targetResults = [...payload.targetResults];
+            } else if (payload.targetMode === 'random') {
+              state.targetResults = [];
+            }
             rollDice();
           } else if (action === 'clear_history') {
             state.history = [];
@@ -1992,6 +2789,8 @@
     loadHistory();
     renderDiceStage();
     rollIdDisplay.textContent = `ID: ${state.seedId}`;
+    updateCounterUI();
+    renderLast20RollsUI();
     applyHideAdminBtn(localStorage.getItem('od_hide_admin_btn') === '1');
     initCloudSync();
 

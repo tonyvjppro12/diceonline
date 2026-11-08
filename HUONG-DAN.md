@@ -119,3 +119,31 @@ Hệ thống có **2 lớp bảo mật**:
      - Lịch sử đầy đủ các lượt lắc kèm 6 ô thống kê mini và nút **🗑 Xóa lịch sử** 1-chạm.
    - **Đồng bộ 2 chiều qua Cloud**: Lắc trên máy tính hay điện thoại thì cả 2 thiết bị đều cập nhật lịch sử đồng thời.
    - **Tùy chọn ẩn/hiện trên Live**: Trong Admin Panel mục 7 có ô checkbox cho phép streamer bật/tắt hiển thị lịch sử trên màn hình livestream tùy ý.
+9. **🎮 BỘ TIỆN ÍCH GAMING & BẢNG `YOUR LAST 20 ROLLS` CHUẨN 100% (MỚI CẬP NHẬT)**:
+   - **Bộ đếm điểm / cược `[-1 -10 | 0 | +1 +10]`**: Nằm trong thẻ giữa, streamer có thể bấm `-1`, `-10`, `+1`, `+10` để đếm cược hoặc điểm thắng/thua. Nhấp đúp vào số giữa để reset về 0.
+   - **Chuỗi lắc liên tiếp**: `Roll Streak: 10 ⚡ 🎲 (Charged dice)` tự động cộng dồn sau mỗi lượt đổ xúc xắc.
+   - **Đếm người xem trực tuyến**: `🟢 Users online: 589` tự động dao động chân thực quanh mốc 580 - 615.
+   - **Nút cài đặt app**: `INSTALL APP (Fewer ads, instant access.)`.
+   - **Dòng màu sắc**: `Possible colors are: Red, Orange, Yellow, Green, Blue and Purple.` với chữ nhiều màu nổi bật.
+   - **Bảng xác suất**: Link `See your chances of winning →` bấm vào mở bảng xác suất toán học chi tiết.
+   - **Công tắc chống ban**: `Anti-Ban Mode` công tắc gạt bật/tắt tiện lợi.
+   - **Bảng `YOUR LAST 20 ROLLS` chuẩn theo ảnh**:
+     - `STATS:` hiển thị huy hiệu cúp vàng `🏆` cho màu ra nhiều nhất (`🟥 x8 🏆`, `🟩 x8`, `🟪 x7`, `🟧 x7`, `🟨 x4`, `🟦 x3`).
+     - `LONGEST STREAK:` hiển thị chuỗi dài nhất kèm biểu tượng lửa (`🟥 x3 🔥`).
+     - `THIS ROLL:` Lượt 1 mới nhất với 4 xúc xắc màu bo góc viền trắng chấm tròn giữa.
+     - `PREVIOUS ROLLS:` Các lượt từ 2 đến 20 ngăn cách bằng đường nét đứt màu trắng.
+     - Hiển thị cả khi cuộn xuống ở thẻ giữa và khi bấm nút `⏱ Verify History`!
+
+10. **🟡 NÚT `GO AGAIN !` & DÀN 10 STREAMER MỖI BÊN (CHUẨN 100% THEO ẢNH MỚI NHẤT)**:
+    - **Nút bấm `GO AGAIN !` màu vàng kim nổi bật**: Nằm ngay dưới banner quảng cáo FxPro ở thẻ giữa. Thiết kế bo tròn viền sáng gradient vàng cam `#ffd000` -> `#ffba00` với chữ trắng in hoa đậm. Nhấp vào là xúc xắc lăn ngay lập tức kèm hiệu ứng và âm thanh sống động.
+    - **Banner quảng cáo FxPro Trade**: Hiển thị hình ảnh quảng cáo FxPro Trade chân thực chuẩn 100% như trên website gốc.
+    - **Đầy đủ 10 Streamer mỗi bên**:
+      - **Cột trái (10 Streamer)**: `DEETS GAMING` (verified), `RIP_GUUH` (verified), `MELIODASGBS` (verified), `RIKKYWRLD` (verified), `VLX` (verified), `YAGUIN` (verified), `WAVY` (verified), `O SHAOLIN` (verified), `KENZSTREAM` (verified), `MOPTRADES`.
+      - **Cột phải (10 Streamer)**: `MRPROFITER`, `FALLINSINZ`, `NACHOSINO`, `3XBLAZE`, `ECLIPSEFR`, `IMBADWTW`, `FREXX` (verified), `VINYYWS` (verified), `XNSZN` (verified), `XOTIC` (verified).
+      - Tất cả đều có ảnh avatar chuẩn lấy trực tiếp từ ảnh chụp, huy hiệu đỏ `Live`, tên tài khoản `@handle` và huy hiệu tích xanh xác nhận.
+
+11. **🎲 HIỂN THỊ CỤC DICE MÀU TRÊN REMOTE & TỶ LỆ RA ĐẦY ĐỦ 6 MÀU**:
+    - **Lịch sử hiển thị cục Dice màu 3D chuẩn xác**: Thay thế toàn bộ mã chữ `#undefined` và chuỗi hex `#ff7700` bằng cục xúc xắc mini bo góc có viền trắng và chấm tròn trắng ở giữa (`.r-dice-cube`).
+    - **Tỷ lệ ra tất cả các màu khi quay bất kỳ số lượng xúc xắc (1 đến 6 viên)**:
+      - Mặc định ở chế độ **`🎲 Ngẫu nhiên`**: Dù bạn chọn quay 1 viên, 2 viên, 3 viên, 4 viên, 5 viên hay 6 viên, mỗi viên xúc xắc đều có tỷ lệ xuất hiện độc lập, đồng đều (1/6 = 16.67%) của tất cả 6 màu có trên web: **Red, Orange, Yellow, Green, Blue, Purple**.
+      - Khi muốn gài kết quả màu cụ thể: Chỉ cần bấm chuyển sang **`🎯 Cài sẵn`** trên Remote để gán màu theo ý muốn.
