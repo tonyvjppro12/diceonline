@@ -1,10 +1,18 @@
-# 🎲 HƯỚNG DẪN SỬ DỤNG ONLINE-DICE (KHÔNG CẦN BẬT SERVER)
+# 🎲 HƯỚNG DẪN SỬ DỤNG ONLINE-DICE (GIAO DIỆN CHUẨN 100% ONLINE-DICE.COM)
 
-Phiên bản này đã được nâng cấp lên **Serverless Cloud Sync**:
-- **KHÔNG CẦN** mở Command Prompt (cmd) hay PowerShell.
-- **KHÔNG CẦN** chạy file `python server.py`.
-- **KHÔNG CẦN** mở máy tính trước hay dùng ngrok / localtunnel.
-- **KHÁC MẠNG VẪN CHẠY VÔ TƯ**: Máy livestream ở nhà cắm mạng dây, điện thoại bật 4G/5G ở bất kỳ đâu đều kết nối và điều khiển xúc xắc tức thì (độ trễ < 80ms).
+Phiên bản này đã được thiết kế lại **chuẩn 100% giao diện và phong cách của Online-Dice.com (Chủ đề SAB-BLU / Roblox Pet Simulator)**:
+- **Giao diện 3 cột card xanh nổi**:
+  - **Cột trái**: `OUR TOP STREAMERS` (7 streamer nổi tiếng kèm avatar, huy hiệu `Live` đỏ, tích xanh verified, name và handle).
+  - **Cột giữa**: `ROLL COLOR DICE`
+    - 3 Dropdown chuẩn: `4 DICE ⌄`, `COLOR D ⌄`, `SAB-BLU ⌄`.
+    - Dàn xúc xắc màu bo góc viền trắng 3.5px chuẩn xác với chấm tròn trắng ở giữa.
+    - Mã lượt quay: `ID: eBI525zQG2` (tự đổi seed sau mỗi lần lắc).
+    - Nút trắng bo tròn: `⏱ Verify History` mở bảng thống kê tỷ lệ ra 6 màu và lịch sử lượt lắc.
+    - Banner quảng cáo Creative Cloud Pro ở dưới.
+  - **Cột phải**: `OUR TOP STREAMERS` (7 streamer top tiếp theo).
+- **Hình nền**: Voxel Roblox sky world, mây 3D khối, chú mèo voxel bay, cây cọ khối và cổng lego nâu hai bên.
+- **Serverless Cloud Sync**: Kết nối tức thì không cần cài đặt server hay mở cmd.
+- **Khác mạng vẫn điều khiển mượt mà**: Máy tính live dùng WiFi/dây, điện thoại bật 4G/5G vẫn gài màu và lắc tức thì.
 
 ---
 
@@ -16,9 +24,20 @@ Phiên bản này đã được nâng cấp lên **Serverless Cloud Sync**:
    - Nhấp đúp chuột mở file `index.html` bằng trình duyệt (Chrome, Edge, Cốc Cốc,...).
    - Trang xúc xắc hiện lên bình thường, góc dưới có kết nối Cloud tự động.
 
-2. **Mở Admin Panel bí mật trên máy tính (nếu muốn chỉnh)**:
-   - Nhấn **`Ctrl + Shift + F12`** hoặc **click 5 lần vào logo ONLINE-DICE.COM**.
-   - Nhập PIN: **`8888`**
+2. **Mở Admin Panel trên máy tính**:
+   - **Phím tắt 1-chạm (Dễ nhất, nhạy 100%)**:
+     - Nhấn phím **`A`** (hoặc `a`) trên bàn phím.
+     - Hoặc nhấn phím **`~`** (dấu ngã / backtick cạnh số 1).
+     - Hoặc nhấn **`Ctrl + M`** / **`F2`** / **`Ctrl + Shift + A`**.
+   - **Cheat code bí mật khi Livestream**:
+     - Gõ liên tiếp chữ **`admin`** ở bất kỳ đâu trên bàn phím $\rightarrow$ Admin panel tự động mở!
+   - **Click chuột**:
+     - Nhấp đúp chuột (Double click) vào logo **ONLINE-DICE.COM**.
+     - Hoặc bấm vào nút **`⚙ Admin`** ở góc trên bên phải thanh navbar / nút tròn nổi ở góc dưới bên phải / link ở chân trang.
+   - **Mở qua link**:
+     - Thêm **`?admin=1`** vào link web (Ví dụ: `index.html?admin=1`) $\rightarrow$ Tự động mở ngay khi vừa tải trang!
+   - **Nhập mã PIN**: **`8888`** (đổi mã mới trong mục 6).
+   - **Đóng Admin**: Bấm phím **`Esc`** hoặc click ra ngoài vùng tối.
 
 3. **Trên điện thoại (Remote điều khiển từ xa)**:
    - Gửi file `remote.html` sang điện thoại và mở lên, hoặc đưa lên web (xem Cách 2).
@@ -41,12 +60,27 @@ Khi đó:
 
 ---
 
-## 🔒 BẢO MẬT PHÒNG RIÊNG (ROOM ID)
+## 🔒 BẢO MẬT & ĐỔI MẬT KHẨU / MÃ PHÒNG (ROOM ID)
 
-- Mặc định mã phòng bí mật là: **`dice8888`**
-- Nếu bạn muốn đổi sang mã phòng riêng (ví dụ `myroom123`):
-  - Trong Owner Panel mục 6 trên `index.html`, đổi sang `myroom123`.
-  - Trên `remote.html`, đổi sang cùng mã `myroom123` là kết nối riêng tư 1-1, không ai can thiệp được.
+Hệ thống có **2 lớp bảo mật**:
+
+### 1. Mã phòng bí mật (Room ID) — "Kênh kết nối riêng tư":
+- Mặc định là: **`dice8888`**
+- Chỉ các máy có cùng mã phòng mới kết nối và điều khiển được nhau.
+- **Cách đổi**:
+  - **Trên điện thoại (`remote.html`)**: Ở thẻ dưới cùng *"🔒 Bảo mật: Mã phòng & Mật khẩu PIN"*, nhập mã phòng mới (ví dụ: `phongcuatui123`) $\rightarrow$ bấm **Đổi phòng**.
+  - **Trên máy tính (`index.html`)**: Mở Admin Panel (click logo 5 lần hoặc `Ctrl+Shift+F12`), mục 6 nhập cùng mã phòng `phongcuatui123` $\rightarrow$ bấm **Save Settings**.
+  - **Hoặc truyền trực tiếp qua link**:
+    - Máy live: `https://ten-web.netlify.app/?room=phongcuatui123`
+    - Điện thoại: `https://ten-web.netlify.app/remote.html?room=phongcuatui123`
+
+### 2. Mật khẩu PIN mở khóa (PIN Code):
+- Mặc định ban đầu là: **`8888`**
+- Dùng để ngăn người khác mở bảng điều khiển bí mật.
+- **Cách đổi ngay trên giao diện (Không cần sửa code)**:
+  - **Trên điện thoại**: Ở thẻ dưới cùng, ô *"Đổi Mật khẩu PIN mở Remote"*, gõ mật khẩu mới (ví dụ `1234`, `9999`...) $\rightarrow$ bấm **Lưu PIN**.
+  - **Trên máy tính**: Trong Admin Panel mục 6, ô *"Đổi Mật khẩu PIN mở khóa"*, nhập mã mới $\rightarrow$ bấm **Lưu PIN**.
+  - **Mẹo mở Remote tự động không cần gõ PIN**: Thêm `?pin=8888` vào đuôi link điện thoại (ví dụ: `remote.html?pin=8888`), trang web sẽ tự động mở thẳng vào bàn điều khiển mà không cần nhập PIN!
 
 ---
 
@@ -72,7 +106,10 @@ Khi đó:
 4. **Âm thanh tiếng xúc xắc thật**: Giả lập đa va chạm (bounces), cộng hưởng vang mặt bàn (convolver reverb), tiếng thud khi xúc xắc dừng.
 5. **Mục số 5 - Custom Face Colors**: Đổi mã màu Hex cho từng mặt từ 1 đến 6.
 6. **Chế độ 6-sided Dice & Color Dice**.
-7. **Nút Admin ẩn 100%**: Người xem livestream không bao giờ thấy nút Admin.
+7. **ẨN HOÀN TOÀN NÚT ADMIN TRÊN LIVE (CHẾ ĐỘ LIVESTREAM BÍ MẬT)**:
+   - **Bật/Tắt ngay trong Admin Panel (`index.html`)**: Có ô checkbox *"Ẩn nút Admin & thanh trạng thái (Chế độ Livestream bí mật)"*. Khi tích chọn, nút ⚙ và thanh trạng thái biến mất 100%, người xem live hoàn toàn không biết có bảng cài đặt.
+   - **Bật/Tắt từ xa trên điện thoại (`remote.html`)**: Trong mục bảo mật có nút *"Ẩn nút Admin"*, bấm 1 cái là nút ⚙ trên màn hình live biến mất ngay lập tức.
+   - **Cách mở lại Admin khi đang ẩn nút**: Chỉ cần nhấn phím **`A`** (hoặc **`~`**, **`F2`**, **`Ctrl + M`**) trên bàn phím, hoặc **nhấp chuột 3 lần** vào tiêu đề **`ROLL COLOR DICE`** trên màn hình!
 8. **📜 Lịch sử ra màu & Thống kê 6 màu (MỚI)**:
    - **Bảng lịch sử trên màn hình Live (`index.html`)**: Hiển thị thứ tự lượt `#1, #2...`, thời gian chính xác, các chip màu đã ra kèm tổng kết (ví dụ: `1 Red, 2 Green, 1 Blue`).
    - **Thanh thống kê tỷ lệ 6 màu**: Đếm dồn số lần xuất hiện của Red, Orange, Yellow, Green, Blue, Purple theo thời gian thực để người xem live theo dõi cầu màu.

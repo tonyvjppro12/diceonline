@@ -1,1498 +1,2000 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>4 Color Dice — Roll 6-Sided Color Dice | Online-Dice.com</title>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="mqtt.min.js"></script>
-<script>
-if(typeof mqtt === 'undefined'){
-  document.write('<script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"><\/script>');
-}
-</script>
-<script src="sync-service.js"></script>
-<style>
-/* ===== RESET & BASE ===== */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Open Sans',Arial,Helvetica,sans-serif;background:#f4f6f9;color:#2c3e50;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>4 Color Dice — Roll 6-Sided Color Dice | Online-Dice.com</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2300a651'/><circle cx='50' cy='50' r='14' fill='%23ffffff'/></svg>">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- MQTT Library for Cloud Sync -->
+  <script src="mqtt.min.js"></script>
+  <script>
+    if (typeof mqtt === 'undefined') {
+      document.write('<script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"><\/script>');
+    }
+  </script>
+  <script src="sync-service.js"></script>
 
-/* ===== HEADER / NAVBAR ===== */
-.navbar{width:100%;background:#ffffff;border-bottom:1px solid #e5e5e5;display:flex;align-items:center;justify-content:center;padding:10px 20px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.logo-wrap{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
-.logo-dice{display:flex;gap:4px}
-.logo-die{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:14px;box-shadow:1px 1px 3px rgba(0,0,0,.25)}
-.logo-die.red{background:#e74c3c}
-.logo-die.green{background:#27ae60}
-.logo-die.yellow{background:#f1c40f;color:#333}
-.logo-text{font-size:22px;font-weight:700;color:#2c3e50;letter-spacing:-.5px}
-.logo-text span{color:#1e73be}
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* ===== THEME SELECTOR ===== */
-.theme-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:12px 10px;max-width:740px;width:100%}
-.theme-btn{padding:5px 11px;border:1px solid #ccc;border-radius:14px;font-size:11.5px;cursor:pointer;background:#fff;color:#555;transition:all .2s;font-family:inherit}
-.theme-btn:hover{border-color:#1e73be;color:#1e73be}
-.theme-btn.active{background:#1e73be;color:#fff;border-color:#1e73be}
+    :root {
+      --bg-sky: #38afee;
+      --card-blue-top: #1aa6ff;
+      --card-blue-bot: #0084ee;
+      --card-border: rgba(255, 255, 255, 0.45);
+      --card-shadow: 0 10px 30px rgba(0, 70, 160, 0.4);
+      --text-white: #ffffff;
+      --badge-red: #e60000;
+    }
 
-/* ===== DICE STAGE (CANVAS AREA) ===== */
-.stage-wrap{width:100%;max-width:720px;margin:0 auto;padding:0 10px}
-.stage{position:relative;width:100%;aspect-ratio:16/10;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.18)}
-.stage canvas{width:100%;height:100%;display:block}
+    html, body {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-sky);
+      background-image: url('assets/bg_clean.png');
+      background-size: cover;
+      background-position: center bottom;
+      background-repeat: no-repeat;
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
-/* ===== CONTROLS ===== */
-.controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;padding:16px 10px;max-width:720px;width:100%}
-.btn-roll{padding:12px 36px;border:none;border-radius:6px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .15s;color:#fff;background:#28a745;box-shadow:0 3px 8px rgba(40,167,69,.35)}
-.btn-roll:hover{filter:brightness(1.08)}
-.btn-roll:active{filter:brightness(.95)}
-.btn-mode{padding:12px 22px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;color:#fff;background:#ff7f00;box-shadow:0 3px 8px rgba(255,127,0,.3);transition:filter .15s}
-.btn-mode:hover{filter:brightness(1.08)}
-.install-link{font-size:12.5px;color:#1e73be;text-decoration:none;border-bottom:1px dashed #1e73be;padding-bottom:1px}
-.install-link:hover{color:#155a9c}
+    /* Outer Viewport Container */
+    .viewport-wrap {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      position: relative;
+    }
 
-/* ===== PAGE HEADER (CHÍNH XÁC ONLINE-DICE.COM) ===== */
-.page-header{text-align:center;padding:16px 10px 4px;max-width:720px;width:100%}
-.page-title{font-size:27px;font-weight:700;color:#2c3e50;letter-spacing:-.5px;margin-bottom:2px}
-.page-subtitle{font-size:13.5px;color:#7f8c8d;font-weight:400}
+    /* Top subtle indicator & stealth admin trigger */
+    .stealth-top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 14px;
+      z-index: 50;
+      pointer-events: none;
+    }
 
-/* ===== QUICK DICE COUNT PILLS ===== */
-.dice-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:6px 10px 10px;max-width:720px;width:100%}
-.dice-pill{padding:5px 12px;border:1px solid #d5dbdb;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#555;transition:all .2s;text-decoration:none;font-family:inherit}
-.dice-pill:hover{border-color:#1e73be;color:#1e73be}
-.dice-pill.active{background:#1e73be;color:#fff;border-color:#1e73be;box-shadow:0 2px 6px rgba(30,115,190,.3)}
+    .cloud-pill {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(4px);
+      padding: 3px 10px;
+      border-radius: 12px;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.2s;
+    }
+    .cloud-pill:hover {
+      background: rgba(0, 0, 0, 0.45);
+      color: #fff;
+    }
+    .cloud-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #e74c3c;
+    }
+    .cloud-dot.connected { background: #2ecc71; }
+    .cloud-dot.connecting { background: #f1c40f; }
 
-/* ===== DICE COUNT SELECTOR ===== */
-.dice-count-bar{display:none;align-items:center;justify-content:center;gap:8px;padding:4px 0 10px}
-.dice-count-bar label{font-size:13px;color:#555;font-weight:600}
-.dice-count-bar select{padding:4px 8px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:13px}
+    .stealth-gear-btn {
+      pointer-events: auto;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.35);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .stealth-gear-btn:hover {
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.2);
+    }
 
-/* ===== RESULT ===== */
-.result-display{text-align:center;padding:8px 0 14px;font-size:15px;color:#2c3e50;font-weight:600;min-height:36px}
-.result-display .total{font-size:28px;color:#1e73be}
-.color-badge-list{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin-bottom:4px}
-.color-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 14px;border-radius:16px;color:#fff;font-size:13px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.2);text-shadow:0 1px 2px rgba(0,0,0,.3)}
-.color-summary-text{font-size:13.5px;color:#555;font-weight:600;margin-top:2px}
+    /* 3-Column Floating Game Container */
+    .game-board {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 10px;
+      width: 100%;
+      max-width: 780px;
+      height: 335px;
+      margin-bottom: 0px;
+      z-index: 10;
+    }
 
-/* ===== ROLL HISTORY (Chuẩn Online-Dice.com) ===== */
-.history-section{width:100%;max-width:720px;margin:8px auto 28px;padding:0 10px}
-.history-card{background:#ffffff;border:1px solid #e5e5e5;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.04);overflow:hidden}
-.history-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:#fbfbfb;border-bottom:1px solid #ebebeb}
-.history-title{font-size:14.5px;font-weight:700;color:#2c3e50;display:flex;align-items:center;gap:7px}
-.history-count{font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;background:#eef2f7;color:#1e73be}
-.btn-clear-hist{background:#fff;border:1px solid #ddd;color:#666;padding:4px 10px;border-radius:5px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
-.btn-clear-hist:hover{background:#fdf2f2;color:#e74c3c;border-color:#e74c3c}
-.history-stats-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 16px;background:#f8f9fa;border-bottom:1px solid #ebebeb;font-size:11.5px}
-.history-stat-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;color:#fff;font-weight:700;font-size:11px;box-shadow:0 1px 3px rgba(0,0,0,.15);text-shadow:0 1px 1px rgba(0,0,0,.2)}
-.history-list{max-height:260px;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px}
-.history-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fcfdfe;border:1px solid #edf0f5;border-radius:8px;font-size:13px;transition:background .15s}
-.history-item:hover{background:#f4f7fb}
-.history-item-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.hist-idx{font-size:11.5px;font-weight:800;color:#8a99a8;min-width:32px}
-.hist-time{font-size:11px;color:#95a5a6;font-variant-numeric:tabular-nums}
-.hist-badges{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.hist-chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:12px;color:#fff;font-size:11.5px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.15);text-shadow:0 1px 1px rgba(0,0,0,.25)}
-.history-item-right{text-align:right}
-.hist-summary{font-size:12px;color:#555;font-weight:600}
-.history-empty{text-align:center;padding:24px 10px;color:#95a5a6;font-size:13px;font-style:italic}
+    /* Individual Glass Blue Card */
+    .card-panel {
+      background: linear-gradient(180deg, var(--card-blue-top) 0%, var(--card-blue-bot) 100%);
+      border: 2px solid var(--card-border);
+      border-bottom: none;
+      border-radius: 18px 18px 0 0;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* ===== OWNER PANEL ===== */
-/* Owner toggle: HIDDEN by default – only visible via secret trigger */
-.owner-toggle{position:fixed;bottom:16px;right:16px;height:44px;padding:0 16px;border-radius:22px;background:#2c3e50;color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);display:none;align-items:center;justify-content:center;gap:6px;z-index:200;transition:all .25s;font-family:inherit;opacity:0}
-.owner-toggle.visible{display:flex;animation:fadeInAdmin .3s forwards}
-.owner-toggle:hover{background:#1e73be;transform:scale(1.05)}
-@keyframes fadeInAdmin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    /* Left and Right Streamer Cards */
+    .streamers-card {
+      width: 215px;
+      height: 335px;
+      padding: 8px 9px 4px 9px;
+    }
 
-/* Owner overlay: sidebar style – không che bàn xúc xắc */
-.owner-overlay{display:none;position:fixed;top:0;right:0;bottom:0;width:320px;z-index:300;transform:translateX(100%);transition:transform .3s ease}
-.owner-overlay.show{display:block;transform:translateX(0)}
+    .card-header-title {
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--text-white);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      text-align: center;
+      margin-bottom: 6px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
 
-.owner-panel{background:#fff;width:100%;height:100%;padding:20px 18px;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,.2);border-left:1px solid #e5e5e5}
-.owner-panel h2{font-size:16px;color:#2c3e50;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.owner-panel h2 .lock{font-size:20px}
-.owner-panel .section{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #eee}
-.owner-panel .section:last-child{border-bottom:none;margin-bottom:0}
-.owner-panel .section h3{font-size:14px;color:#1e73be;margin-bottom:8px}
-.owner-panel label{display:block;font-size:13px;color:#555;margin-bottom:4px}
-.owner-panel input[type=text],
-.owner-panel input[type=password],
-.owner-panel input[type=color],
-.owner-panel select{width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:13px;margin-bottom:6px}
-.owner-panel input[type=color]{height:38px;padding:2px;cursor:pointer}
-.owner-panel .btn-save{padding:8px 20px;background:#28a745;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-family:inherit;font-size:13px}
-.owner-panel .btn-save:hover{filter:brightness(1.1)}
-.owner-panel .btn-close{position:absolute;top:10px;right:14px;background:none;border:none;font-size:22px;cursor:pointer;color:#999}
-.pin-gate{text-align:center}
-.pin-gate input{text-align:center;letter-spacing:8px;font-size:22px;max-width:180px;margin:0 auto 10px}
-.pin-gate .btn-pin{padding:8px 28px;background:#1e73be;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-family:inherit}
-.pin-error{color:#e74c3c;font-size:12px;margin-top:4px;display:none}
+    .streamers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow: hidden;
+    }
 
-/* face color grid */
-.face-color-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.face-color-item{display:flex;flex-direction:column;align-items:center;gap:2px}
-.face-color-item span{font-size:12px;font-weight:600;color:#555}
-.face-color-item input[type=color]{width:52px;height:34px}
+    .streamer-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 10px;
+      padding: 3px 6px;
+      height: 37px;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .streamer-row:hover {
+      background: rgba(255, 255, 255, 0.28);
+      transform: translateX(1px);
+    }
 
-/* ===== FOOTER ===== */
-footer{padding:20px 10px;text-align:center;font-size:11.5px;color:#999;margin-top:auto}
-footer a{color:#1e73be;text-decoration:none}
+    .avatar-wrapper {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
 
-/* ===== RESPONSIVE ===== */
-@media(max-width:500px){
-  .logo-text{font-size:17px}
-  .logo-die{width:22px;height:22px;font-size:11px}
-  .btn-roll{padding:10px 26px;font-size:15px}
-  .btn-mode{padding:10px 16px;font-size:12.5px}
-  .owner-overlay{width:280px}
-  .owner-panel{padding:16px 14px}
-}
-</style>
+    .streamer-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid #ffffff;
+      object-fit: cover;
+      display: block;
+    }
+
+    .live-pill {
+      position: absolute;
+      bottom: -3px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--badge-red);
+      color: #ffffff;
+      font-size: 7.5px;
+      font-weight: 800;
+      padding: 0.5px 3.5px;
+      border-radius: 4px;
+      letter-spacing: 0.2px;
+      line-height: 1.1;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      text-transform: uppercase;
+    }
+
+    .streamer-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .streamer-name-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .streamer-name {
+      font-size: 11px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+
+    .verified-badge {
+      width: 11px;
+      height: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .verified-badge svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .streamer-handle {
+      font-size: 9px;
+      color: #d6ecff;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* =========================================================
+       CENTER CARD (ROLL COLOR DICE)
+       ========================================================= */
+    .center-roller-card {
+      width: 320px;
+      height: 335px;
+      padding: 9px 12px 6px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .center-card-header {
+      font-family: 'Fredoka One', 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      text-align: center;
+      margin-bottom: 8px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+    }
+
+    /* 3 Dropdowns Row */
+    .dropdowns-row {
+      display: flex;
+      gap: 7px;
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .pill-select-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 92px;
+    }
+
+    .pill-select {
+      width: 100%;
+      background: #ffffff;
+      color: #111827;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 18px 5px 8px;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+      outline: none;
+      letter-spacing: 0.2px;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .pill-select:hover {
+      background: #f9fafb;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.18);
+    }
+    .pill-select-arrow {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      width: 8px;
+      height: 8px;
+      fill: #374151;
+    }
+
+    /* Dice Stage Area */
+    .dice-stage-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9px;
+      min-height: 58px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .color-die {
+      width: 52px;
+      height: 52px;
+      border: 3.5px solid #ffffff;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.35);
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .color-die:hover {
+      transform: translateY(-2px) scale(1.04);
+    }
+    .color-die:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* Rolling 3D Animation */
+    .color-die.rolling {
+      animation: dieTumble 0.65s cubic-bezier(0.2, 0.8, 0.3, 1) infinite;
+    }
+
+    @keyframes dieTumble {
+      0% {
+        transform: rotate(0deg) scale(1);
+      }
+      25% {
+        transform: rotate(-15deg) scale(1.1) translateY(-6px);
+      }
+      50% {
+        transform: rotate(12deg) scale(1.05) translateY(-2px);
+      }
+      75% {
+        transform: rotate(-8deg) scale(1.08) translateY(-4px);
+      }
+      100% {
+        transform: rotate(0deg) scale(1);
+      }
+    }
+
+    /* Dice Center White Pip Dot */
+    .die-center-dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Classic Pip Layout for classic mode */
+    .pip-grid {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      padding: 6px;
+      align-items: center;
+      justify-items: center;
+    }
+    .pip {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #111;
+    }
+
+    /* Roll Seed ID */
+    .roll-id-text {
+      font-family: 'Fredoka One', 'Nunito', monospace;
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 1.6px;
+      text-align: center;
+      margin-bottom: 7px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+    }
+
+    /* Verify History Pill Button */
+    .btn-verify-history {
+      background: #ffffff;
+      color: #0047bb;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11.5px;
+      font-weight: 800;
+      border: none;
+      border-radius: 20px;
+      padding: 5px 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+      margin-bottom: 8px;
+      transition: all 0.15s;
+    }
+    .btn-verify-history:hover {
+      background: #f4f8ff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 71, 187, 0.25);
+    }
+    .btn-verify-history:active {
+      transform: translateY(1px);
+    }
+
+    /* Ad Creative Cloud Banner */
+    .ad-card-banner {
+      width: 100%;
+      background: #f7f4ed;
+      border-radius: 10px;
+      padding: 6px 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-top: auto;
+    }
+
+    .ad-left-text {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .ad-main-title {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    .ad-sub-terms {
+      font-size: 8.5px;
+      color: #4b5563;
+      margin-top: 2px;
+      line-height: 1.2;
+    }
+
+    .ad-cta-btn {
+      display: inline-block;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      text-decoration: none;
+      margin-top: 4px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(37, 99, 235, 0.35);
+    }
+    .ad-cta-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .ad-right-visual {
+      width: 80px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      position: relative;
+    }
+
+    .ad-graphic-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .ad-info-icon {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      width: 11px;
+      height: 11px;
+      opacity: 0.6;
+    }
+
+    /* =========================================================
+       MODALS (Verify History & Admin Panel)
+       ========================================================= */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 20, 50, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      max-height: 88vh;
+      overflow: hidden;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #1aa6ff, #0070d2);
+      color: #ffffff;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+      opacity: 0.85;
+      transition: opacity 0.15s;
+    }
+    .modal-close-btn:hover {
+      opacity: 1;
+    }
+
+    .modal-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      font-size: 13px;
+      color: #374151;
+    }
+
+    /* History Stats Grid */
+    .stats-color-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .stat-color-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stat-color-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1.5px solid rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+    .stat-color-info {
+      line-height: 1.2;
+    }
+    .stat-color-name {
+      font-weight: 700;
+      font-size: 11.5px;
+      color: #1e293b;
+    }
+    .stat-color-count {
+      font-size: 10.5px;
+      color: #64748b;
+    }
+
+    .history-log-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .history-log-table th {
+      background: #f1f5f9;
+      padding: 6px 8px;
+      text-align: left;
+      font-weight: 700;
+      color: #475569;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    .history-log-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+    }
+    .mini-dice-list {
+      display: flex;
+      gap: 4px;
+    }
+    .mini-die-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    /* Admin Panel Styles */
+    .admin-form-group {
+      margin-bottom: 14px;
+    }
+    .admin-label {
+      display: block;
+      font-weight: 700;
+      font-size: 12px;
+      color: #374151;
+      margin-bottom: 5px;
+    }
+    .admin-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .admin-input:focus {
+      border-color: #2563eb;
+    }
+
+    /* Target Result Pickers */
+    .dice-targets-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .die-target-box {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 6px;
+      text-align: center;
+      background: #f8fafc;
+    }
+    .die-target-box.active {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+    .die-target-label {
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      color: #475569;
+    }
+    .die-target-select {
+      width: 100%;
+      padding: 4px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .admin-btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .admin-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .admin-btn-primary {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .admin-btn-primary:hover {
+      background: #1d4ed8;
+    }
+    .admin-btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .admin-btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    .admin-btn-danger {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    .admin-btn-danger:hover {
+      background: #fecaca;
+    }
+
+    /* Remote Link Box */
+    .remote-link-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    .remote-link-text {
+      font-size: 11.5px;
+      color: #166534;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    /* Responsive scaling for mobile / smaller screens */
+    @media (max-width: 768px) {
+      .game-board {
+        transform: scale(0.85);
+        transform-origin: bottom center;
+      }
+    }
+    @media (max-width: 600px) {
+      .game-board {
+        transform: scale(0.68);
+        transform-origin: bottom center;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ========== NAVBAR ========== -->
-<nav class="navbar">
-  <div class="logo-wrap" onclick="location.reload()">
-    <div class="logo-dice">
-      <div class="logo-die red">⚄</div>
-      <div class="logo-die green">⚂</div>
-      <div class="logo-die yellow">⚅</div>
-    </div>
-    <div class="logo-text">ONLINE-DICE<span>.COM</span></div>
-  </div>
-</nav>
-
-<!-- ========== PAGE HEADER (ONLINE-DICE.COM) ========== -->
-<div class="page-header">
-  <h1 class="page-title" id="pageTitle">4 Color Dice</h1>
-  <p class="page-subtitle" id="pageSubtitle">Roll 6-Sided Color Dice</p>
-</div>
-
-<!-- ========== QUICK DICE COUNT PILLS ========== -->
-<div class="dice-pills" id="dicePills">
-  <button class="dice-pill" data-count="1">1 Color Die</button>
-  <button class="dice-pill" data-count="2">2 Color Dice</button>
-  <button class="dice-pill" data-count="3">3 Color Dice</button>
-  <button class="dice-pill active" data-count="4">4 Color Dice</button>
-  <button class="dice-pill" data-count="5">5 Color Dice</button>
-  <button class="dice-pill" data-count="6">6 Color Dice</button>
-</div>
-
-<!-- ========== THEME BAR ========== -->
-<div class="theme-bar" id="themeBar"></div>
-
-<!-- ========== DICE COUNT (HIDDEN SELECT FALLBACK) ========== -->
-<div class="dice-count-bar">
-  <label for="diceCount">Number of Dice:</label>
-  <select id="diceCount">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4" selected>4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-  </select>
-</div>
-
-<!-- ========== CANVAS STAGE ========== -->
-<div class="stage-wrap">
-  <div class="stage" id="stage">
-    <canvas id="diceCanvas"></canvas>
-  </div>
-</div>
-
-<!-- ========== RESULT ========== -->
-<div class="result-display" id="resultDisplay">🎲 Press <b>Go Again !</b> to roll</div>
-
-<!-- ========== CONTROLS ========== -->
-<div class="controls">
-  <button class="btn-roll" id="btnRoll">🎲 Go Again !</button>
-  <button class="btn-mode" id="btnMode">🎨 Color Dice</button>
-  <a href="#" class="install-link" onclick="return false">📲 Install app – Fewer ads, instant access.</a>
-</div>
-
-<!-- ========== ROLL HISTORY SECTION ========== -->
-<div class="history-section" id="historySection">
-  <div class="history-card">
-    <div class="history-header">
-      <div class="history-title">
-        <span>📜</span>
-        <span>Roll History</span>
-        <span class="history-count" id="historyCount">0 rolls</span>
+  <div class="viewport-wrap">
+    
+    <!-- Top subtle indicator & stealth admin trigger -->
+    <div class="stealth-top-bar">
+      <div class="cloud-pill" id="cloudStatusPill" title="MQTT Cloud Sync Status">
+        <div class="cloud-dot" id="cloudDot"></div>
+        <span id="cloudStatusText">Cloud</span>
       </div>
-      <div class="history-actions">
-        <button class="btn-clear-hist" id="btnClearHistory" title="Clear history">🗑 Clear</button>
-      </div>
-    </div>
-    <div class="history-stats-bar" id="historyStatsBar"></div>
-    <div class="history-list" id="historyList">
-      <div class="history-empty">No rolls yet. Press <b>Go Again !</b> to roll the dice.</div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== OWNER BUTTON ========== -->
-<button class="owner-toggle" id="ownerToggle" title="Owner Panel">⚙ Admin</button>
-
-<!-- ========== OWNER OVERLAY ========== -->
-<div class="owner-overlay" id="ownerOverlay">
-  <div class="owner-panel" style="position:relative">
-    <button class="btn-close" id="ownerClose">&times;</button>
-
-    <!-- PIN GATE -->
-    <div id="pinGate" class="pin-gate">
-      <h2><span class="lock">🔒</span> Owner Panel</h2>
-      <p style="font-size:13px;color:#777;margin-bottom:14px">Enter PIN to access settings</p>
-      <input type="password" id="pinInput" maxlength="4" placeholder="••••">
-      <br>
-      <button class="btn-pin" id="btnPin">Unlock</button>
-      <div class="pin-error" id="pinError">❌ Wrong PIN. Try again.</div>
+      <button class="stealth-gear-btn" id="stealthGearBtn" title="Admin Settings (PIN: 8888)">⚙</button>
     </div>
 
-    <!-- PANEL CONTENT (hidden until PIN ok) -->
-    <div id="panelContent" style="display:none">
-      <h2><span class="lock">🔓</span> Owner Panel</h2>
+    <!-- 3-Column Floating Game Board -->
+    <div class="game-board">
 
-      <!-- 1. Theme -->
-      <div class="section">
-        <h3>1. Default Theme</h3>
-        <select id="ownerTheme"></select>
-      </div>
+      <!-- ==================== LEFT CARD ==================== -->
+      <div class="card-panel streamers-card">
+        <div class="card-header-title">OUR TOP STREAMERS</div>
+        <div class="streamers-list">
+          
+          <!-- Streamer 1 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left_1.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">DEETS GAMING</span>
+                <span class="verified-badge">
+                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+              </div>
+              <span class="streamer-handle">@deets_gaming</span>
+            </div>
+          </div>
 
-      <!-- 2. Default dice count -->
-      <div class="section">
-        <h3>2. Default Dice Count</h3>
-        <select id="ownerDiceCount">
-          <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
-          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-        </select>
-      </div>
+          <!-- Streamer 2 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left_2.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">WAVY</span>
+                <span class="verified-badge">
+                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+              </div>
+              <span class="streamer-handle">@its.will1am</span>
+            </div>
+          </div>
 
-      <!-- 3. Default mode -->
-      <div class="section">
-        <h3>3. Default Mode</h3>
-        <select id="ownerMode">
-          <option value="classic">6-sided Dice</option>
-          <option value="color">Color Dice</option>
-        </select>
-      </div>
+          <!-- Streamer 3 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left_3.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">MELIODASGBS</span>
+                <span class="verified-badge">
+                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+              </div>
+              <span class="streamer-handle">@meliodasgbs</span>
+            </div>
+          </div>
 
-      <!-- 4. Sound -->
-      <div class="section">
-        <h3>4. Roll Sound</h3>
-        <select id="ownerSound">
-          <option value="on">On</option>
-          <option value="off">Off</option>
-        </select>
-      </div>
+          <!-- Streamer 4 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left_4.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">YAGUIN</span>
+                <span class="verified-badge">
+                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+              </div>
+              <span class="streamer-handle">@yagu1n3</span>
+            </div>
+          </div>
 
-      <!-- 4b. Roll Speed -->
-      <div class="section">
-        <h3>⚡ Tốc độ lăn xúc xắc</h3>
-        <select id="ownerRollSpeed">
-          <option value="0.4">⚡ Cực nhanh (0.4s)</option>
-          <option value="0.7">🚀 Nhanh (0.7s)</option>
-          <option value="1.0" selected>⏱️ Chuẩn (1.0s)</option>
-          <option value="1.8">⏳ Chậm (1.8s)</option>
-          <option value="2.8">🎭 Siêu chậm / Hồi hộp (2.8s)</option>
-        </select>
-      </div>
+          <!-- Streamer 5 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left_5.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">RIP_GUUH</span>
+                <span class="verified-badge">
+                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+              </div>
+              <span class="streamer-handle">@rip_guuhyt</span>
+            </div>
+          </div>
 
-      <!-- 5. 6 Dice Colors -->
-      <div class="section">
-        <h3>5. 6 Dice Colors (Red, Orange, Yellow, Green, Blue, Purple)</h3>
-        <p style="font-size:12px;color:#888;margin-bottom:8px">Chọn màu cho từng mặt từ 1–6.</p>
-        <div class="face-color-grid" id="faceColorGrid"></div>
-      </div>
+          <!-- Streamer 6 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left_6.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">KENZSTREAM</span>
+                <span class="verified-badge">
+                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+              </div>
+              <span class="streamer-handle">@donsszznn</span>
+            </div>
+          </div>
 
-      <!-- 6. Cloud Sync (Không cần máy chủ) -->
-      <div class="section">
-        <h3>6. Cloud Sync (Điều khiển từ xa không cần server) ☁️</h3>
-        <label>Mã phòng bí mật (Room ID):</label>
-        <input type="text" id="ownerRoomId" value="dice8888" placeholder="dice8888" style="font-weight:700;letter-spacing:1px">
-        <p style="font-size:11.5px;color:#666;margin:4px 0 6px">Trạng thái Cloud: <b id="cloudStatusText" style="color:#28a745">● Đang kết nối...</b></p>
-        <p style="font-size:11px;color:#777">Mở <b>remote.html</b> trên điện thoại với cùng mã phòng này để điều khiển tức thì từ xa mà không cần bật server!</p>
-      </div>
+          <!-- Streamer 7 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_left_7.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">FLAY</span>
+                <span class="verified-badge">
+                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+              </div>
+              <span class="streamer-handle">@ps99game</span>
+            </div>
+          </div>
 
-      <!-- 7. Roll History Settings -->
-      <div class="section">
-        <h3>7. Lịch sử ra màu (Roll History) 📜</h3>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:13px">
-          <input type="checkbox" id="ownerShowHistory" checked style="width:16px;height:16px">
-          Hiển thị bảng Lịch sử trên màn hình Live
-        </label>
-        <div style="margin-top:10px">
-          <button type="button" id="ownerBtnClearHistory" style="padding:6px 14px;font-size:12px;background:#e74c3c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600">🗑 Xóa toàn bộ lịch sử</button>
         </div>
       </div>
 
-      <button class="btn-save" id="btnSave">💾 Save Settings</button>
+      <!-- ==================== CENTER CARD ==================== -->
+      <div class="card-panel center-roller-card">
+        
+        <div class="center-card-header" id="centerCardTitle" title="Click 3 times to open Admin">ROLL COLOR DICE</div>
+
+        <!-- 3 Selects -->
+        <div class="dropdowns-row">
+          
+          <div class="pill-select-wrap">
+            <select id="diceCountSelect" class="pill-select">
+              <option value="1">1 DICE</option>
+              <option value="2">2 DICE</option>
+              <option value="3">3 DICE</option>
+              <option value="4" selected>4 DICE</option>
+              <option value="5">5 DICE</option>
+              <option value="6">6 DICE</option>
+            </select>
+            <svg class="pill-select-arrow" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+          </div>
+
+          <div class="pill-select-wrap">
+            <select id="diceModeSelect" class="pill-select">
+              <option value="color" selected>COLOR D</option>
+              <option value="classic">CLASSIC</option>
+            </select>
+            <svg class="pill-select-arrow" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+          </div>
+
+          <div class="pill-select-wrap">
+            <select id="themeSelect" class="pill-select">
+              <option value="SAB-BLU" selected>SAB-BLU</option>
+              <option value="SAB-GRN">SAB-GRN</option>
+              <option value="CLASSIC">CLASSIC</option>
+            </select>
+            <svg class="pill-select-arrow" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+          </div>
+
+        </div>
+
+        <!-- Dice Stage (Clickable to roll) -->
+        <div class="dice-stage-wrap" id="diceStageWrap" title="Click to Roll!">
+          <!-- Rendered dynamically via JavaScript -->
+        </div>
+
+        <!-- Roll ID -->
+        <div class="roll-id-text" id="rollIdDisplay" title="Click to copy Seed ID">ID: eBI525zQG2</div>
+
+        <!-- Verify Button -->
+        <button class="btn-verify-history" id="btnVerifyHistory">
+          <span>⏱</span> Verify History
+        </button>
+
+        <!-- Ad Creative Cloud Box -->
+        <div class="ad-card-banner">
+          <div class="ad-left-text">
+            <div class="ad-main-title">Save 60% on<br>Creative Cloud Pro.</div>
+            <div class="ad-sub-terms">Ends 13 November. First year only.<br>Terms apply.</div>
+            <button class="ad-cta-btn" onclick="window.open('https://www.adobe.com', '_blank')">Learn more</button>
+          </div>
+          <div class="ad-right-visual">
+            <img src="assets/ad_graphic.png" class="ad-graphic-image" alt="Creative Cloud">
+            <svg class="ad-info-icon" viewBox="0 0 20 20" fill="#6b7280"><circle cx="10" cy="10" r="9" stroke="#6b7280" stroke-width="2" fill="none"/><text x="10" y="14" font-size="11" font-weight="bold" text-anchor="middle" fill="#6b7280">i</text></svg>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== RIGHT CARD ==================== -->
+      <div class="card-panel streamers-card">
+        <div class="card-header-title">OUR TOP STREAMERS</div>
+        <div class="streamers-list">
+          
+          <!-- Streamer 1 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right_1.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">LJUNIORTT</span>
+              </div>
+              <span class="streamer-handle">@ljuniortt</span>
+            </div>
+          </div>
+
+          <!-- Streamer 2 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right_2.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">3XBLAZE</span>
+              </div>
+              <span class="streamer-handle">@3xblaze</span>
+            </div>
+          </div>
+
+          <!-- Streamer 3 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right_3.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">ECLIPSEFR</span>
+              </div>
+              <span class="streamer-handle">@eclipseisbackfr</span>
+            </div>
+          </div>
+
+          <!-- Streamer 4 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right_4.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">NACHOSINO</span>
+              </div>
+              <span class="streamer-handle">@nachomamalive</span>
+            </div>
+          </div>
+
+          <!-- Streamer 5 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right_5.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">SUGGAR</span>
+              </div>
+              <span class="streamer-handle">@suggar420</span>
+            </div>
+          </div>
+
+          <!-- Streamer 6 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right_6.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">IMBADWTW</span>
+              </div>
+              <span class="streamer-handle">@imbadwtw</span>
+            </div>
+          </div>
+
+          <!-- Streamer 7 -->
+          <div class="streamer-row">
+            <div class="avatar-wrapper">
+              <img src="assets/avatar_right_7.png" class="streamer-avatar" alt="Avatar">
+              <span class="live-pill">Live</span>
+            </div>
+            <div class="streamer-info">
+              <div class="streamer-name-row">
+                <span class="streamer-name">FREXX</span>
+                <span class="verified-badge">
+                  <svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+              </div>
+              <span class="streamer-handle">@frexx150</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ==================== MODAL: VERIFY HISTORY ==================== -->
+  <div class="modal-backdrop" id="verifyHistoryModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">⏱ Provably Fair & Roll History</div>
+        <button class="modal-close-btn" id="closeVerifyModal">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <div style="margin-bottom: 12px; font-weight: 700; color: #1e293b;">
+          Color Distribution Statistics (<span id="totalRollsCount">0</span> rolls total):
+        </div>
+
+        <div class="stats-color-grid" id="statsColorGrid">
+          <!-- Filled by JS -->
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; margin-bottom:6px;">
+          <div style="font-weight: 700; color: #1e293b;">Recent Rolls:</div>
+          <button id="clearHistoryBtn" style="background:transparent; border:none; color:#dc2626; font-size:11.5px; font-weight:700; cursor:pointer;">Clear Log</button>
+        </div>
+
+        <div style="max-height: 240px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <table class="history-log-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Roll ID</th>
+                <th>Results</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 14px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; color: #64748b;">
+          <strong>Provably Fair Seed:</strong> Each roll generates a SHA-256 verifiable hash ID. The seed ensures unbiased outcome generation on the Online-Dice network.
+        </div>
+
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ========== FOOTER ========== -->
-<footer>
-  Online-Dice Clone &copy; 2026 &mdash; Built for demonstration purposes.
-</footer>
+  <!-- ==================== MODAL: ADMIN / STEALTH CONTROL ==================== -->
+  <div class="modal-backdrop" id="adminModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">⚙ Admin Settings & Stream Control</div>
+        <button class="modal-close-btn" id="closeAdminModal">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- PIN Lock Section (if locked) -->
+        <div id="adminPinSection">
+          <p style="margin-bottom: 10px; color: #4b5563;">Nhập mã PIN để truy cập bảng điều khiển (Mặc định: <strong>8888</strong>):</p>
+          <div style="display:flex; gap:8px;">
+            <input type="password" id="adminPinInput" class="admin-input" placeholder="Mã PIN (8888)" maxlength="12">
+            <button class="admin-btn admin-btn-primary" id="adminPinSubmitBtn" style="flex:0 0 90px;">Mở khóa</button>
+          </div>
+          <div id="adminPinError" style="color:#dc2626; font-size:11px; margin-top:6px; display:none;">Mã PIN không chính xác!</div>
+        </div>
 
-<!-- ===================================================================== -->
-<script>
-/* =====================================================================
-   CONFIG & STATE
-   ===================================================================== */
-const OWNER_PIN = '8888';
+        <!-- Admin Content (shown after PIN success) -->
+        <div id="adminContentSection" style="display:none;">
 
-const THEMES = {
-  'Blue':       {g1:'#2980b9',g2:'#154360'},
-  'Sab-Blue':   {g1:'#5dade2',g2:'#1a5276'},
-  'Green':      {g1:'#27ae60',g2:'#0e3d20'},
-  'Sab-Green':  {g1:'#58d68d',g2:'#145a32'},
-  'Red':        {g1:'#e74c3c',g2:'#641e16'},
-  'Sab-Red':    {g1:'#ec7063',g2:'#78281f'},
-  'Pink':       {g1:'#e91e90',g2:'#6c1248'},
-  'B&W':        {g1:'#bdc3c7',g2:'#2c3e50'},
-  'Sab-Black':  {g1:'#555555',g2:'#111111'},
-  'Heaven':     {g1:'#87ceeb',g2:'#f0e68c'},
-  'Hell':       {g1:'#8b0000',g2:'#1a0000'},
-  'Underwater': {g1:'#006994',g2:'#00293d'},
-  'Bronze':     {g1:'#cd7f32',g2:'#4a2c0a'},
-  'Silver':     {g1:'#c0c0c0',g2:'#404040'},
-  'Gold':       {g1:'#ffd700',g2:'#6b4f00'}
-};
+          <!-- Preset Target Colors -->
+          <div class="admin-form-group">
+            <label class="admin-label">🎯 Kết quả gài trước cho lần Roll kế tiếp:</label>
+            <div class="dice-targets-grid" id="diceTargetsContainer">
+              <!-- Dynamically generated for each die -->
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+              <span style="font-size:11px; color:#6b7280;">Để trống = Ngẫu nhiên hoàn toàn</span>
+              <button class="admin-btn admin-btn-secondary" id="clearTargetsBtn" style="padding:3px 8px; font-size:11px; flex:none;">Xóa gài</button>
+            </div>
+          </div>
 
-const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
-const COLOR_DICE_FACES    = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
-const COLOR_NAMES         = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple'];
+          <!-- Room / Cloud Settings -->
+          <div class="admin-form-group">
+            <label class="admin-label">📡 Mã Phòng Cloud Sync (Điện thoại kết nối vào đây):</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="adminRoomInput" class="admin-input" value="dice8888">
+              <button class="admin-btn admin-btn-primary" id="saveRoomBtn" style="flex:0 0 70px;">Lưu</button>
+            </div>
+          </div>
 
-const HEX_TO_NAME = {
-  '#e74c3c': 'Red',
-  '#e67e22': 'Orange',
-  '#f1c40f': 'Yellow',
-  '#2ecc71': 'Green',
-  '#3498db': 'Blue',
-  '#9b59b6': 'Purple'
-};
+          <!-- Direct Remote Link -->
+          <div class="remote-link-box">
+            <div style="font-weight:700; margin-bottom:4px; font-size:12px; color:#15803d;">📱 Link điều khiển từ xa bí mật:</div>
+            <div class="remote-link-text" id="remoteLinkDisplay">remote.html?room=dice8888</div>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <button class="admin-btn admin-btn-secondary" id="copyRemoteLinkBtn" style="font-size:11px; padding:4px 10px;">📋 Copy Link</button>
+              <button class="admin-btn admin-btn-primary" id="openRemoteTabBtn" style="font-size:11px; padding:4px 10px;">Mở Remote Tab</button>
+            </div>
+          </div>
 
-function getColorName(hex, fallbackIndex){
-  if(hex && HEX_TO_NAME[hex.toLowerCase()]){
-    return HEX_TO_NAME[hex.toLowerCase()];
-  }
-  return COLOR_NAMES[fallbackIndex] || 'Color';
-}
+          <!-- Change PIN -->
+          <div class="admin-form-group" style="margin-top:14px;">
+            <label class="admin-label">🔐 Đổi mã PIN bảo vệ:</label>
+            <div style="display:flex; gap:8px;">
+              <input type="password" id="newPinInput" class="admin-input" placeholder="Nhập PIN mới">
+              <button class="admin-btn admin-btn-secondary" id="saveNewPinBtn" style="flex:0 0 70px;">Đổi</button>
+            </div>
+          </div>
 
-function getFaceValueForColor(colorOrName, fallbackIdx){
-  if(!colorOrName) return Math.floor(Math.random()*6)+1;
-  const str = String(colorOrName).toLowerCase().trim();
-  const num = parseInt(str);
-  if(!isNaN(num) && num >= 1 && num <= 6) return num;
-  const nameIdx = COLOR_NAMES.findIndex(n => n.toLowerCase() === str);
-  if(nameIdx !== -1) return nameIdx + 1;
-  if(HEX_TO_NAME[str]){
-    const n = HEX_TO_NAME[str].toLowerCase();
-    const idx = COLOR_NAMES.findIndex(item => item.toLowerCase() === n);
-    if(idx !== -1) return idx + 1;
-  }
-  const faceIdx = state.faceColors.findIndex(c => c.toLowerCase() === str);
-  if(faceIdx !== -1) return faceIdx + 1;
+          <!-- Stealth Mode: Hide Admin Button & Top Bar -->
+          <div class="admin-form-group" style="margin-top:14px; padding:10px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700; font-size:12px; color:#1e293b;">
+              <input type="checkbox" id="hideAdminBtnCheckbox" style="width:16px; height:16px; cursor:pointer; accent-color:#2563eb;">
+              <span>Ẩn nút Admin & thanh trạng thái (Chế độ Livestream bí mật)</span>
+            </label>
+            <div style="font-size:10.5px; color:#64748b; margin-top:5px; line-height:1.4;">
+              💡 Khi bật, nút ⚙ và thanh Cloud trên màn hình sẽ biến mất 100%. Khán giả xem live hoàn toàn không thấy gì. Để mở lại panel bất kỳ lúc nào, chỉ cần nhấn phím <strong>A</strong> (hoặc <strong>~</strong>, <strong>F2</strong>, <strong>Ctrl+M</strong>) hoặc nhấp 3 lần vào tiêu đề <strong>ROLL COLOR DICE</strong>.
+            </div>
+          </div>
 
-  return (fallbackIdx % 6) + 1;
-}
+          <div class="admin-btn-row">
+            <button class="admin-btn admin-btn-secondary" id="adminCloseBtn">Đóng</button>
+          </div>
 
-let rollCounter = 0;
-let rollHistory = [];
+        </div>
 
-let state = {
-  theme:        'Blue',
-  diceCount:    4,           // 4 Color Dice (Chuẩn online-dice.com/roll-color-dice/4/)
-  mode:         'color',      // Chế độ Color Dice
-  sound:        'on',
-  faceColors:   [...DEFAULT_FACE_COLORS],
-  rollDuration: 1.0,         // thời gian lăn tính bằng giây (0.3s - 3.5s)
-  showHistory:  true,        // hiển thị bảng lịch sử
-  targetMode:   'target',     // 'target' (kết quả cài trước từ remote) hoặc 'random'
-  targetResults:[1, 2, 4, 5], // Kết quả cài sẵn: 1=Red, 2=Orange, 4=Green, 5=Blue
-  rolling:      false,
-  results:      [1, 2, 4, 5] // Hiển thị sẵn 4 xúc xắc 4 màu trên bàn
-};
+      </div>
+    </div>
+  </div>
 
-/* helpers */
-function saveState(){
-  try{
-    localStorage.setItem('od_state',JSON.stringify({
-      theme: state.theme,
-      diceCount: state.diceCount,
-      mode: state.mode,
-      sound: state.sound,
-      faceColors: state.faceColors,
-      rollDuration: state.rollDuration || 1.0,
-      showHistory: state.showHistory !== undefined ? state.showHistory : true,
-      targetMode: state.targetMode || 'target',
-      targetResults: state.targetResults || [1, 2, 4, 5]
-    }));
-  }catch(e){}
-}
-function loadState(){
-  try{
-    const s = JSON.parse(localStorage.getItem('od_state'));
-    if(s){
-      state.theme = s.theme || 'Blue';
-      state.diceCount = s.diceCount !== undefined ? s.diceCount : 4;
-      state.mode = s.mode || 'color';
-      state.sound = s.sound || 'on';
-      state.faceColors = s.faceColors || [...DEFAULT_FACE_COLORS];
-      state.rollDuration = parseFloat(s.rollDuration) || 1.0;
-      state.showHistory = s.showHistory !== undefined ? s.showHistory : true;
-      state.targetMode = s.targetMode || 'target';
-      state.targetResults = (s.targetResults && Array.isArray(s.targetResults)) ? s.targetResults : [1, 2, 4, 5];
-    }
-  }catch(e){}
-}
+  <!-- Sound Audio Synthesizer -->
+  <script>
+    class DiceAudio {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playTumble() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        
+        const now = this.ctx.currentTime;
+        // Clatter hits
+        for (let i = 0; i < 5; i++) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const t = now + i * 0.1 + Math.random() * 0.04;
+          
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(220 + Math.random() * 320, t);
+          osc.frequency.exponentialRampToValueAtTime(100, t + 0.06);
 
-function loadHistory(){
-  try {
-    const raw = localStorage.getItem('od_history');
-    if(raw){
-      rollHistory = JSON.parse(raw) || [];
-      if(rollHistory.length > 0){
-        rollCounter = rollHistory[0].id || rollHistory.length;
+          gain.gain.setValueAtTime(0.18, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(t);
+          osc.stop(t + 0.07);
+        }
+      }
+      playSettle() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(380, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.12);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.13);
       }
     }
-  }catch(e){}
-}
+    const diceAudio = new DiceAudio();
+  </script>
 
-function saveHistory(){
-  try {
-    localStorage.setItem('od_history', JSON.stringify(rollHistory));
-  }catch(e){}
-}
+  <!-- Main Game Logic & Sync Script -->
+  <script>
+    /* =========================================================
+       CONSTANTS & STATE
+       ========================================================= */
+    const SIX_COLORS = [
+      { name: 'Green',  hex: '#00a651' },
+      { name: 'Red',    hex: '#e60000' },
+      { name: 'Purple', hex: '#7a0099' },
+      { name: 'Blue',   hex: '#0072ce' },
+      { name: 'Orange', hex: '#ff7700' },
+      { name: 'Yellow', hex: '#ffcc00' }
+    ];
 
-function addRollToHistory(results){
-  rollCounter++;
-  const d = new Date();
-  const timeStr = [
-    String(d.getHours()).padStart(2,'0'),
-    String(d.getMinutes()).padStart(2,'0'),
-    String(d.getSeconds()).padStart(2,'0')
-  ].join(':');
+    const COLOR_HEX_MAP = {
+      'green':   '#00a651',
+      'red':     '#e60000',
+      'purple':  '#7a0099',
+      'blue':    '#0072ce',
+      'orange':  '#ff7700',
+      'yellow':  '#ffcc00',
+      '#e74c3c': '#e60000',
+      '#e67e22': '#ff7700',
+      '#f1c40f': '#ffcc00',
+      '#2ecc71': '#00a651',
+      '#3498db': '#0072ce',
+      '#9b59b6': '#7a0099'
+    };
 
-  let record = {
-    id: rollCounter,
-    time: timeStr,
-    mode: state.mode,
-    diceCount: state.diceCount,
-    results: [...results]
-  };
+    const state = {
+      diceCount: 4,
+      mode: 'color',        // 'color' or 'classic'
+      theme: 'SAB-BLU',
+      diceResults: ['#00a651', '#00a651', '#e60000', '#7a0099'],
+      classicResults: [4, 4, 1, 6],
+      targetResults: [],    // predetermined target colors or numbers
+      seedId: 'eBI525zQG2',
+      isRolling: false,
+      history: []
+    };
 
-  if(state.mode === 'color'){
-    const colors = results.map(v => state.faceColors[(v-1)%6] || DEFAULT_FACE_COLORS[(v-1)%6]);
-    const names = colors.map((col, idx) => getColorName(col, (results[idx]-1)%6));
-    const counts = {};
-    names.forEach(name => { counts[name] = (counts[name] || 0) + 1; });
-    const summary = Object.entries(counts).map(([name, c]) => `${c} ${name}`).join(', ');
+    /* Owner PIN */
+    function getOwnerPin() {
+      return localStorage.getItem('od_owner_pin') || '8888';
+    }
+    function setOwnerPin(pin) {
+      if (pin && pin.trim()) {
+        localStorage.setItem('od_owner_pin', pin.trim());
+        return true;
+      }
+      return false;
+    }
 
-    record.colors = colors;
-    record.names = names;
-    record.summary = summary;
-  } else {
-    const total = results.reduce((a,b)=>a+b, 0);
-    record.total = total;
-    record.summary = `Total: ${total}`;
-  }
+    /* History Persistence */
+    function loadHistory() {
+      try {
+        const stored = localStorage.getItem('od_roll_history_v2');
+        if (stored) state.history = JSON.parse(stored);
+      } catch(e) {
+        state.history = [];
+      }
+      if (!Array.isArray(state.history)) state.history = [];
+    }
+    function saveHistory() {
+      try {
+        localStorage.setItem('od_roll_history_v2', JSON.stringify(state.history.slice(0, 50)));
+      } catch(e) {}
+    }
 
-  rollHistory.unshift(record);
-  if(rollHistory.length > 60) rollHistory.pop();
-  saveHistory();
-  renderHistoryUI();
+    /* Random Alphanumeric Seed Generator */
+    function generateSeed() {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let res = '';
+      for (let i = 0; i < 10; i++) {
+        res += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return res;
+    }
 
-  if(window.syncService){
-    window.syncService.send('roll_result', record);
-  }
-}
+    /* =========================================================
+       DOM ELEMENTS
+       ========================================================= */
+    const diceStageWrap    = document.getElementById('diceStageWrap');
+    const rollIdDisplay    = document.getElementById('rollIdDisplay');
+    const diceCountSelect  = document.getElementById('diceCountSelect');
+    const diceModeSelect   = document.getElementById('diceModeSelect');
+    const themeSelect      = document.getElementById('themeSelect');
+    const centerCardTitle  = document.getElementById('centerCardTitle');
 
-function clearHistory(){
-  rollHistory = [];
-  rollCounter = 0;
-  saveHistory();
-  renderHistoryUI();
-  if(window.syncService){
-    window.syncService.send('clear_history', {});
-  }
-}
+    const verifyModal      = document.getElementById('verifyHistoryModal');
+    const btnVerifyHistory = document.getElementById('btnVerifyHistory');
+    const closeVerifyModal = document.getElementById('closeVerifyModal');
+    const statsColorGrid   = document.getElementById('statsColorGrid');
+    const historyTableBody = document.getElementById('historyTableBody');
+    const totalRollsCount  = document.getElementById('totalRollsCount');
+    const clearHistoryBtn  = document.getElementById('clearHistoryBtn');
 
-function renderHistoryUI(){
-  const listEl = document.getElementById('historyList');
-  const countEl = document.getElementById('historyCount');
-  const statsEl = document.getElementById('historyStatsBar');
-  const sectionEl = document.getElementById('historySection');
-  if(!listEl) return;
+    const adminModal       = document.getElementById('adminModal');
+    const closeAdminModal  = document.getElementById('closeAdminModal');
+    const adminCloseBtn    = document.getElementById('adminCloseBtn');
+    const stealthGearBtn   = document.getElementById('stealthGearBtn');
+    const adminPinSection  = document.getElementById('adminPinSection');
+    const adminContentSection = document.getElementById('adminContentSection');
+    const adminPinInput    = document.getElementById('adminPinInput');
+    const adminPinSubmitBtn = document.getElementById('adminPinSubmitBtn');
+    const adminPinError    = document.getElementById('adminPinError');
+    const diceTargetsContainer = document.getElementById('diceTargetsContainer');
+    const clearTargetsBtn  = document.getElementById('clearTargetsBtn');
 
-  if(sectionEl){
-    sectionEl.style.display = state.showHistory ? 'block' : 'none';
-  }
+    const adminRoomInput   = document.getElementById('adminRoomInput');
+    const saveRoomBtn      = document.getElementById('saveRoomBtn');
+    const remoteLinkDisplay = document.getElementById('remoteLinkDisplay');
+    const copyRemoteLinkBtn = document.getElementById('copyRemoteLinkBtn');
+    const openRemoteTabBtn = document.getElementById('openRemoteTabBtn');
+    const newPinInput      = document.getElementById('newPinInput');
+    const saveNewPinBtn    = document.getElementById('saveNewPinBtn');
 
-  countEl.textContent = `${rollHistory.length} ${rollHistory.length === 1 ? 'roll' : 'rolls'}`;
+    const cloudStatusPill  = document.getElementById('cloudStatusPill');
+    const cloudDot         = document.getElementById('cloudDot');
+    const cloudStatusText  = document.getElementById('cloudStatusText');
+    const hideAdminBtnCheckbox = document.getElementById('hideAdminBtnCheckbox');
+    const stealthTopBar    = document.querySelector('.stealth-top-bar');
 
-  // Thống kê 6 màu
-  const colorCounts = { 'Red': 0, 'Orange': 0, 'Yellow': 0, 'Green': 0, 'Blue': 0, 'Purple': 0 };
-  rollHistory.forEach(item => {
-    if(item.names && Array.isArray(item.names)){
-      item.names.forEach(name => {
-        if(colorCounts[name] !== undefined) colorCounts[name]++;
+    /* Stealth Hide Admin Button & Top Bar */
+    function applyHideAdminBtn(hide) {
+      const isHidden = !!hide;
+      if (stealthTopBar) {
+        stealthTopBar.style.display = isHidden ? 'none' : 'flex';
+      }
+      if (hideAdminBtnCheckbox) {
+        hideAdminBtnCheckbox.checked = isHidden;
+      }
+      if (isHidden) {
+        localStorage.setItem('od_hide_admin_btn', '1');
+      } else {
+        localStorage.removeItem('od_hide_admin_btn');
+      }
+    }
+
+    if (hideAdminBtnCheckbox) {
+      hideAdminBtnCheckbox.addEventListener('change', (e) => {
+        applyHideAdminBtn(e.target.checked);
+        broadcastSyncState();
       });
     }
-  });
 
-  if(statsEl){
-    const statPills = [
-      { name: 'Red', hex: '#e74c3c' },
-      { name: 'Orange', hex: '#e67e22' },
-      { name: 'Yellow', hex: '#f1c40f' },
-      { name: 'Green', hex: '#2ecc71' },
-      { name: 'Blue', hex: '#3498db' },
-      { name: 'Purple', hex: '#9b59b6' }
-    ].map(c => `
-      <span class="history-stat-pill" style="background:${c.hex};${c.name==='Yellow'?'color:#222;text-shadow:none':''}">
-        ${c.name}: <b>${colorCounts[c.name]}</b>
-      </span>
-    `).join(' ');
+    /* =========================================================
+       RENDER DICE STAGE
+       ========================================================= */
+    function renderDiceStage() {
+      diceStageWrap.innerHTML = '';
+      const count = state.diceCount;
 
-    statsEl.innerHTML = `<span style="font-weight:700;color:#555;margin-right:2px">📊 Stats:</span> ${statPills}`;
-  }
+      for (let i = 0; i < count; i++) {
+        const die = document.createElement('div');
+        die.className = 'color-die';
+        die.dataset.index = i;
 
-  if(rollHistory.length === 0){
-    listEl.innerHTML = '<div class="history-empty">No rolls yet. Press <b>Go Again !</b> to roll the dice.</div>';
-    return;
-  }
+        if (state.mode === 'color') {
+          const colorHex = state.diceResults[i] || SIX_COLORS[i % SIX_COLORS.length].hex;
+          die.style.backgroundColor = colorHex;
+          
+          const dot = document.createElement('div');
+          dot.className = 'die-center-dot';
+          die.appendChild(dot);
+        } else {
+          // Classic pip dice
+          die.style.backgroundColor = '#ffffff';
+          const val = state.classicResults[i] || (i + 1);
+          renderPips(die, val);
+        }
 
-  listEl.innerHTML = rollHistory.map(item => {
-    let badgesHtml = '';
-    if(item.mode === 'color' && item.colors){
-      badgesHtml = item.colors.map((col, idx) => {
-        const name = item.names?.[idx] || 'Color';
-        const isYellow = name === 'Yellow' || col.toLowerCase() === '#f1c40f';
-        return `<span class="hist-chip" style="background:${col};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
-      }).join(' ');
-    } else if(item.results){
-      badgesHtml = item.results.map(v => `<span class="hist-chip" style="background:#2c3e50">${'⚀⚁⚂⚃⚄⚅'[v-1] || v} ${v}</span>`).join(' ');
+        die.addEventListener('click', () => {
+          rollDice();
+        });
+
+        diceStageWrap.appendChild(die);
+      }
     }
 
-    return `
-      <div class="history-item">
-        <div class="history-item-left">
-          <span class="hist-idx">#${item.id}</span>
-          <span class="hist-time">${item.time}</span>
-          <div class="hist-badges">${badgesHtml}</div>
-        </div>
-        <div class="history-item-right">
-          <span class="hist-summary">${item.summary || ''}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
+    function renderPips(dieElem, val) {
+      dieElem.innerHTML = '';
+      const grid = document.createElement('div');
+      grid.className = 'pip-grid';
+      
+      const pipPositions = {
+        1: [4],
+        2: [0, 8],
+        3: [0, 4, 8],
+        4: [0, 2, 6, 8],
+        5: [0, 2, 4, 6, 8],
+        6: [0, 2, 3, 5, 6, 8]
+      };
 
-/* =====================================================================
-   DOM REFS
-   ===================================================================== */
-const canvas   = document.getElementById('diceCanvas');
-const ctx      = canvas.getContext('2d');
-const stageEl  = document.getElementById('stage');
-const btnRoll  = document.getElementById('btnRoll');
-const btnMode  = document.getElementById('btnMode');
-const resultEl = document.getElementById('resultDisplay');
-const diceCountSel = document.getElementById('diceCount');
-
-/* =====================================================================
-   THEME BAR
-   ===================================================================== */
-(function buildThemeBar(){
-  const bar = document.getElementById('themeBar');
-  Object.keys(THEMES).forEach(name=>{
-    const b = document.createElement('button');
-    b.className = 'theme-btn';
-    b.textContent = name;
-    b.dataset.theme = name;
-    b.onclick = ()=> setTheme(name);
-    bar.appendChild(b);
-  });
-})();
-
-function setTheme(name){
-  state.theme = name;
-  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===name));
-  drawStage();
-  saveState();
-}
-
-/* =====================================================================
-   CANVAS SIZING
-   ===================================================================== */
-function resizeCanvas(){
-  const rect = stageEl.getBoundingClientRect();
-  canvas.width  = rect.width  * devicePixelRatio;
-  canvas.height = rect.height * devicePixelRatio;
-  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-  drawStage();
-}
-window.addEventListener('resize', resizeCanvas);
-
-/* =====================================================================
-   DRAW HELPERS
-   ===================================================================== */
-function drawBackground(w,h){
-  const t = THEMES[state.theme] || THEMES['Blue'];
-  const grad = ctx.createLinearGradient(0,0,0,h);
-  grad.addColorStop(0, t.g1);
-  grad.addColorStop(1, t.g2);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0,0,w,h);
-
-  // inset vignette
-  const vig = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.25, w/2,h/2,Math.max(w,h)*0.75);
-  vig.addColorStop(0,'rgba(0,0,0,0)');
-  vig.addColorStop(1,'rgba(0,0,0,0.35)');
-  ctx.fillStyle = vig;
-  ctx.fillRect(0,0,w,h);
-}
-
-/* Draw a single die at (cx,cy) with given size and face value 1-6 */
-function drawDie(cx, cy, size, value, rotation, isColor){
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(rotation);
-
-  const half = size / 2;
-  const r = size * 0.14;
-
-  // body
-  if(isColor){
-    ctx.fillStyle = state.faceColors[(value-1) % 6] || COLOR_DICE_FACES[(value-1) % 6];
-  } else {
-    ctx.fillStyle = '#ffffff';
-  }
-  ctx.shadowColor = 'rgba(0,0,0,0.38)';
-  ctx.shadowBlur  = size * 0.22;
-  ctx.shadowOffsetX = size*0.04;
-  ctx.shadowOffsetY = size*0.07;
-  ctx.beginPath();
-  ctx.roundRect(-half,-half,size,size,r);
-  ctx.fill();
-  ctx.shadowColor = 'transparent';
-
-  // subtle border
-  ctx.strokeStyle = isColor ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.12)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  // inner highlight (ánh sáng 3D bevel)
-  const ig = ctx.createLinearGradient(-half,-half,half,half);
-  ig.addColorStop(0,'rgba(255,255,255,0.32)');
-  ig.addColorStop(0.5,'rgba(255,255,255,0)');
-  ig.addColorStop(1,'rgba(0,0,0,0.12)');
-  ctx.fillStyle = ig;
-  ctx.beginPath();
-  ctx.roundRect(-half,-half,size,size,r);
-  ctx.fill();
-
-  // pips / center marker
-  if(isColor){
-    // Chấm tròn tâm màu trắng thanh lịch chuẩn color dice
-    const pipR = size * 0.11;
-    ctx.beginPath();
-    ctx.arc(0, 0, pipR, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,255,255,0.92)';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(0, 0, pipR, 0, Math.PI*2);
-    ctx.strokeStyle = 'rgba(0,0,0,0.14)';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-  } else {
-    const pipR = size * 0.085;
-    const pipColor = state.faceColors[(value-1) % 6] || '#333333';
-    const positions = getPipPositions(value, size * 0.56);
-    positions.forEach(([px,py])=>{
-      ctx.beginPath();
-      ctx.arc(px, py, pipR, 0, Math.PI*2);
-      ctx.fillStyle = pipColor;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(px+0.5, py+0.5, pipR, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(0,0,0,0.1)';
-      ctx.fill();
-    });
-  }
-
-  ctx.restore();
-}
-
-function getPipPositions(v, spread){
-  const s = spread / 2;
-  const pips = {
-    1: [[0,0]],
-    2: [[-s,-s],[s,s]],
-    3: [[-s,-s],[0,0],[s,s]],
-    4: [[-s,-s],[s,-s],[-s,s],[s,s]],
-    5: [[-s,-s],[s,-s],[0,0],[-s,s],[s,s]],
-    6: [[-s,-s],[s,-s],[-s,0],[s,0],[-s,s],[s,s]]
-  };
-  return pips[v] || pips[1];
-}
-
-/* =====================================================================
-   DRAW STAGE (static or with results)
-   ===================================================================== */
-function drawStage(){
-  const w = canvas.width / devicePixelRatio;
-  const h = canvas.height / devicePixelRatio;
-  ctx.clearRect(0,0,w,h);
-  drawBackground(w,h);
-
-  if(state.results.length > 0 && !state.rolling){
-    drawDiceResults(w, h);
-  }
-}
-
-function drawDiceResults(w, h){
-  const n = state.results.length;
-  // Tính size linh hoạt – hỗ trợ cả preview 6 viên
-  const maxPerRow = Math.min(n, w < 400 ? 3 : 6);
-  const rows = Math.ceil(n / maxPerRow);
-  const dieSize = Math.min(
-    (w * 0.85) / (maxPerRow * 1.3),
-    (h * 0.8) / (rows * 1.4),
-    110
-  );
-
-  for(let i = 0; i < n; i++){
-    const row = Math.floor(i / maxPerRow);
-    const col = i % maxPerRow;
-    const colsInRow = Math.min(maxPerRow, n - row * maxPerRow);
-    const rowW = colsInRow * dieSize * 1.3 - dieSize * 0.3;
-    const startX = (w - rowW) / 2 + dieSize / 2;
-    const totalH = rows * dieSize * 1.4 - dieSize * 0.4;
-    const startY = (h - totalH) / 2 + dieSize / 2;
-
-    const cx = startX + col * (dieSize * 1.3);
-    const cy = startY + row * (dieSize * 1.4);
-    drawDie(cx, cy, dieSize, state.results[i], state._rotations?.[i] || 0, state.mode==='color');
-  }
-}
-
-/* =====================================================================
-   ROLLING ANIMATION (Hỗ trợ tùy chỉnh tốc độ nhanh / chậm)
-   ===================================================================== */
-function rollDice(overrideDuration, overrideTargets){
-  if(state.rolling) return;
-  state.rolling = true;
-  btnRoll.disabled = true;
-  btnRoll.textContent = '🎲 Rolling...';
-
-  const n = state.diceCount;
-
-  // Xác định kết quả cài sẵn từ remote hoặc ngẫu nhiên
-  let finalValues = [];
-  const targets = (overrideTargets && Array.isArray(overrideTargets) && overrideTargets.length)
-    ? overrideTargets
-    : state.targetResults;
-
-  if(state.targetMode === 'random' || !targets || !targets.length){
-    finalValues = Array.from({length:n}, ()=> Math.floor(Math.random()*6)+1);
-  } else {
-    finalValues = Array.from({length:n}, (_, i)=>{
-      const t = targets[i];
-      if(typeof t === 'number' && t >= 1 && t <= 6) return t;
-      if(typeof t === 'string') return getFaceValueForColor(t, i);
-      return Math.floor(Math.random()*6)+1;
-    });
-  }
-
-  const finalRotations = Array.from({length:n}, ()=> (Math.random()-0.5)*0.5);
-  state._rotations = finalRotations;
-
-  const durationSec = Math.max(0.2, parseFloat(overrideDuration || state.rollDuration || 1.0));
-  const totalFrames = Math.max(10, Math.round(durationSec * 50)); // ~50fps
-
-  // play sound theo thời lượng
-  playRollSound(durationSec);
-
-  let frame = 0;
-
-  function animate(){
-    const w = canvas.width / devicePixelRatio;
-    const h = canvas.height / devicePixelRatio;
-    ctx.clearRect(0,0,w,h);
-    drawBackground(w,h);
-
-    const progress = frame / totalFrames;
-    const maxSize = Math.min(w / (n * 1.1 + 0.5), h * 0.55, 120);
-    const dieSize = Math.max(maxSize, 40);
-    const totalW  = n * dieSize + (n-1) * dieSize * 0.3;
-    const startX  = (w - totalW) / 2 + dieSize / 2;
-
-    const bounceCount = durationSec > 1.8 ? 3 : (durationSec > 0.7 ? 2 : 1);
-
-    for(let i=0; i<n; i++){
-      const cx = startX + i * (dieSize * 1.3);
-      // bounce effect đa va chạm mượt mà
-      const bounceHeight = (h * 0.16) * Math.pow(1 - progress, 1.4) * Math.abs(Math.sin(progress * Math.PI * bounceCount));
-      const cy = h / 2 - bounceHeight + (Math.random()-0.5) * (1-progress) * 5;
-      const rot = (1 - progress) * (Math.random()-0.5) * (durationSec > 1.5 ? 2.5 : 1.5);
-
-      // Thay đổi mặt xúc xắc: chậm dần về cuối để tạo độ hồi hộp
-      const slowDownStep = Math.max(1, Math.floor(progress * progress * 6));
-      let showVal;
-      if(progress >= 0.9){
-        showVal = finalValues[i];
-      } else if(frame % slowDownStep === 0){
-        showVal = Math.floor(Math.random()*6)+1;
-      } else {
-        showVal = state._lastFrameVals?.[i] || finalValues[i];
+      const activePos = pipPositions[val] || [4];
+      for (let p = 0; p < 9; p++) {
+        const cell = document.createElement('div');
+        if (activePos.includes(p)) {
+          const pip = document.createElement('div');
+          pip.className = 'pip';
+          cell.appendChild(pip);
+        }
+        grid.appendChild(cell);
       }
-      if(!state._lastFrameVals) state._lastFrameVals = [];
-      state._lastFrameVals[i] = showVal;
-
-      drawDie(cx, cy, dieSize, showVal, rot, state.mode==='color');
+      dieElem.appendChild(grid);
     }
 
-    frame++;
-    if(frame <= totalFrames){
-      requestAnimationFrame(animate);
-    } else {
-      state.results = finalValues;
-      state.rolling = false;
-      state._lastFrameVals = null;
-      btnRoll.disabled = false;
-      btnRoll.textContent = '🎲 Go Again !';
-      drawStage();
-      showResult();
-      addRollToHistory(finalValues);
-    }
-  }
-  animate();
-}
+    /* =========================================================
+       ROLL DICE LOGIC (WITH TARGET RIGGING & RANDOM BACKUP)
+       ========================================================= */
+    function rollDice() {
+      if (state.isRolling) return;
+      state.isRolling = true;
 
-function showResult(){
-  const vals = state.results;
-  if(!vals.length) return;
+      diceAudio.playTumble();
 
-  if(state.mode === 'color'){
-    // Hiển thị kết quả Color Dice chuẩn Online-Dice.com
-    const badgesHtml = vals.map(v => {
-      const color = state.faceColors[(v-1)%6] || DEFAULT_FACE_COLORS[(v-1)%6];
-      const name = getColorName(color, (v-1)%6);
-      const isYellow = name === 'Yellow' || color.toLowerCase() === '#f1c40f';
-      return `<span class="color-badge" style="background:${color};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
-    }).join(' ');
+      // Animate dice
+      const diceElements = document.querySelectorAll('.color-die');
+      diceElements.forEach(el => el.classList.add('rolling'));
 
-    const counts = {};
-    vals.forEach(v => {
-      const color = state.faceColors[(v-1)%6] || DEFAULT_FACE_COLORS[(v-1)%6];
-      const name = getColorName(color, (v-1)%6);
-      counts[name] = (counts[name] || 0) + 1;
-    });
-    const summaryStr = Object.entries(counts).map(([name, c]) => `${c} ${name}`).join(', ');
+      // Cycle colors during animation
+      let shuffleInterval = setInterval(() => {
+        diceElements.forEach((el, idx) => {
+          if (state.mode === 'color') {
+            const randColor = SIX_COLORS[Math.floor(Math.random() * SIX_COLORS.length)].hex;
+            el.style.backgroundColor = randColor;
+          } else {
+            const randNum = Math.floor(Math.random() * 6) + 1;
+            renderPips(el, randNum);
+          }
+        });
+      }, 70);
 
-    resultEl.innerHTML = `
-      <div class="color-badge-list">${badgesHtml}</div>
-      <div class="color-summary-text">Result: <b>${summaryStr}</b></div>
-    `;
-  } else {
-    const total = vals.reduce((a,b)=>a+b,0);
-    const each = vals.map(v=>`<b>${v}</b>`).join(' + ');
-    if(vals.length === 1){
-      resultEl.innerHTML = `Result: <span class="total">${total}</span>`;
-    } else {
-      resultEl.innerHTML = `${each} = <span class="total">${total}</span>`;
-    }
-  }
-}
-
-/* =====================================================================
-   SOUND – Realistic dice roll (Scale theo tốc độ lăn)
-   ===================================================================== */
-let audioCtx;
-function ensureAudioCtx(){
-  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==='suspended') audioCtx.resume();
-  return audioCtx;
-}
-
-function playRollSound(durationSec){
-  if(state.sound==='off') return;
-  try{
-    const ac = ensureAudioCtx();
-    const now = ac.currentTime;
-    const durScale = Math.max(0.3, Math.min(3.5, (durationSec || state.rollDuration || 1.0) / 1.0));
-
-    const master = ac.createGain();
-    master.gain.value = 0.6;
-    master.connect(ac.destination);
-
-    // Convolver for table resonance
-    const convLen = ac.sampleRate * 0.3;
-    const convBuf = ac.createBuffer(1, convLen, ac.sampleRate);
-    const convData = convBuf.getChannelData(0);
-    for(let i=0;i<convLen;i++){
-      convData[i] = (Math.random()*2-1) * Math.pow(1 - i/convLen, 3) * 0.15;
-    }
-    const convolver = ac.createConvolver();
-    convolver.buffer = convBuf;
-    convolver.connect(master);
-
-    const dryGain = ac.createGain();
-    dryGain.gain.value = 0.7;
-    dryGain.connect(master);
-
-    const wetGain = ac.createGain();
-    wetGain.gain.value = 0.4;
-    wetGain.connect(convolver);
-
-    // Số lần nảy tương ứng với thời lượng lăn
-    const numBounces = Math.max(3, Math.round((5 + Math.floor(Math.random()*3)) * Math.sqrt(durScale)));
-    let t = 0;
-    for(let b=0; b<numBounces; b++){
-      const progress = b / numBounces;
-      const impactVol = (1 - progress*0.7) * (0.6 + Math.random()*0.4);
-      const dur = (0.015 + Math.random()*0.02);
-
-      const buf = ac.createBuffer(1, Math.max(1, Math.floor(ac.sampleRate * dur)), ac.sampleRate);
-      const d = buf.getChannelData(0);
-      const freq = 200 + Math.random()*600;
-      for(let i=0;i<d.length;i++){
-        const env = Math.pow(1 - i/d.length, 4);
-        const noise = (Math.random()*2-1) * 0.5;
-        const tone = Math.sin(2*Math.PI*freq*i/ac.sampleRate) * 0.5;
-        d[i] = (noise + tone) * env;
+      // MQTT Broadcast roll started
+      if (window.syncService) {
+        window.syncService.send('roll_started', { diceCount: state.diceCount });
       }
 
-      const src = ac.createBufferSource();
-      src.buffer = buf;
-      const g = ac.createGain();
-      g.gain.value = impactVol;
-      src.connect(g);
-      g.connect(dryGain);
-      g.connect(wetGain);
-      src.start(now + t);
+      // Settle roll after 700ms
+      setTimeout(() => {
+        clearInterval(shuffleInterval);
 
-      // Khoảng cách giữa các lần nảy dãn ra hoặc co lại theo tốc độ
-      t += (0.04 + Math.random()*0.05) * (1 - progress*0.5) * durScale;
-    }
+        // Determine final results
+        const newResults = [];
+        const newClassic = [];
 
-    // Tiếng chạm cuối cùng (thud)
-    const settleDur = 0.04;
-    const settleBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * settleDur), ac.sampleRate);
-    const sd = settleBuf.getChannelData(0);
-    for(let i=0;i<sd.length;i++){
-      const env = Math.pow(1 - i/sd.length, 6);
-      sd[i] = (Math.random()*2-1) * env * 0.3 + Math.sin(2*Math.PI*150*i/ac.sampleRate) * env * 0.4;
-    }
-    const ss = ac.createBufferSource();
-    ss.buffer = settleBuf;
-    const sg = ac.createGain();
-    sg.gain.value = 0.8;
-    ss.connect(sg);
-    sg.connect(dryGain);
-    sg.connect(wetGain);
-    ss.start(now + t + 0.02 * durScale);
-
-  }catch(e){console.log('Sound error:',e)}
-}
-
-/* =====================================================================
-   MODE & DICE PILLS (ONLINE-DICE.COM 4 COLOR DICE UI)
-   ===================================================================== */
-function updateDicePillsUI(){
-  document.querySelectorAll('.dice-pill').forEach(pill => {
-    const c = parseInt(pill.dataset.count);
-    pill.classList.toggle('active', c === state.diceCount);
-    pill.textContent = state.mode === 'color'
-      ? (c === 1 ? '1 Color Die' : `${c} Color Dice`)
-      : (c === 1 ? '1 Die' : `${c} Dice`);
-  });
-
-  const titleEl = document.getElementById('pageTitle');
-  const subtitleEl = document.getElementById('pageSubtitle');
-  if(titleEl){
-    titleEl.textContent = state.mode === 'color'
-      ? (state.diceCount === 1 ? '1 Color Die' : `${state.diceCount} Color Dice`)
-      : (state.diceCount === 1 ? '1 Die' : `${state.diceCount} Dice`);
-  }
-  if(subtitleEl){
-    subtitleEl.textContent = state.mode === 'color'
-      ? 'Roll 6-Sided Color Dice'
-      : 'Roll 6-Sided Dice Online';
-  }
-  btnMode.textContent = state.mode === 'classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
-}
-
-document.querySelectorAll('.dice-pill').forEach(pill => {
-  pill.addEventListener('click', ()=>{
-    const count = parseInt(pill.dataset.count);
-    setDiceCount(count);
-  });
-});
-
-function setDiceCount(count){
-  state.diceCount = count;
-  diceCountSel.value = count;
-
-  // Đồng bộ độ dài của targetResults với số lượng xúc xắc
-  if(!state.targetResults || !Array.isArray(state.targetResults)){
-    state.targetResults = [];
-  }
-  while(state.targetResults.length < count){
-    state.targetResults.push((state.targetResults.length % 6) + 1);
-  }
-
-  updateDicePillsUI();
-  // Khởi tạo xúc xắc trên bàn hiển thị theo màu đã cài sẵn
-  state.results = Array.from({length: state.diceCount}, (_, i)=> {
-    const t = state.targetResults[i];
-    return (typeof t === 'number' && t >= 1 && t <= 6) ? t : ((i % 6) + 1);
-  });
-  drawStage();
-  showResult();
-  saveState();
-  broadcastCloudState();
-}
-
-btnMode.addEventListener('click', ()=>{
-  state.mode = state.mode === 'classic' ? 'color' : 'classic';
-  updateDicePillsUI();
-  if(state.results.length){
-    drawStage();
-    showResult();
-  }
-  saveState();
-  broadcastCloudState();
-});
-
-diceCountSel.addEventListener('change', ()=>{
-  setDiceCount(parseInt(diceCountSel.value));
-});
-
-/* =====================================================================
-   ROLL BUTTON + KEYBOARD
-   ===================================================================== */
-btnRoll.addEventListener('click', rollDice);
-document.addEventListener('keydown', e=>{
-  if(e.code==='Space' && !e.repeat && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='SELECT'){
-    e.preventDefault();
-    rollDice();
-  }
-});
-
-/* =====================================================================
-   OWNER PANEL
-   ===================================================================== */
-/* =====================================================================
-   OWNER PANEL – SECRET ACCESS
-   Cách mở (người xem stream KHÔNG biết):
-     1. Click logo 5 lần liên tiếp (trong 3 giây)
-     2. Hoặc nhấn Ctrl + Shift + F12
-   Panel tự ẩn sau khi đóng.
-   ===================================================================== */
-const ownerToggle  = document.getElementById('ownerToggle');
-const ownerOverlay = document.getElementById('ownerOverlay');
-const ownerClose   = document.getElementById('ownerClose');
-const pinGate      = document.getElementById('pinGate');
-const panelContent = document.getElementById('panelContent');
-const pinInput     = document.getElementById('pinInput');
-const btnPin       = document.getElementById('btnPin');
-const pinError     = document.getElementById('pinError');
-
-/* --- Secret trigger 1: click logo 5 lần trong 3 giây --- */
-let logoClicks = 0;
-let logoTimer  = null;
-document.querySelector('.logo-wrap').addEventListener('click', e => {
-  e.stopPropagation();
-  logoClicks++;
-  if(logoClicks === 1){
-    logoTimer = setTimeout(()=>{ logoClicks = 0; }, 3000);
-  }
-  if(logoClicks >= 5){
-    logoClicks = 0;
-    clearTimeout(logoTimer);
-    showOwnerButton();
-  }
-});
-
-/* --- Secret trigger 2: Ctrl + Shift + F12 --- */
-document.addEventListener('keydown', e => {
-  if(e.ctrlKey && e.shiftKey && e.key === 'F12'){
-    e.preventDefault();
-    showOwnerButton();
-  }
-});
-
-function showOwnerButton(){
-  ownerToggle.classList.add('visible');
-  // auto-hide nút sau 15 giây nếu không click
-  clearTimeout(ownerToggle._hideTimer);
-  ownerToggle._hideTimer = setTimeout(()=>{
-    if(!ownerOverlay.classList.contains('show')){
-      ownerToggle.classList.remove('visible');
-    }
-  }, 15000);
-}
-
-ownerToggle.addEventListener('click',()=>{
-  clearTimeout(ownerToggle._hideTimer);
-  ownerOverlay.classList.add('show');
-});
-ownerClose.addEventListener('click',closePanel);
-
-/* Click bên ngoài sidebar để đóng */
-document.addEventListener('click', e => {
-  if(ownerOverlay.classList.contains('show') &&
-     !ownerOverlay.contains(e.target) &&
-     e.target !== ownerToggle){
-    closePanel();
-  }
-});
-
-function closePanel(){
-  ownerOverlay.classList.remove('show');
-  ownerToggle.classList.remove('visible');   // ẩn nút Admin luôn
-  pinGate.style.display='block';
-  panelContent.style.display='none';
-  pinInput.value='';
-  pinError.style.display='none';
-}
-
-btnPin.addEventListener('click',checkPin);
-pinInput.addEventListener('keydown',e=>{if(e.key==='Enter')checkPin()});
-
-function checkPin(){
-  if(pinInput.value===OWNER_PIN){
-    pinGate.style.display='none';
-    panelContent.style.display='block';
-    populateOwnerPanel();
-  } else {
-    pinError.style.display='block';
-    pinInput.value='';
-    pinInput.focus();
-  }
-}
-
-function populateOwnerPanel(){
-  // theme select + live preview
-  const ts = document.getElementById('ownerTheme');
-  ts.innerHTML='';
-  Object.keys(THEMES).forEach(name=>{
-    const o=document.createElement('option');o.value=name;o.textContent=name;
-    if(name===state.theme)o.selected=true;
-    ts.appendChild(o);
-  });
-  ts.addEventListener('change',()=>{ setTheme(ts.value); livePreview(); });
-
-  // dice count
-  document.getElementById('ownerDiceCount').value = state.diceCount;
-
-  // mode + live preview
-  const modeSelect = document.getElementById('ownerMode');
-  modeSelect.value = state.mode;
-  modeSelect.addEventListener('change',()=>{
-    state.mode = modeSelect.value;
-    btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
-    livePreview();
-  });
-
-  // sound
-  document.getElementById('ownerSound').value = state.sound;
-  // roll speed
-  const speedSel = document.getElementById('ownerRollSpeed');
-  if(speedSel) speedSel.value = (state.rollDuration || 1.0).toString();
-  // room ID
-  const roomInput = document.getElementById('ownerRoomId');
-  if(roomInput) roomInput.value = window.syncService ? window.syncService.roomId : 'dice8888';
-  // show history
-  const histCheck = document.getElementById('ownerShowHistory');
-  if(histCheck) histCheck.checked = (state.showHistory !== false);
-  const btnOwnerClear = document.getElementById('ownerBtnClearHistory');
-  if(btnOwnerClear){
-    btnOwnerClear.onclick = ()=>{
-      if(confirm('Bạn có chắc muốn xóa toàn bộ lịch sử lắc?')){
-        clearHistory();
-      }
-    };
-  }
-  // face colors
-  buildFaceColorGrid();
-
-  // Hiện preview ngay khi mở panel
-  livePreview();
-}
-
-function buildFaceColorGrid(){
-  const grid = document.getElementById('faceColorGrid');
-  grid.innerHTML = '';
-  const SIX_OPTS = [
-    { name: 'Red', hex: '#e74c3c' },
-    { name: 'Orange', hex: '#e67e22' },
-    { name: 'Yellow', hex: '#f1c40f' },
-    { name: 'Green', hex: '#2ecc71' },
-    { name: 'Blue', hex: '#3498db' },
-    { name: 'Purple', hex: '#9b59b6' }
-  ];
-
-  for(let i=0;i<6;i++){
-    const item = document.createElement('div');
-    item.className='face-color-item';
-    const dots = '⚀⚁⚂⚃⚄⚅'[i];
-    const cur = (state.faceColors[i] || SIX_OPTS[i].hex).toLowerCase();
-
-    let opts = SIX_OPTS.map(c => `
-      <option value="${c.hex}" ${c.hex.toLowerCase() === cur ? 'selected' : ''}>${c.name}</option>
-    `).join('');
-
-    item.innerHTML=`
-      <span>${dots} Face ${i+1}</span>
-      <select data-face="${i}" style="padding:4px;font-size:12px;font-weight:600">
-        ${opts}
-      </select>
-    `;
-
-    const sel = item.querySelector('select');
-    sel.addEventListener('change',()=>{
-      state.faceColors[i] = sel.value;
-      livePreview();
-    });
-    grid.appendChild(item);
-  }
-}
-
-/* ---- LIVE PREVIEW: hiện 6 mặt xúc xắc trên bàn khi đang chỉnh ---- */
-function livePreview(){
-  // Tự đặt 6 viên xúc xắc (mặt 1–6) lên bàn để thấy màu ngay
-  state.results = [1,2,3,4,5,6];
-  state._rotations = [0,0,0,0,0,0];
-  const savedCount = state.diceCount;
-  state.diceCount = 6;
-  drawStage();
-  state.diceCount = savedCount;
-  resultEl.innerHTML = '🔍 <b>Live Preview</b> – đang xem trước màu sắc';
-}
-
-document.getElementById('btnSave').addEventListener('click',()=>{
-  state.theme = document.getElementById('ownerTheme').value;
-  state.diceCount = parseInt(document.getElementById('ownerDiceCount').value);
-  state.mode = document.getElementById('ownerMode').value;
-  state.sound = document.getElementById('ownerSound').value;
-  const speedSel = document.getElementById('ownerRollSpeed');
-  if(speedSel) state.rollDuration = parseFloat(speedSel.value) || 1.0;
-
-  // face colors (6 colors only)
-  document.querySelectorAll('#faceColorGrid select').forEach(sel=>{
-    const i = parseInt(sel.dataset.face);
-    state.faceColors[i] = sel.value;
-  });
-
-  // room ID
-  const roomInput = document.getElementById('ownerRoomId');
-  if(roomInput && window.syncService){
-    window.syncService.setRoomId(roomInput.value.trim());
-  }
-
-  // show history
-  const histCheck = document.getElementById('ownerShowHistory');
-  if(histCheck){
-    state.showHistory = histCheck.checked;
-    const sec = document.getElementById('historySection');
-    if(sec) sec.style.display = state.showHistory ? 'block' : 'none';
-  }
-
-  // apply
-  setTheme(state.theme);
-  diceCountSel.value = state.diceCount;
-  btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
-  state.results = [];
-  resultEl.innerHTML = '🎲 Press <b>Go Again !</b> to roll';
-  drawStage();
-  saveState();
-  broadcastCloudState();
-  pushToServer();   // optional local server fallback
-  closePanel();
-});
-
-// Clear history button on stream page
-document.getElementById('btnClearHistory').addEventListener('click',()=>{
-  if(confirm('Bạn có muốn xóa toàn bộ lịch sử ra màu?')){
-    clearHistory();
-  }
-});
-
-/* =====================================================================
-   INIT
-   ===================================================================== */
-loadState();
-loadHistory();
-setTheme(state.theme);
-diceCountSel.value = state.diceCount;
-updateDicePillsUI();
-resizeCanvas();
-showResult();
-renderHistoryUI();
-
-/* =====================================================================
-   CLOUD SYNC (Serverless, No Machine Host Required)
-   ===================================================================== */
-function broadcastCloudState(){
-  if(!window.syncService) return;
-  window.syncService.send('sync_state', {
-    theme: state.theme,
-    diceCount: state.diceCount,
-    mode: state.mode,
-    sound: state.sound,
-    faceColors: state.faceColors,
-    rollDuration: state.rollDuration || 1.0,
-    showHistory: state.showHistory,
-    history: rollHistory,
-    targetResults: state.targetResults,
-    targetMode: state.targetMode
-  });
-}
-
-if(window.syncService){
-  window.syncService.init({
-    role: 'host',
-    onStatus: (status, text)=>{
-      const statusEl = document.getElementById('cloudStatusText');
-      if(statusEl){
-        statusEl.textContent = '● ' + text;
-        statusEl.style.color = (status === 'connected') ? '#28a745' : (status === 'connecting' ? '#ff7f00' : '#e74c3c');
-      }
-    },
-    onMessage: (action, payload)=>{
-      let needRedraw = false;
-
-      if(action === 'roll'){
-        if(payload.targetResults && Array.isArray(payload.targetResults)){
-          state.targetResults = [...payload.targetResults];
+        for (let i = 0; i < state.diceCount; i++) {
+          if (state.mode === 'color') {
+            // Check if there is a target predetermined color
+            let target = state.targetResults[i];
+            if (target) {
+              // Normalize color hex/name
+              const lower = target.toLowerCase();
+              if (COLOR_HEX_MAP[lower]) target = COLOR_HEX_MAP[lower];
+              newResults.push(target);
+            } else {
+              // Random color from the 6 allowed
+              const randChoice = SIX_COLORS[Math.floor(Math.random() * SIX_COLORS.length)].hex;
+              newResults.push(randChoice);
+            }
+          } else {
+            let targetNum = parseInt(state.targetResults[i]);
+            if (targetNum >= 1 && targetNum <= 6) {
+              newClassic.push(targetNum);
+            } else {
+              newClassic.push(Math.floor(Math.random() * 6) + 1);
+            }
+          }
         }
-        if(payload.targetMode){
-          state.targetMode = payload.targetMode;
-        }
-        rollDice(payload.rollDuration, payload.targetResults);
-        return;
-      }
 
-      if(action === 'set_targets'){
-        if(payload.targets && Array.isArray(payload.targets)){
-          state.targetResults = [...payload.targets];
-        }
-        if(payload.targetMode){
-          state.targetMode = payload.targetMode;
-        }
-        saveState();
-        return;
-      }
+        // Target used up: clear target results so subsequent rolls are naturally random
+        state.targetResults = [];
+        updateAdminTargetPickers();
 
-      if(action === 'change_roll_speed'){
-        if(payload.rollDuration){
-          state.rollDuration = parseFloat(payload.rollDuration) || 1.0;
-          saveState();
-        }
-        return;
-      }
+        state.diceResults = newResults;
+        state.classicResults = newClassic;
+        state.seedId = generateSeed();
+        rollIdDisplay.textContent = `ID: ${state.seedId}`;
 
-      if(action === 'change_theme'){
-        if(payload.theme && THEMES[payload.theme]){
-          setTheme(payload.theme);
-          needRedraw = true;
-        }
-      }
+        // Stop rolling animation and set final colors
+        diceElements.forEach(el => el.classList.remove('rolling'));
+        renderDiceStage();
+        diceAudio.playSettle();
 
-      if(action === 'change_dice_count'){
-        const cnt = parseInt(payload.diceCount);
-        if(cnt >= 1 && cnt <= 6){
-          setDiceCount(cnt);
-          return;
-        }
-      }
-
-      if(action === 'change_mode'){
-        if(payload.mode){
-          state.mode = payload.mode;
-          btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
-          needRedraw = true;
-        }
-      }
-
-      if(action === 'change_sound'){
-        if(payload.sound) state.sound = payload.sound;
-      }
-
-      if(action === 'change_face_color'){
-        const idx = parseInt(payload.faceIndex);
-        if(idx >= 0 && idx < 6 && payload.color){
-          state.faceColors[idx] = payload.color;
-          needRedraw = true;
-        }
-      }
-
-      if(action === 'change_all_face_colors' || action === 'sync_state'){
-        if(payload.faceColors && Array.isArray(payload.faceColors)){
-          state.faceColors = [...payload.faceColors];
-          needRedraw = true;
-        }
-        if(payload.theme && THEMES[payload.theme]){
-          state.theme = payload.theme;
-          setTheme(payload.theme);
-          needRedraw = true;
-        }
-        if(payload.diceCount){
-          state.diceCount = parseInt(payload.diceCount);
-          diceCountSel.value = state.diceCount;
-          needRedraw = true;
-        }
-        if(payload.mode){
-          state.mode = payload.mode;
-          btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
-          needRedraw = true;
-        }
-        if(payload.sound) state.sound = payload.sound;
-        if(payload.rollDuration) state.rollDuration = parseFloat(payload.rollDuration) || 1.0;
-      }
-
-      if(action === 'request_state'){
-        broadcastCloudState();
-      }
-
-      if(action === 'clear_history'){
-        rollHistory = [];
-        rollCounter = 0;
+        // Record history
+        const rollRecord = {
+          time: new Date().toLocaleTimeString(),
+          seed: state.seedId,
+          mode: state.mode,
+          results: state.mode === 'color' ? [...state.diceResults] : [...state.classicResults]
+        };
+        state.history.unshift(rollRecord);
         saveHistory();
-        renderHistoryUI();
+
+        state.isRolling = false;
+
+        // MQTT Broadcast roll completed
+        broadcastSyncState('roll_completed');
+
+      }, 750);
+    }
+
+    /* Broadcast State via MQTT */
+    function broadcastSyncState(actionName = 'sync_state') {
+      if (!window.syncService) return;
+      window.syncService.send(actionName, {
+        theme: state.theme,
+        diceCount: state.diceCount,
+        mode: state.mode,
+        seed: state.seedId,
+        diceResults: state.diceResults,
+        classicResults: state.classicResults,
+        targets: state.targetResults,
+        targetResults: state.targetResults,
+        hideAdminBtn: localStorage.getItem('od_hide_admin_btn') === '1',
+        history: state.history.slice(0, 20)
+      });
+    }
+
+    /* =========================================================
+       VERIFY HISTORY MODAL
+       ========================================================= */
+    function openVerifyHistory() {
+      // Calculate color stats
+      const counts = {};
+      SIX_COLORS.forEach(c => counts[c.hex] = 0);
+      let totalDiceSeen = 0;
+
+      state.history.forEach(rec => {
+        if (rec.mode === 'color' && Array.isArray(rec.results)) {
+          rec.results.forEach(h => {
+            if (counts[h] !== undefined) counts[h]++;
+            totalDiceSeen++;
+          });
+        }
+      });
+
+      totalRollsCount.textContent = state.history.length;
+
+      // Render stats grid
+      statsColorGrid.innerHTML = '';
+      SIX_COLORS.forEach(c => {
+        const count = counts[c.hex] || 0;
+        const pct = totalDiceSeen > 0 ? Math.round((count / totalDiceSeen) * 100) : 0;
+
+        const card = document.createElement('div');
+        card.className = 'stat-color-card';
+        card.innerHTML = `
+          <div class="stat-color-dot" style="background-color: ${c.hex};"></div>
+          <div class="stat-color-info">
+            <div class="stat-color-name">${c.name}</div>
+            <div class="stat-color-count">${count} (${pct}%)</div>
+          </div>
+        `;
+        statsColorGrid.appendChild(card);
+      });
+
+      // Render history table
+      historyTableBody.innerHTML = '';
+      state.history.slice(0, 30).forEach(rec => {
+        const tr = document.createElement('tr');
+        
+        let miniList = '<div class="mini-dice-list">';
+        if (rec.mode === 'color') {
+          rec.results.forEach(col => {
+            miniList += `<div class="mini-die-dot" style="background-color: ${col};"></div>`;
+          });
+        } else {
+          rec.results.forEach(num => {
+            miniList += `<span style="font-weight:700; padding:1px 5px; background:#e2e8f0; border-radius:4px;">${num}</span>`;
+          });
+        }
+        miniList += '</div>';
+
+        tr.innerHTML = `
+          <td style="white-space:nowrap;">${rec.time}</td>
+          <td style="font-family:monospace; font-weight:700;">${rec.seed}</td>
+          <td>${miniList}</td>
+        `;
+        historyTableBody.appendChild(tr);
+      });
+
+      verifyModal.classList.add('active');
+    }
+
+    btnVerifyHistory.addEventListener('click', openVerifyHistory);
+    closeVerifyModal.addEventListener('click', () => {
+      verifyModal.classList.remove('active');
+    });
+    verifyModal.addEventListener('click', (e) => {
+      if (e.target === verifyModal) verifyModal.classList.remove('active');
+    });
+
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('Xác nhận xóa sạch lịch sử roll?')) {
+        state.history = [];
+        saveHistory();
+        openVerifyHistory();
+        broadcastSyncState();
+      }
+    });
+
+    /* =========================================================
+       ADMIN PANEL & STEALTH TRIGGERS
+       ========================================================= */
+    let titleClickCount = 0;
+    let titleClickTimer = null;
+
+    centerCardTitle.addEventListener('click', () => {
+      titleClickCount++;
+      clearTimeout(titleClickTimer);
+      titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 1000);
+      if (titleClickCount >= 3) {
+        titleClickCount = 0;
+        openAdminModal();
+      }
+    });
+
+    rollIdDisplay.addEventListener('click', () => {
+      // Single click copies seed, double click opens admin
+      navigator.clipboard?.writeText(state.seedId);
+      const originalText = rollIdDisplay.textContent;
+      rollIdDisplay.textContent = 'COPIED!';
+      setTimeout(() => { rollIdDisplay.textContent = originalText; }, 800);
+    });
+
+    rollIdDisplay.addEventListener('dblclick', () => {
+      openAdminModal();
+    });
+
+    stealthGearBtn.addEventListener('click', openAdminModal);
+
+    // Keyboard Shortcuts: 'A', '~', 'Ctrl+M', 'F2', 'Space'
+    window.addEventListener('keydown', (e) => {
+      // Space to roll
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
+        e.preventDefault();
+        rollDice();
         return;
       }
 
-      if(needRedraw){
-        updateDicePillsUI();
-        drawStage();
-        showResult();
-        saveState();
+      // Admin panel shortcuts
+      if (e.key === 'a' || e.key === 'A' || e.key === '`' || e.key === '~' || e.key === 'F2' || (e.ctrlKey && e.key.toLowerCase() === 'm')) {
+        if (e.target.tagName !== 'INPUT') {
+          e.preventDefault();
+          openAdminModal();
+        }
+      }
+    });
+
+    function openAdminModal() {
+      adminPinError.style.display = 'none';
+      adminPinInput.value = '';
+      adminPinSection.style.display = 'block';
+      adminContentSection.style.display = 'none';
+      adminModal.classList.add('active');
+      adminPinInput.focus();
+    }
+
+    function checkAdminPin() {
+      const entered = adminPinInput.value.trim();
+      if (entered === getOwnerPin()) {
+        adminPinSection.style.display = 'none';
+        adminContentSection.style.display = 'block';
+        updateAdminTargetPickers();
+        updateAdminRoomDisplay();
+      } else {
+        adminPinError.style.display = 'block';
       }
     }
-  });
-}
 
-/* Optional local server sync fallback (nếu người dùng có bật local server) */
-function pushToServer(){
-  fetch('/api/settings',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      theme: state.theme,
-      diceCount: state.diceCount,
-      mode: state.mode,
-      sound: state.sound,
-      faceColors: state.faceColors,
-      rollCmd: 0
-    })
-  }).catch(()=>{});
-}
+    adminPinSubmitBtn.addEventListener('click', checkAdminPin);
+    adminPinInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkAdminPin();
+    });
 
-</script>
+    closeAdminModal.addEventListener('click', () => {
+      adminModal.classList.remove('active');
+    });
+    adminCloseBtn.addEventListener('click', () => {
+      adminModal.classList.remove('active');
+    });
+    adminModal.addEventListener('click', (e) => {
+      if (e.target === adminModal) adminModal.classList.remove('active');
+    });
+
+    /* Admin Target Result Pickers */
+    function updateAdminTargetPickers() {
+      diceTargetsContainer.innerHTML = '';
+      for (let i = 0; i < state.diceCount; i++) {
+        const box = document.createElement('div');
+        box.className = 'die-target-box';
+        
+        const label = document.createElement('div');
+        label.className = 'die-target-label';
+        label.textContent = `Xúc xắc #${i + 1}`;
+
+        const sel = document.createElement('select');
+        sel.className = 'die-target-select';
+        sel.dataset.index = i;
+
+        if (state.mode === 'color') {
+          sel.innerHTML = `<option value="">(Ngẫu nhiên)</option>` + 
+            SIX_COLORS.map(c => `<option value="${c.hex}" ${state.targetResults[i] === c.hex ? 'selected' : ''}>${c.name}</option>`).join('');
+        } else {
+          sel.innerHTML = `<option value="">(Ngẫu nhiên)</option>` + 
+            [1,2,3,4,5,6].map(n => `<option value="${n}" ${parseInt(state.targetResults[i]) === n ? 'selected' : ''}>${n}</option>`).join('');
+        }
+
+        sel.addEventListener('change', (e) => {
+          const val = e.target.value;
+          state.targetResults[i] = val || null;
+          broadcastSyncState();
+        });
+
+        box.appendChild(label);
+        box.appendChild(sel);
+        diceTargetsContainer.appendChild(box);
+      }
+    }
+
+    clearTargetsBtn.addEventListener('click', () => {
+      state.targetResults = [];
+      updateAdminTargetPickers();
+      broadcastSyncState();
+    });
+
+    /* Room ID & Remote Link */
+    function updateAdminRoomDisplay() {
+      const room = window.syncService ? window.syncService.roomId : 'dice8888';
+      adminRoomInput.value = room;
+      const remoteUrl = `${window.location.origin}${window.location.pathname.replace(/index\.html$/, '')}remote.html?room=${room}`;
+      remoteLinkDisplay.textContent = remoteUrl;
+    }
+
+    saveRoomBtn.addEventListener('click', () => {
+      const newRoom = adminRoomInput.value.trim().toLowerCase();
+      if (newRoom && window.syncService) {
+        window.syncService.setRoomId(newRoom);
+        updateAdminRoomDisplay();
+        alert(`Đã đổi mã phòng sang: ${newRoom}`);
+      }
+    });
+
+    copyRemoteLinkBtn.addEventListener('click', () => {
+      navigator.clipboard?.writeText(remoteLinkDisplay.textContent);
+      alert('Đã sao chép link remote vào clipboard!');
+    });
+
+    openRemoteTabBtn.addEventListener('click', () => {
+      window.open(remoteLinkDisplay.textContent, '_blank');
+    });
+
+    saveNewPinBtn.addEventListener('click', () => {
+      const p = newPinInput.value.trim();
+      if (p.length >= 4) {
+        setOwnerPin(p);
+        newPinInput.value = '';
+        alert(`Đã đổi mã PIN thành công sang: ${p}`);
+      } else {
+        alert('Mã PIN phải từ 4 ký tự trở lên!');
+      }
+    });
+
+    /* =========================================================
+       DROPDOWNS CONTROLS
+       ========================================================= */
+    diceCountSelect.addEventListener('change', (e) => {
+      const count = parseInt(e.target.value);
+      state.diceCount = count;
+      // Adjust target results size if needed
+      if (state.targetResults.length > count) {
+        state.targetResults = state.targetResults.slice(0, count);
+      }
+      renderDiceStage();
+      updateAdminTargetPickers();
+      broadcastSyncState();
+    });
+
+    diceModeSelect.addEventListener('change', (e) => {
+      state.mode = e.target.value;
+      renderDiceStage();
+      updateAdminTargetPickers();
+      broadcastSyncState();
+    });
+
+    function applyTheme(themeName) {
+      if (!themeName) return;
+      state.theme = themeName;
+      themeSelect.value = themeName;
+      if (themeName === 'SAB-GRN') {
+        document.documentElement.style.setProperty('--card-blue-top', '#27ae60');
+        document.documentElement.style.setProperty('--card-blue-bot', '#145a32');
+      } else if (themeName === 'CLASSIC') {
+        document.documentElement.style.setProperty('--card-blue-top', '#374151');
+        document.documentElement.style.setProperty('--card-blue-bot', '#111827');
+      } else {
+        // Default SAB-BLU
+        document.documentElement.style.setProperty('--card-blue-top', '#1aa6ff');
+        document.documentElement.style.setProperty('--card-blue-bot', '#0084ee');
+      }
+    }
+
+    themeSelect.addEventListener('change', (e) => {
+      applyTheme(e.target.value);
+      broadcastSyncState();
+    });
+
+    /* =========================================================
+       MQTT CLOUD SYNC SERVICE INTEGRATION
+       ========================================================= */
+    function initCloudSync() {
+      if (!window.syncService) return;
+
+      window.syncService.init({
+        role: 'host',
+        onStatus: (status, text) => {
+          cloudDot.className = 'cloud-dot ' + status;
+          cloudStatusText.textContent = status === 'connected' ? `Room: ${window.syncService.roomId}` : text;
+        },
+        onMessage: (action, payload) => {
+          if (action === 'request_state') {
+            broadcastSyncState();
+          } else if (action === 'set_targets') {
+            if (Array.isArray(payload.targets)) {
+              state.targetResults = payload.targets;
+              updateAdminTargetPickers();
+            }
+          } else if (action === 'change_dice_count') {
+            if (payload.count) {
+              const c = parseInt(payload.count);
+              if (c >= 1 && c <= 6) {
+                state.diceCount = c;
+                diceCountSelect.value = c.toString();
+                renderDiceStage();
+                updateAdminTargetPickers();
+              }
+            }
+          } else if (action === 'change_mode') {
+            if (payload.mode) {
+              state.mode = payload.mode;
+              diceModeSelect.value = state.mode;
+              renderDiceStage();
+              updateAdminTargetPickers();
+            }
+          } else if (action === 'change_theme') {
+            if (payload.theme) {
+              applyTheme(payload.theme);
+            }
+          } else if (action === 'roll') {
+            rollDice();
+          } else if (action === 'clear_history') {
+            state.history = [];
+            saveHistory();
+          } else if (action === 'toggle_admin_btn') {
+            const shouldHide = payload.hide !== undefined ? !!payload.hide : !(localStorage.getItem('od_hide_admin_btn') === '1');
+            applyHideAdminBtn(shouldHide);
+          }
+        }
+      });
+    }
+
+    /* =========================================================
+       INITIALIZATION
+       ========================================================= */
+    loadHistory();
+    renderDiceStage();
+    rollIdDisplay.textContent = `ID: ${state.seedId}`;
+    applyHideAdminBtn(localStorage.getItem('od_hide_admin_btn') === '1');
+    initCloudSync();
+
+  </script>
 </body>
 </html>

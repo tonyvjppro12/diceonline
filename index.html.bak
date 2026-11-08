@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4 Color Dice — Roll 6-Sided Color Dice | Online-Dice.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="mqtt.min.js"></script>
+<script>
+if(typeof mqtt === 'undefined'){
+  document.write('<script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"><\/script>');
+}
+</script>
+<script src="sync-service.js"></script>
+<style>
+/* ===== RESET & BASE (Chuẩn Online-Dice.com) ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Open Sans',Arial,Helvetica,sans-serif;
+  background:#f0f2f5;
+  color:#2c3e50;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* ===== NAVBAR (Trắng sạch, bóng nhẹ, sticky) ===== */
+.navbar{
+  width:100%;
+  background:#ffffff;
+  border-bottom:1px solid #e0e4e8;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 20px;
+  position:sticky;top:0;
+  z-index:100;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+  height:54px;
+}
+.navbar-inner{
+  width:100%;
+  max-width:960px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.logo-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.logo-dice{display:flex;gap:3px}
+.logo-die{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:11px;box-shadow:1px 1px 2px rgba(0,0,0,.2)}
+.logo-die.red{background:#e74c3c}
+.logo-die.green{background:#27ae60}
+.logo-die.yellow{background:#f1c40f;color:#333}
+.logo-text{font-size:18px;font-weight:800;color:#2c3e50;letter-spacing:-.4px}
+.logo-text span{color:#1e73be}
+
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-link{
+  padding:6px 12px;
+  font-size:12.5px;
+  font-weight:600;
+  color:#64748b;
+  text-decoration:none;
+  border-radius:6px;
+  transition:all .15s;
+}
+.nav-link:hover{color:#1e73be;background:#f1f5f9}
+.nav-link.active{color:#1e73be;background:#eff6ff;font-weight:700}
+@media(max-width:768px){
+  .nav-links{display:none}
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header{text-align:center;padding:18px 10px 6px;max-width:720px;width:100%}
+.page-title{font-size:26px;font-weight:700;color:#2c3e50;letter-spacing:-.3px;margin-bottom:3px}
+.page-subtitle{font-size:13px;color:#7f8c8d;font-weight:400}
+
+/* ===== QUICK DICE COUNT PILLS (Tab bar chuẩn online-dice.com) ===== */
+.dice-pills{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:5px;
+  padding:8px 10px 12px;
+  max-width:720px;width:100%;
+}
+.dice-pill{
+  padding:6px 14px;
+  border:1px solid #d0d5da;
+  border-radius:18px;
+  font-size:12.5px;
+  font-weight:600;
+  cursor:pointer;
+  background:#fff;
+  color:#555;
+  transition:all .18s;
+  text-decoration:none;
+  font-family:inherit;
+  letter-spacing:.1px;
+}
+.dice-pill:hover{border-color:#2980b9;color:#2980b9;background:#f0f7fd}
+.dice-pill.active{
+  background:#2980b9;
+  color:#fff;
+  border-color:#2980b9;
+  box-shadow:0 2px 8px rgba(41,128,185,.3);
+}
+
+/* ===== THEME BAR ===== */
+.theme-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;padding:4px 10px 10px;max-width:720px;width:100%}
+.theme-btn{
+  padding:4px 10px;
+  border:1px solid #d0d5da;
+  border-radius:14px;
+  font-size:11px;
+  cursor:pointer;
+  background:#fff;
+  color:#666;
+  transition:all .18s;
+  font-family:inherit;
+  font-weight:600;
+}
+.theme-btn:hover{border-color:#2980b9;color:#2980b9}
+.theme-btn.active{background:#2980b9;color:#fff;border-color:#2980b9}
+
+/* ===== DICE STAGE (CANVAS AREA) — Nền gradient bo tròn ===== */
+.stage-wrap{width:100%;max-width:720px;margin:0 auto;padding:0 12px}
+.stage{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/10;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:
+    0 6px 28px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+.stage canvas{width:100%;height:100%;display:block}
+
+/* ===== RESULT ===== */
+.result-display{
+  text-align:center;
+  padding:10px 10px 6px;
+  font-size:15px;
+  color:#2c3e50;
+  font-weight:600;
+  min-height:38px;
+  max-width:720px;width:100%;
+}
+.result-display .total{font-size:28px;color:#2980b9;font-weight:700}
+.color-badge-list{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:7px;margin-bottom:5px}
+.color-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:5px 16px;
+  border-radius:18px;
+  color:#fff;
+  font-size:13px;
+  font-weight:700;
+  box-shadow:0 2px 6px rgba(0,0,0,.22);
+  text-shadow:0 1px 2px rgba(0,0,0,.25);
+}
+.color-summary-text{font-size:13px;color:#666;font-weight:600;margin-top:3px}
+
+/* ===== CONTROLS ===== */
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:10px 10px 14px;
+  max-width:720px;width:100%;
+}
+.btn-roll{
+  padding:13px 42px;
+  border:none;
+  border-radius:8px;
+  font-size:17px;
+  font-weight:700;
+  cursor:pointer;
+  font-family:inherit;
+  color:#fff;
+  background:linear-gradient(135deg,#27ae60,#219a52);
+  box-shadow:0 4px 14px rgba(39,174,96,.35);
+  transition:all .18s;
+  letter-spacing:.3px;
+}
+.btn-roll:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 6px 18px rgba(39,174,96,.4)}
+.btn-roll:active{filter:brightness(.94);transform:translateY(0)}
+.btn-roll:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-mode{
+  padding:11px 20px;
+  border:none;
+  border-radius:8px;
+  font-size:13.5px;
+  font-weight:600;
+  cursor:pointer;
+  font-family:inherit;
+  color:#fff;
+  background:linear-gradient(135deg,#e67e22,#d35400);
+  box-shadow:0 3px 10px rgba(230,126,34,.3);
+  transition:all .18s;
+}
+.btn-mode:hover{filter:brightness(1.06)}
+.install-link{font-size:12px;color:#2980b9;text-decoration:none;border-bottom:1px dashed #2980b9;padding-bottom:1px}
+.install-link:hover{color:#1a5276}
+
+/* ===== DICE COUNT SELECTOR (hidden) ===== */
+.dice-count-bar{display:none;align-items:center;justify-content:center;gap:8px;padding:4px 0 10px}
+.dice-count-bar label{font-size:13px;color:#555;font-weight:600}
+.dice-count-bar select{padding:4px 8px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:13px}
+
+/* ===== ROLL HISTORY ===== */
+.history-section{width:100%;max-width:720px;margin:6px auto 28px;padding:0 12px}
+.history-card{
+  background:#ffffff;
+  border:1px solid #e0e4e8;
+  border-radius:12px;
+  box-shadow:0 2px 12px rgba(0,0,0,.05);
+  overflow:hidden;
+}
+.history-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 16px;
+  background:#f8f9fb;
+  border-bottom:1px solid #e8eaed;
+}
+.history-title{font-size:14px;font-weight:700;color:#2c3e50;display:flex;align-items:center;gap:7px}
+.history-count{font-size:11px;font-weight:700;padding:2px 9px;border-radius:12px;background:#e8f4fd;color:#2980b9}
+.btn-clear-hist{
+  background:#fff;
+  border:1px solid #ddd;
+  color:#888;
+  padding:4px 10px;
+  border-radius:5px;
+  font-size:11px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .15s;
+  font-family:inherit;
+}
+.btn-clear-hist:hover{background:#fef0f0;color:#e74c3c;border-color:#e74c3c}
+.history-stats-bar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:5px;
+  padding:7px 16px;
+  background:#f4f6f8;
+  border-bottom:1px solid #e8eaed;
+  font-size:11px;
+}
+.history-stat-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:2px 8px;
+  border-radius:12px;
+  color:#fff;
+  font-weight:700;
+  font-size:10.5px;
+  box-shadow:0 1px 3px rgba(0,0,0,.14);
+  text-shadow:0 1px 1px rgba(0,0,0,.18);
+}
+.history-list{max-height:240px;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:5px}
+.history-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:7px 10px;
+  background:#fcfdfe;
+  border:1px solid #edf0f5;
+  border-radius:8px;
+  font-size:12.5px;
+  transition:background .12s;
+}
+.history-item:hover{background:#f0f5fa}
+.history-item-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hist-idx{font-size:11px;font-weight:800;color:#8a99a8;min-width:30px}
+.hist-time{font-size:10.5px;color:#95a5a6;font-variant-numeric:tabular-nums}
+.hist-badges{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.hist-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:2px 8px;
+  border-radius:10px;
+  color:#fff;
+  font-size:11px;
+  font-weight:700;
+  box-shadow:0 1px 3px rgba(0,0,0,.14);
+  text-shadow:0 1px 1px rgba(0,0,0,.2);
+}
+.history-item-right{text-align:right}
+.hist-summary{font-size:11.5px;color:#666;font-weight:600}
+.history-empty{text-align:center;padding:22px 10px;color:#95a5a6;font-size:13px;font-style:italic}
+
+/* ===== OWNER PANEL ===== */
+.owner-toggle{
+  position:fixed;bottom:16px;right:16px;
+  height:40px;padding:0 15px;
+  border-radius:20px;
+  background:rgba(44,62,80,.85);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.15);
+  font-size:13px;font-weight:700;
+  cursor:pointer;
+  box-shadow:0 3px 12px rgba(0,0,0,.25);
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  z-index:200;
+  transition:all .2s;
+  font-family:inherit;opacity:1;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+}
+.owner-toggle:hover{background:rgba(41,128,185,.9);transform:scale(1.04)}
+.owner-toggle.hidden-mode{display:none!important}
+
+.nav-admin-btn{
+  position:absolute;right:14px;
+  padding:5px 12px;
+  background:rgba(44,62,80,.08);
+  color:#555;
+  border:1px solid #d5d9dd;
+  border-radius:6px;
+  font-size:11.5px;font-weight:700;
+  cursor:pointer;
+  transition:all .15s;
+  font-family:inherit;
+  display:flex;align-items:center;gap:4px;
+}
+.nav-admin-btn:hover{background:#2980b9;color:#fff;border-color:#2980b9}
+.nav-admin-btn.hidden-mode{display:none!important}
+
+/* Owner overlay: Backdrop + Sidebar */
+.owner-overlay{
+  display:none;
+  position:fixed;top:0;left:0;
+  width:100vw;height:100vh;
+  background:rgba(0,0,0,0.5);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  z-index:99999;
+  justify-content:flex-end;
+  align-items:stretch;
+}
+.owner-overlay.show{display:flex!important}
+
+.owner-panel{
+  background:#fff;
+  width:360px;max-width:92vw;height:100%;
+  padding:22px 18px;
+  overflow-y:auto;
+  box-shadow:-6px 0 30px rgba(0,0,0,.35);
+  position:relative;
+  animation:ownerPanelSlide .22s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes ownerPanelSlide{
+  from{transform:translateX(100%);opacity:0.6}
+  to{transform:translateX(0);opacity:1}
+}
+.owner-panel h2{font-size:15px;color:#2c3e50;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.owner-panel h2 .lock{font-size:18px}
+.owner-panel .section{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #eee}
+.owner-panel .section:last-child{border-bottom:none;margin-bottom:0}
+.owner-panel .section h3{font-size:13px;color:#2980b9;margin-bottom:7px;font-weight:700}
+.owner-panel label{display:block;font-size:12.5px;color:#555;margin-bottom:3px}
+.owner-panel input[type=text],
+.owner-panel input[type=password],
+.owner-panel input[type=color],
+.owner-panel select{width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:12.5px;margin-bottom:5px}
+.owner-panel input[type=color]{height:36px;padding:2px;cursor:pointer}
+.owner-panel .btn-save{
+  padding:9px 22px;
+  background:linear-gradient(135deg,#27ae60,#219a52);
+  color:#fff;border:none;border-radius:6px;
+  font-weight:700;cursor:pointer;
+  font-family:inherit;font-size:13px;
+  box-shadow:0 2px 8px rgba(39,174,96,.25);
+}
+.owner-panel .btn-save:hover{filter:brightness(1.08)}
+.owner-panel .btn-close{position:absolute;top:8px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;color:#999}
+.owner-panel .btn-close:hover{color:#333}
+.pin-gate{text-align:center;padding:18px 8px}
+.pin-gate input{
+  text-align:center;
+  letter-spacing:8px;
+  font-size:24px;font-weight:700;
+  max-width:180px;
+  margin:0 auto 14px;
+  padding:10px 14px;
+  border:2px solid #2980b9;
+  border-radius:8px;
+}
+.pin-gate .btn-pin{
+  padding:10px 34px;
+  background:linear-gradient(135deg,#2980b9,#2471a3);
+  color:#fff;border:none;
+  border-radius:6px;
+  font-weight:700;font-size:14px;
+  cursor:pointer;font-family:inherit;
+  box-shadow:0 3px 10px rgba(41,128,185,.3);
+}
+.pin-gate .btn-pin:hover{filter:brightness(1.06)}
+.pin-error{color:#e74c3c;font-size:12px;font-weight:600;margin-top:8px;display:none}
+
+/* face color grid */
+.face-color-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.face-color-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.face-color-item span{font-size:11.5px;font-weight:600;color:#555}
+.face-color-item input[type=color]{width:48px;height:32px}
+
+/* ===== THEME BAR WRAP ===== */
+.theme-bar-wrap{display:flex;align-items:center;justify-content:center;gap:8px;padding:4px 10px 10px;max-width:740px;width:100%;flex-wrap:wrap}
+.theme-bar-label{font-size:12px;font-weight:700;color:#7f8c8d;text-transform:uppercase;letter-spacing:.4px}
+
+/* ===== ABOUT / INFO SECTION (CHUẨN ONLINE-DICE.COM) ===== */
+.info-section{width:100%;max-width:720px;margin:12px auto 28px;padding:0 12px}
+.info-card{background:#ffffff;border:1px solid #e0e4e8;border-radius:12px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.info-card h2{font-size:17px;font-weight:700;color:#2c3e50;margin-bottom:8px;letter-spacing:-.2px}
+.info-card p{font-size:13px;color:#555;line-height:1.6;margin-bottom:14px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-top:14px}
+.info-box{background:#f8f9fb;border:1px solid #edf0f5;border-radius:8px;padding:12px 14px}
+.info-box h4{font-size:13px;font-weight:700;color:#2980b9;margin-bottom:4px}
+.info-box p{font-size:12px;color:#666;line-height:1.5;margin-bottom:0}
+
+/* ===== FOOTER LINKS ===== */
+.footer-links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;margin-bottom:8px;font-size:12px}
+.footer-links a{color:#64748b;text-decoration:none}
+.footer-links a:hover{color:#2980b9;text-decoration:underline}
+.footer-links span{color:#cbd5e1;font-size:11px}
+
+/* ===== FOOTER ===== */
+footer{
+  padding:22px 10px 20px;
+  text-align:center;
+  font-size:11.5px;
+  color:#94a3b8;
+  margin-top:auto;
+  border-top:1px solid #e8eaed;
+  width:100%;
+  background:#fafbfc;
+}
+footer a{color:#2980b9;text-decoration:none}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:500px){
+  .navbar{padding:6px 12px}
+  .logo-text{font-size:15px}
+  .logo-die{width:20px;height:20px;font-size:10px}
+  .page-title{font-size:22px}
+  .btn-roll{padding:11px 28px;font-size:15px}
+  .btn-mode{padding:9px 16px;font-size:12.5px}
+  .dice-pill{padding:5px 10px;font-size:11.5px}
+  .stage{aspect-ratio:4/3}
+  .info-card{padding:16px 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <div class="logo-wrap" id="logoWrap" title="Online-Dice">
+      <div class="logo-dice">
+        <div class="logo-die red">⚄</div>
+        <div class="logo-die green">⚂</div>
+        <div class="logo-die yellow">⚅</div>
+      </div>
+      <div class="logo-text">ONLINE-DICE<span>.COM</span></div>
+    </div>
+    <div class="nav-links">
+      <a href="#" class="nav-link" onclick="return false">Standard Dice</a>
+      <a href="#" class="nav-link active" onclick="return false">Color Dice</a>
+      <a href="#" class="nav-link" onclick="return false">Perya Color</a>
+      <a href="#" class="nav-link" onclick="return false">D&D Dice</a>
+    </div>
+    <button class="nav-admin-btn" id="navAdminBtn" title="Mở cài đặt Admin">⚙ Admin</button>
+  </div>
+</nav>
+
+<!-- ========== PAGE HEADER (ONLINE-DICE.COM) ========== -->
+<div class="page-header">
+  <h1 class="page-title" id="pageTitle">4 Color Dice</h1>
+  <p class="page-subtitle" id="pageSubtitle">Roll 6-Sided Color Dice</p>
+</div>
+
+<!-- ========== QUICK DICE COUNT PILLS ========== -->
+<div class="dice-pills" id="dicePills">
+  <button class="dice-pill" data-count="1">1 Color Die</button>
+  <button class="dice-pill" data-count="2">2 Color Dice</button>
+  <button class="dice-pill" data-count="3">3 Color Dice</button>
+  <button class="dice-pill active" data-count="4">4 Color Dice</button>
+  <button class="dice-pill" data-count="5">5 Color Dice</button>
+  <button class="dice-pill" data-count="6">6 Color Dice</button>
+</div>
+
+<!-- ========== THEME BAR ========== -->
+<div class="theme-bar-wrap">
+  <span class="theme-bar-label">Select Theme:</span>
+  <div class="theme-bar" id="themeBar"></div>
+</div>
+
+<!-- ========== DICE COUNT (HIDDEN SELECT FALLBACK) ========== -->
+<div class="dice-count-bar">
+  <label for="diceCount">Number of Dice:</label>
+  <select id="diceCount">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4" selected>4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+  </select>
+</div>
+
+<!-- ========== CANVAS STAGE ========== -->
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <canvas id="diceCanvas"></canvas>
+  </div>
+</div>
+
+<!-- ========== RESULT ========== -->
+<div class="result-display" id="resultDisplay">🎲 Press <b>Go Again !</b> to roll</div>
+
+<!-- ========== CONTROLS ========== -->
+<div class="controls">
+  <button class="btn-roll" id="btnRoll">🎲 Go Again !</button>
+  <button class="btn-mode" id="btnMode">🎨 Color Dice</button>
+  <a href="#" class="install-link" onclick="return false">📲 Install app – Fewer ads, instant access.</a>
+</div>
+
+<!-- ========== ROLL HISTORY SECTION ========== -->
+<div class="history-section" id="historySection">
+  <div class="history-card">
+    <div class="history-header">
+      <div class="history-title">
+        <span>📜</span>
+        <span>Roll History</span>
+        <span class="history-count" id="historyCount">0 rolls</span>
+      </div>
+      <div class="history-actions">
+        <button class="btn-clear-hist" id="btnClearHistory" title="Clear history">🗑 Clear</button>
+      </div>
+    </div>
+    <div class="history-stats-bar" id="historyStatsBar"></div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">No rolls yet. Press <b>Go Again !</b> to roll the dice.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OWNER BUTTON ========== -->
+<button class="owner-toggle" id="ownerToggle" title="Owner Panel">⚙ Admin</button>
+
+<!-- ========== OWNER OVERLAY ========== -->
+<div class="owner-overlay" id="ownerOverlay">
+  <div class="owner-panel" style="position:relative">
+    <button class="btn-close" id="ownerClose">&times;</button>
+
+    <!-- PIN GATE -->
+    <div id="pinGate" class="pin-gate">
+      <h2><span class="lock">🔒</span> Owner Panel</h2>
+      <p style="font-size:13px;color:#777;margin-bottom:14px">Enter PIN to access settings</p>
+      <input type="password" id="pinInput" maxlength="4" placeholder="••••">
+      <br>
+      <button class="btn-pin" id="btnPin">Unlock</button>
+      <div class="pin-error" id="pinError">❌ Wrong PIN. Try again.</div>
+    </div>
+
+    <!-- PANEL CONTENT (hidden until PIN ok) -->
+    <div id="panelContent" style="display:none">
+      <h2><span class="lock">🔓</span> Owner Panel</h2>
+
+      <!-- 1. Theme -->
+      <div class="section">
+        <h3>1. Default Theme</h3>
+        <select id="ownerTheme"></select>
+      </div>
+
+      <!-- 2. Default dice count -->
+      <div class="section">
+        <h3>2. Default Dice Count</h3>
+        <select id="ownerDiceCount">
+          <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        </select>
+      </div>
+
+      <!-- 3. Default mode -->
+      <div class="section">
+        <h3>3. Default Mode</h3>
+        <select id="ownerMode">
+          <option value="classic">6-sided Dice</option>
+          <option value="color">Color Dice</option>
+        </select>
+      </div>
+
+      <!-- 4. Sound -->
+      <div class="section">
+        <h3>4. Roll Sound</h3>
+        <select id="ownerSound">
+          <option value="on">On</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
+
+      <!-- 4b. Roll Speed -->
+      <div class="section">
+        <h3>⚡ Tốc độ lăn xúc xắc</h3>
+        <select id="ownerRollSpeed">
+          <option value="0.4">⚡ Cực nhanh (0.4s)</option>
+          <option value="0.7">🚀 Nhanh (0.7s)</option>
+          <option value="1.0" selected>⏱️ Chuẩn (1.0s)</option>
+          <option value="1.8">⏳ Chậm (1.8s)</option>
+          <option value="2.8">🎭 Siêu chậm / Hồi hộp (2.8s)</option>
+        </select>
+      </div>
+
+      <!-- 5. 6 Dice Colors -->
+      <div class="section">
+        <h3>5. 6 Dice Colors (Red, Orange, Yellow, Green, Blue, Purple)</h3>
+        <p style="font-size:12px;color:#888;margin-bottom:8px">Chọn màu cho từng mặt từ 1–6.</p>
+        <div class="face-color-grid" id="faceColorGrid"></div>
+      </div>
+
+      <!-- 6. Cloud Sync (Không cần máy chủ) -->
+      <div class="section">
+        <h3>6. Mã phòng & Mật khẩu PIN 🔒</h3>
+        <label>Mã phòng bí mật (Room ID):</label>
+        <input type="text" id="ownerRoomId" value="dice8888" placeholder="dice8888" style="font-weight:700;letter-spacing:1px">
+        <p style="font-size:11.5px;color:#666;margin:4px 0 6px">Trạng thái Cloud: <b id="cloudStatusText" style="color:#28a745">● Đang kết nối...</b></p>
+        
+        <label style="margin-top:8px">Đổi Mật khẩu PIN mở khóa:</label>
+        <div style="display:flex;gap:6px;margin-bottom:4px">
+          <input type="text" id="ownerPinChange" placeholder="Nhập PIN mới (vd: 1234, 9999)" style="flex:1;font-weight:700;margin-bottom:0">
+          <button type="button" id="btnSaveNewPin" style="padding:6px 12px;background:#1e73be;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Lưu PIN</button>
+        </div>
+        <div id="pinChangeNotice" style="font-size:11.5px;color:#28a745;display:none;margin-top:2px;margin-bottom:6px">✅ Đã lưu mã PIN mới thành công!</div>
+
+        <p style="font-size:11px;color:#777;margin-top:6px">Mở <b>remote.html</b> trên điện thoại với cùng mã phòng này để điều khiển tức thì từ xa mà không cần bật server!</p>
+      </div>
+
+      <!-- 7. Roll History Settings -->
+      <div class="section">
+        <h3>7. Lịch sử ra màu (Roll History) 📜</h3>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:13px">
+          <input type="checkbox" id="ownerShowHistory" checked style="width:16px;height:16px">
+          Hiển thị bảng Lịch sử trên màn hình Live
+        </label>
+        <div style="margin-top:10px">
+          <button type="button" id="ownerBtnClearHistory" style="padding:6px 14px;font-size:12px;background:#e74c3c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600">🗑 Xóa toàn bộ lịch sử</button>
+        </div>
+      </div>
+
+      <!-- 8. Chế độ hiển thị nút Admin -->
+      <div class="section">
+        <h3>8. Chế độ hiển thị nút Admin ⚙</h3>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:13px">
+          <input type="checkbox" id="ownerHideAdminBtns" style="width:16px;height:16px">
+          Ẩn toàn bộ nút Admin trên trang để Livestream (Chế độ bí mật)
+        </label>
+        <p style="font-size:11px;color:#777;margin-top:4px">Nếu bật, các nút Admin sẽ ẩn đi để khán giả xem live không thấy. Bạn có thể mở lại bằng phím <b>Ctrl + Shift + F12</b> hoặc thêm <b>?admin=1</b> vào link web.</p>
+      </div>
+
+      <button class="btn-save" id="btnSave">💾 Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ABOUT & INFO SECTION (Online-Dice.com) ========== -->
+<div class="info-section">
+  <div class="info-card">
+    <h2>About 4 Color Dice Roller</h2>
+    <p>This virtual <b>4 Color Dice</b> simulator lets you roll 6-sided color dice online for board games, classroom activities, decision-making, and probability games. Each die features 6 distinct, vibrant colors instead of standard numbers: <b>Red</b>, <b>Orange</b>, <b>Yellow</b>, <b>Green</b>, <b>Blue</b>, and <b>Purple</b>.</p>
+    <div class="info-grid">
+      <div class="info-box">
+        <h4>🎲 6-Sided Color Faces</h4>
+        <p>Each die has six equal faces: Red, Orange, Yellow, Green, Blue, and Purple, each with an exact 1/6 (16.67%) chance.</p>
+      </div>
+      <div class="info-box">
+        <h4>🎨 15 Table Themes</h4>
+        <p>Choose between Blue, Green, Red, Pink, B&W, Heaven, Hell, Underwater, or unlockable Gold, Silver, and Bronze themes.</p>
+      </div>
+      <div class="info-box">
+        <h4>⚡ Keyboard Shortcut</h4>
+        <p>Press the <b>Spacebar</b> on your keyboard at any time to instantly roll the dice again without using your mouse.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  <div class="footer-links">
+    <a href="#" onclick="return false">Home</a>
+    <span>&bull;</span>
+    <a href="#" onclick="return false">Color Dice</a>
+    <span>&bull;</span>
+    <a href="#" onclick="return false">6-Sided Dice</a>
+    <span>&bull;</span>
+    <a href="#" onclick="return false">Privacy Policy</a>
+    <span>&bull;</span>
+    <a href="#" onclick="return false">Terms of Service</a>
+  </div>
+  <p style="margin-top:4px;color:#94a3b8">Online-Dice.com &copy; 2026 &mdash; Free Virtual Color Dice Simulator.</p>
+  <div style="margin-top:6px">
+    <button id="footerAdminBtn" style="background:transparent;border:none;color:#94a3b8;font-size:11.5px;cursor:pointer;text-decoration:underline">⚙ Admin Settings</button>
+  </div>
+</footer>
+
+<!-- ===================================================================== -->
+<script>
+/* =====================================================================
+   CONFIG & STATE
+   ===================================================================== */
+function getOwnerPin(){
+  return localStorage.getItem('od_owner_pin') || '8888';
+}
+function setOwnerPin(pin){
+  if(pin && pin.trim()){
+    localStorage.setItem('od_owner_pin', pin.trim());
+    return true;
+  }
+  return false;
+}
+
+const THEMES = {
+  'Blue':       {g1:'#2980b9',g2:'#154360'},
+  'Sab-Blue':   {g1:'#5dade2',g2:'#1a5276'},
+  'Green':      {g1:'#27ae60',g2:'#0e3d20'},
+  'Sab-Green':  {g1:'#58d68d',g2:'#145a32'},
+  'Red':        {g1:'#e74c3c',g2:'#641e16'},
+  'Sab-Red':    {g1:'#ec7063',g2:'#78281f'},
+  'Pink':       {g1:'#e91e90',g2:'#6c1248'},
+  'B&W':        {g1:'#bdc3c7',g2:'#2c3e50'},
+  'Sab-Black':  {g1:'#555555',g2:'#111111'},
+  'Heaven':     {g1:'#87ceeb',g2:'#f0e68c'},
+  'Hell':       {g1:'#8b0000',g2:'#1a0000'},
+  'Underwater': {g1:'#006994',g2:'#00293d'},
+  'Bronze':     {g1:'#cd7f32',g2:'#4a2c0a'},
+  'Silver':     {g1:'#c0c0c0',g2:'#404040'},
+  'Gold':       {g1:'#ffd700',g2:'#6b4f00'}
+};
+
+const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
+const COLOR_DICE_FACES    = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
+const COLOR_NAMES         = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple'];
+
+const HEX_TO_NAME = {
+  '#e74c3c': 'Red',
+  '#e67e22': 'Orange',
+  '#f1c40f': 'Yellow',
+  '#2ecc71': 'Green',
+  '#3498db': 'Blue',
+  '#9b59b6': 'Purple'
+};
+
+function getColorName(hex, fallbackIndex){
+  if(hex && HEX_TO_NAME[hex.toLowerCase()]){
+    return HEX_TO_NAME[hex.toLowerCase()];
+  }
+  return COLOR_NAMES[fallbackIndex] || 'Color';
+}
+
+function getFaceValueForColor(colorOrName, fallbackIdx){
+  if(!colorOrName) return Math.floor(Math.random()*6)+1;
+  const str = String(colorOrName).toLowerCase().trim();
+  const num = parseInt(str);
+  if(!isNaN(num) && num >= 1 && num <= 6) return num;
+  const nameIdx = COLOR_NAMES.findIndex(n => n.toLowerCase() === str);
+  if(nameIdx !== -1) return nameIdx + 1;
+  if(HEX_TO_NAME[str]){
+    const n = HEX_TO_NAME[str].toLowerCase();
+    const idx = COLOR_NAMES.findIndex(item => item.toLowerCase() === n);
+    if(idx !== -1) return idx + 1;
+  }
+  const faceIdx = state.faceColors.findIndex(c => c.toLowerCase() === str);
+  if(faceIdx !== -1) return faceIdx + 1;
+
+  return (fallbackIdx % 6) + 1;
+}
+
+let rollCounter = 0;
+let rollHistory = [];
+
+let state = {
+  theme:        'Blue',
+  diceCount:    4,           // 4 Color Dice (Chuẩn online-dice.com/roll-color-dice/4/)
+  mode:         'color',      // Chế độ Color Dice
+  sound:        'on',
+  faceColors:   [...DEFAULT_FACE_COLORS],
+  rollDuration: 1.0,         // thời gian lăn tính bằng giây (0.3s - 3.5s)
+  showHistory:  true,        // hiển thị bảng lịch sử
+  hideAdminBtns:false,       // ẩn nút Admin cho livestream stealth mode
+  targetMode:   'target',     // 'target' (kết quả cài trước từ remote) hoặc 'random'
+  targetResults:[1, 2, 4, 5], // Kết quả cài sẵn: 1=Red, 2=Orange, 4=Green, 5=Blue
+  rolling:      false,
+  results:      [1, 2, 4, 5] // Hiển thị sẵn 4 xúc xắc 4 màu trên bàn
+};
+
+/* helpers */
+function saveState(){
+  try{
+    localStorage.setItem('od_state',JSON.stringify({
+      theme: state.theme,
+      diceCount: state.diceCount,
+      mode: state.mode,
+      sound: state.sound,
+      faceColors: state.faceColors,
+      rollDuration: state.rollDuration || 1.0,
+      showHistory: state.showHistory !== undefined ? state.showHistory : true,
+      hideAdminBtns: state.hideAdminBtns === true,
+      targetMode: state.targetMode || 'target',
+      targetResults: state.targetResults || [1, 2, 4, 5]
+    }));
+  }catch(e){}
+}
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem('od_state'));
+    if(s){
+      state.theme = s.theme || 'Blue';
+      state.diceCount = s.diceCount !== undefined ? s.diceCount : 4;
+      state.mode = s.mode || 'color';
+      state.sound = s.sound || 'on';
+      state.faceColors = s.faceColors || [...DEFAULT_FACE_COLORS];
+      state.rollDuration = parseFloat(s.rollDuration) || 1.0;
+      state.showHistory = s.showHistory !== undefined ? s.showHistory : true;
+      state.hideAdminBtns = (s.hideAdminBtns === true);
+      state.targetMode = s.targetMode || 'target';
+      state.targetResults = (s.targetResults && Array.isArray(s.targetResults)) ? s.targetResults : [1, 2, 4, 5];
+    }
+  }catch(e){}
+}
+
+function loadHistory(){
+  try {
+    const raw = localStorage.getItem('od_history');
+    if(raw){
+      rollHistory = JSON.parse(raw) || [];
+      if(rollHistory.length > 0){
+        rollCounter = rollHistory[0].id || rollHistory.length;
+      }
+    }
+  }catch(e){}
+}
+
+function saveHistory(){
+  try {
+    localStorage.setItem('od_history', JSON.stringify(rollHistory));
+  }catch(e){}
+}
+
+function addRollToHistory(results){
+  rollCounter++;
+  const d = new Date();
+  const timeStr = [
+    String(d.getHours()).padStart(2,'0'),
+    String(d.getMinutes()).padStart(2,'0'),
+    String(d.getSeconds()).padStart(2,'0')
+  ].join(':');
+
+  let record = {
+    id: rollCounter,
+    time: timeStr,
+    mode: state.mode,
+    diceCount: state.diceCount,
+    results: [...results]
+  };
+
+  if(state.mode === 'color'){
+    const colors = results.map(v => state.faceColors[(v-1)%6] || DEFAULT_FACE_COLORS[(v-1)%6]);
+    const names = colors.map((col, idx) => getColorName(col, (results[idx]-1)%6));
+    const counts = {};
+    names.forEach(name => { counts[name] = (counts[name] || 0) + 1; });
+    const summary = Object.entries(counts).map(([name, c]) => `${c} ${name}`).join(', ');
+
+    record.colors = colors;
+    record.names = names;
+    record.summary = summary;
+  } else {
+    const total = results.reduce((a,b)=>a+b, 0);
+    record.total = total;
+    record.summary = `Total: ${total}`;
+  }
+
+  rollHistory.unshift(record);
+  if(rollHistory.length > 60) rollHistory.pop();
+  saveHistory();
+  renderHistoryUI();
+
+  if(window.syncService){
+    window.syncService.send('roll_result', record);
+  }
+}
+
+function clearHistory(){
+  rollHistory = [];
+  rollCounter = 0;
+  saveHistory();
+  renderHistoryUI();
+  if(window.syncService){
+    window.syncService.send('clear_history', {});
+  }
+}
+
+function renderHistoryUI(){
+  const listEl = document.getElementById('historyList');
+  const countEl = document.getElementById('historyCount');
+  const statsEl = document.getElementById('historyStatsBar');
+  const sectionEl = document.getElementById('historySection');
+  if(!listEl) return;
+
+  if(sectionEl){
+    sectionEl.style.display = state.showHistory ? 'block' : 'none';
+  }
+
+  countEl.textContent = `${rollHistory.length} ${rollHistory.length === 1 ? 'roll' : 'rolls'}`;
+
+  // Thống kê 6 màu
+  const colorCounts = { 'Red': 0, 'Orange': 0, 'Yellow': 0, 'Green': 0, 'Blue': 0, 'Purple': 0 };
+  rollHistory.forEach(item => {
+    if(item.names && Array.isArray(item.names)){
+      item.names.forEach(name => {
+        if(colorCounts[name] !== undefined) colorCounts[name]++;
+      });
+    }
+  });
+
+  if(statsEl){
+    const statPills = [
+      { name: 'Red', hex: '#e74c3c' },
+      { name: 'Orange', hex: '#e67e22' },
+      { name: 'Yellow', hex: '#f1c40f' },
+      { name: 'Green', hex: '#2ecc71' },
+      { name: 'Blue', hex: '#3498db' },
+      { name: 'Purple', hex: '#9b59b6' }
+    ].map(c => `
+      <span class="history-stat-pill" style="background:${c.hex};${c.name==='Yellow'?'color:#222;text-shadow:none':''}">
+        ${c.name}: <b>${colorCounts[c.name]}</b>
+      </span>
+    `).join(' ');
+
+    statsEl.innerHTML = `<span style="font-weight:700;color:#555;margin-right:2px">📊 Stats:</span> ${statPills}`;
+  }
+
+  if(rollHistory.length === 0){
+    listEl.innerHTML = '<div class="history-empty">No rolls yet. Press <b>Go Again !</b> to roll the dice.</div>';
+    return;
+  }
+
+  listEl.innerHTML = rollHistory.map(item => {
+    let badgesHtml = '';
+    if(item.mode === 'color' && item.colors){
+      badgesHtml = item.colors.map((col, idx) => {
+        const name = item.names?.[idx] || 'Color';
+        const isYellow = name === 'Yellow' || col.toLowerCase() === '#f1c40f';
+        return `<span class="hist-chip" style="background:${col};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
+      }).join(' ');
+    } else if(item.results){
+      badgesHtml = item.results.map(v => `<span class="hist-chip" style="background:#2c3e50">${'⚀⚁⚂⚃⚄⚅'[v-1] || v} ${v}</span>`).join(' ');
+    }
+
+    return `
+      <div class="history-item">
+        <div class="history-item-left">
+          <span class="hist-idx">#${item.id}</span>
+          <span class="hist-time">${item.time}</span>
+          <div class="hist-badges">${badgesHtml}</div>
+        </div>
+        <div class="history-item-right">
+          <span class="hist-summary">${item.summary || ''}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* =====================================================================
+   DOM REFS
+   ===================================================================== */
+const canvas   = document.getElementById('diceCanvas');
+const ctx      = canvas.getContext('2d');
+const stageEl  = document.getElementById('stage');
+const btnRoll  = document.getElementById('btnRoll');
+const btnMode  = document.getElementById('btnMode');
+const resultEl = document.getElementById('resultDisplay');
+const diceCountSel = document.getElementById('diceCount');
+
+/* =====================================================================
+   THEME BAR
+   ===================================================================== */
+(function buildThemeBar(){
+  const bar = document.getElementById('themeBar');
+  Object.keys(THEMES).forEach(name=>{
+    const b = document.createElement('button');
+    b.className = 'theme-btn';
+    b.textContent = name;
+    b.dataset.theme = name;
+    b.onclick = ()=> setTheme(name);
+    bar.appendChild(b);
+  });
+})();
+
+function setTheme(name){
+  state.theme = name;
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===name));
+  drawStage();
+  saveState();
+}
+
+/* =====================================================================
+   CANVAS SIZING
+   ===================================================================== */
+function resizeCanvas(){
+  const rect = stageEl.getBoundingClientRect();
+  canvas.width  = rect.width  * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  drawStage();
+}
+window.addEventListener('resize', resizeCanvas);
+
+/* =====================================================================
+   DRAW HELPERS
+   ===================================================================== */
+function drawBackground(w,h){
+  const t = THEMES[state.theme] || THEMES['Blue'];
+  // Radial gradient nền bàn (giống "felt" online-dice.com)
+  const grad = ctx.createRadialGradient(w/2, h*0.45, Math.min(w,h)*0.15, w/2, h*0.5, Math.max(w,h)*0.8);
+  grad.addColorStop(0, t.g1);
+  grad.addColorStop(1, t.g2);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,w,h);
+
+  // Subtle vignette (tối góc, sáng tâm)
+  const vig = ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.2, w/2,h/2,Math.max(w,h)*0.72);
+  vig.addColorStop(0,'rgba(255,255,255,0.04)');
+  vig.addColorStop(0.5,'rgba(0,0,0,0)');
+  vig.addColorStop(1,'rgba(0,0,0,0.32)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0,0,w,h);
+
+  // Subtle noise texture
+  ctx.fillStyle = 'rgba(0,0,0,0.02)';
+  for(let i=0;i<8;i++){
+    const x = Math.random()*w, y = Math.random()*h;
+    const sz = Math.random()*w*0.4 + w*0.1;
+    ctx.beginPath();
+    ctx.arc(x,y,sz,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+
+/* Draw a single die at (cx,cy) with given size and face value 1-6 */
+function drawDie(cx, cy, size, value, rotation, isColor){
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+
+  const half = size / 2;
+  const r = size * 0.17; // Rounded smooth corners chuẩn online-dice.com
+
+  // Drop shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.34)';
+  ctx.shadowBlur  = size * 0.22;
+  ctx.shadowOffsetX = size * 0.035;
+  ctx.shadowOffsetY = size * 0.065;
+
+  // Dice body
+  if(isColor){
+    ctx.fillStyle = state.faceColors[(value-1) % 6] || COLOR_DICE_FACES[(value-1) % 6];
+  } else {
+    ctx.fillStyle = '#ffffff';
+  }
+  ctx.beginPath();
+  ctx.roundRect(-half, -half, size, size, r);
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+
+  // Subtle border outline
+  ctx.strokeStyle = isColor ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.12)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // 3D Bevel & Glossy lighting
+  const ig = ctx.createLinearGradient(-half, -half, half, half);
+  ig.addColorStop(0, 'rgba(255,255,255,0.36)');
+  ig.addColorStop(0.35, 'rgba(255,255,255,0.06)');
+  ig.addColorStop(0.7, 'rgba(0,0,0,0.02)');
+  ig.addColorStop(1, 'rgba(0,0,0,0.16)');
+  ctx.fillStyle = ig;
+  ctx.beginPath();
+  ctx.roundRect(-half, -half, size, size, r);
+  ctx.fill();
+
+  // Pips / Center dot
+  if(isColor){
+    // White circular center pip
+    const pipR = size * 0.105;
+    ctx.beginPath();
+    ctx.arc(0, 0, pipR, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, pipR, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  } else {
+    const pipR = size * 0.085;
+    const pipColor = state.faceColors[(value-1) % 6] || '#333333';
+    const positions = getPipPositions(value, size * 0.56);
+    positions.forEach(([px,py])=>{
+      ctx.beginPath();
+      ctx.arc(px, py, pipR, 0, Math.PI*2);
+      ctx.fillStyle = pipColor;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(px+0.5, py+0.5, pipR, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,0.1)';
+      ctx.fill();
+    });
+  }
+
+  ctx.restore();
+}
+
+function getPipPositions(v, spread){
+  const s = spread / 2;
+  const pips = {
+    1: [[0,0]],
+    2: [[-s,-s],[s,s]],
+    3: [[-s,-s],[0,0],[s,s]],
+    4: [[-s,-s],[s,-s],[-s,s],[s,s]],
+    5: [[-s,-s],[s,-s],[0,0],[-s,s],[s,s]],
+    6: [[-s,-s],[s,-s],[-s,0],[s,0],[-s,s],[s,s]]
+  };
+  return pips[v] || pips[1];
+}
+
+/* =====================================================================
+   DRAW STAGE (static or with results)
+   ===================================================================== */
+function drawStage(){
+  const w = canvas.width / devicePixelRatio;
+  const h = canvas.height / devicePixelRatio;
+  ctx.clearRect(0,0,w,h);
+  drawBackground(w,h);
+
+  if(state.results.length > 0 && !state.rolling){
+    drawDiceResults(w, h);
+  }
+}
+
+function drawDiceResults(w, h){
+  const n = state.results.length;
+  // Bố cục 4 viên xúc xắc chuẩn 1 hàng ngang trên desktop, 2x2 trên mobile
+  const maxPerRow = (n === 4 && w < 480) ? 2 : Math.min(n, w < 400 ? 3 : 6);
+  const rows = Math.ceil(n / maxPerRow);
+  const dieSize = Math.min(
+    (w * 0.86) / (maxPerRow * 1.3),
+    (h * 0.82) / (rows * 1.4),
+    n === 4 ? 104 : 96
+  );
+
+  for(let i = 0; i < n; i++){
+    const row = Math.floor(i / maxPerRow);
+    const col = i % maxPerRow;
+    const colsInRow = Math.min(maxPerRow, n - row * maxPerRow);
+    const rowW = colsInRow * dieSize * 1.3 - dieSize * 0.3;
+    const startX = (w - rowW) / 2 + dieSize / 2;
+    const totalH = rows * dieSize * 1.4 - dieSize * 0.4;
+    const startY = (h - totalH) / 2 + dieSize / 2;
+
+    const cx = startX + col * (dieSize * 1.3);
+    const cy = startY + row * (dieSize * 1.4);
+    drawDie(cx, cy, dieSize, state.results[i], state._rotations?.[i] || 0, state.mode==='color');
+  }
+}
+
+/* =====================================================================
+   ROLLING ANIMATION (Hỗ trợ tùy chỉnh tốc độ nhanh / chậm)
+   ===================================================================== */
+function rollDice(overrideDuration, overrideTargets){
+  if(state.rolling) return;
+  state.rolling = true;
+  btnRoll.disabled = true;
+  btnRoll.textContent = '🎲 Rolling...';
+
+  const n = state.diceCount;
+
+  // Xác định kết quả cài sẵn từ remote hoặc ngẫu nhiên
+  let finalValues = [];
+  const targets = (overrideTargets && Array.isArray(overrideTargets) && overrideTargets.length)
+    ? overrideTargets
+    : state.targetResults;
+
+  if(state.targetMode === 'random' || !targets || !targets.length){
+    finalValues = Array.from({length:n}, ()=> Math.floor(Math.random()*6)+1);
+  } else {
+    finalValues = Array.from({length:n}, (_, i)=>{
+      const t = targets[i];
+      if(typeof t === 'number' && t >= 1 && t <= 6) return t;
+      if(typeof t === 'string') return getFaceValueForColor(t, i);
+      return Math.floor(Math.random()*6)+1;
+    });
+  }
+
+  const finalRotations = Array.from({length:n}, ()=> (Math.random()-0.5)*0.5);
+  state._rotations = finalRotations;
+
+  const durationSec = Math.max(0.2, parseFloat(overrideDuration || state.rollDuration || 1.0));
+  const totalFrames = Math.max(10, Math.round(durationSec * 50)); // ~50fps
+
+  // play sound theo thời lượng
+  playRollSound(durationSec);
+
+  let frame = 0;
+
+  function animate(){
+    const w = canvas.width / devicePixelRatio;
+    const h = canvas.height / devicePixelRatio;
+    ctx.clearRect(0,0,w,h);
+    drawBackground(w,h);
+
+    const progress = frame / totalFrames;
+    const maxSize = Math.min(w / (n * 1.1 + 0.5), h * 0.55, 120);
+    const dieSize = Math.max(maxSize, 40);
+    const totalW  = n * dieSize + (n-1) * dieSize * 0.3;
+    const startX  = (w - totalW) / 2 + dieSize / 2;
+
+    const bounceCount = durationSec > 1.8 ? 3 : (durationSec > 0.7 ? 2 : 1);
+
+    for(let i=0; i<n; i++){
+      const cx = startX + i * (dieSize * 1.3);
+      // bounce effect đa va chạm mượt mà
+      const bounceHeight = (h * 0.16) * Math.pow(1 - progress, 1.4) * Math.abs(Math.sin(progress * Math.PI * bounceCount));
+      const cy = h / 2 - bounceHeight + (Math.random()-0.5) * (1-progress) * 5;
+      const rot = (1 - progress) * (Math.random()-0.5) * (durationSec > 1.5 ? 2.5 : 1.5);
+
+      // Thay đổi mặt xúc xắc: chậm dần về cuối để tạo độ hồi hộp
+      const slowDownStep = Math.max(1, Math.floor(progress * progress * 6));
+      let showVal;
+      if(progress >= 0.9){
+        showVal = finalValues[i];
+      } else if(frame % slowDownStep === 0){
+        showVal = Math.floor(Math.random()*6)+1;
+      } else {
+        showVal = state._lastFrameVals?.[i] || finalValues[i];
+      }
+      if(!state._lastFrameVals) state._lastFrameVals = [];
+      state._lastFrameVals[i] = showVal;
+
+      drawDie(cx, cy, dieSize, showVal, rot, state.mode==='color');
+    }
+
+    frame++;
+    if(frame <= totalFrames){
+      requestAnimationFrame(animate);
+    } else {
+      state.results = finalValues;
+      state.rolling = false;
+      state._lastFrameVals = null;
+      btnRoll.disabled = false;
+      btnRoll.textContent = '🎲 Go Again !';
+      drawStage();
+      showResult();
+      addRollToHistory(finalValues);
+    }
+  }
+  animate();
+}
+
+function showResult(){
+  const vals = state.results;
+  if(!vals.length) return;
+
+  if(state.mode === 'color'){
+    // Hiển thị kết quả Color Dice chuẩn Online-Dice.com
+    const badgesHtml = vals.map(v => {
+      const color = state.faceColors[(v-1)%6] || DEFAULT_FACE_COLORS[(v-1)%6];
+      const name = getColorName(color, (v-1)%6);
+      const isYellow = name === 'Yellow' || color.toLowerCase() === '#f1c40f';
+      return `<span class="color-badge" style="background:${color};${isYellow?'color:#222;text-shadow:none':''}">${name}</span>`;
+    }).join(' ');
+
+    const counts = {};
+    vals.forEach(v => {
+      const color = state.faceColors[(v-1)%6] || DEFAULT_FACE_COLORS[(v-1)%6];
+      const name = getColorName(color, (v-1)%6);
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    const summaryStr = Object.entries(counts).map(([name, c]) => `${c} ${name}`).join(', ');
+
+    resultEl.innerHTML = `
+      <div class="color-badge-list">${badgesHtml}</div>
+      <div class="color-summary-text">Result: <b>${summaryStr}</b></div>
+    `;
+  } else {
+    const total = vals.reduce((a,b)=>a+b,0);
+    const each = vals.map(v=>`<b>${v}</b>`).join(' + ');
+    if(vals.length === 1){
+      resultEl.innerHTML = `Result: <span class="total">${total}</span>`;
+    } else {
+      resultEl.innerHTML = `${each} = <span class="total">${total}</span>`;
+    }
+  }
+}
+
+/* =====================================================================
+   SOUND – Realistic dice roll (Scale theo tốc độ lăn)
+   ===================================================================== */
+let audioCtx;
+function ensureAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playRollSound(durationSec){
+  if(state.sound==='off') return;
+  try{
+    const ac = ensureAudioCtx();
+    const now = ac.currentTime;
+    const durScale = Math.max(0.3, Math.min(3.5, (durationSec || state.rollDuration || 1.0) / 1.0));
+
+    const master = ac.createGain();
+    master.gain.value = 0.6;
+    master.connect(ac.destination);
+
+    // Convolver for table resonance
+    const convLen = ac.sampleRate * 0.3;
+    const convBuf = ac.createBuffer(1, convLen, ac.sampleRate);
+    const convData = convBuf.getChannelData(0);
+    for(let i=0;i<convLen;i++){
+      convData[i] = (Math.random()*2-1) * Math.pow(1 - i/convLen, 3) * 0.15;
+    }
+    const convolver = ac.createConvolver();
+    convolver.buffer = convBuf;
+    convolver.connect(master);
+
+    const dryGain = ac.createGain();
+    dryGain.gain.value = 0.7;
+    dryGain.connect(master);
+
+    const wetGain = ac.createGain();
+    wetGain.gain.value = 0.4;
+    wetGain.connect(convolver);
+
+    // Số lần nảy tương ứng với thời lượng lăn
+    const numBounces = Math.max(3, Math.round((5 + Math.floor(Math.random()*3)) * Math.sqrt(durScale)));
+    let t = 0;
+    for(let b=0; b<numBounces; b++){
+      const progress = b / numBounces;
+      const impactVol = (1 - progress*0.7) * (0.6 + Math.random()*0.4);
+      const dur = (0.015 + Math.random()*0.02);
+
+      const buf = ac.createBuffer(1, Math.max(1, Math.floor(ac.sampleRate * dur)), ac.sampleRate);
+      const d = buf.getChannelData(0);
+      const freq = 200 + Math.random()*600;
+      for(let i=0;i<d.length;i++){
+        const env = Math.pow(1 - i/d.length, 4);
+        const noise = (Math.random()*2-1) * 0.5;
+        const tone = Math.sin(2*Math.PI*freq*i/ac.sampleRate) * 0.5;
+        d[i] = (noise + tone) * env;
+      }
+
+      const src = ac.createBufferSource();
+      src.buffer = buf;
+      const g = ac.createGain();
+      g.gain.value = impactVol;
+      src.connect(g);
+      g.connect(dryGain);
+      g.connect(wetGain);
+      src.start(now + t);
+
+      // Khoảng cách giữa các lần nảy dãn ra hoặc co lại theo tốc độ
+      t += (0.04 + Math.random()*0.05) * (1 - progress*0.5) * durScale;
+    }
+
+    // Tiếng chạm cuối cùng (thud)
+    const settleDur = 0.04;
+    const settleBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * settleDur), ac.sampleRate);
+    const sd = settleBuf.getChannelData(0);
+    for(let i=0;i<sd.length;i++){
+      const env = Math.pow(1 - i/sd.length, 6);
+      sd[i] = (Math.random()*2-1) * env * 0.3 + Math.sin(2*Math.PI*150*i/ac.sampleRate) * env * 0.4;
+    }
+    const ss = ac.createBufferSource();
+    ss.buffer = settleBuf;
+    const sg = ac.createGain();
+    sg.gain.value = 0.8;
+    ss.connect(sg);
+    sg.connect(dryGain);
+    sg.connect(wetGain);
+    ss.start(now + t + 0.02 * durScale);
+
+  }catch(e){console.log('Sound error:',e)}
+}
+
+/* =====================================================================
+   MODE & DICE PILLS (ONLINE-DICE.COM 4 COLOR DICE UI)
+   ===================================================================== */
+function updateDicePillsUI(){
+  document.querySelectorAll('.dice-pill').forEach(pill => {
+    const c = parseInt(pill.dataset.count);
+    pill.classList.toggle('active', c === state.diceCount);
+    pill.textContent = state.mode === 'color'
+      ? (c === 1 ? '1 Color Die' : `${c} Color Dice`)
+      : (c === 1 ? '1 Die' : `${c} Dice`);
+  });
+
+  const titleEl = document.getElementById('pageTitle');
+  const subtitleEl = document.getElementById('pageSubtitle');
+  if(titleEl){
+    titleEl.textContent = state.mode === 'color'
+      ? (state.diceCount === 1 ? '1 Color Die' : `${state.diceCount} Color Dice`)
+      : (state.diceCount === 1 ? '1 Die' : `${state.diceCount} Dice`);
+  }
+  if(subtitleEl){
+    subtitleEl.textContent = state.mode === 'color'
+      ? 'Roll 6-Sided Color Dice'
+      : 'Roll 6-Sided Dice Online';
+  }
+  btnMode.textContent = state.mode === 'classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+}
+
+document.querySelectorAll('.dice-pill').forEach(pill => {
+  pill.addEventListener('click', ()=>{
+    const count = parseInt(pill.dataset.count);
+    setDiceCount(count);
+  });
+});
+
+function setDiceCount(count){
+  state.diceCount = count;
+  diceCountSel.value = count;
+
+  // Đồng bộ độ dài của targetResults với số lượng xúc xắc
+  if(!state.targetResults || !Array.isArray(state.targetResults)){
+    state.targetResults = [];
+  }
+  while(state.targetResults.length < count){
+    state.targetResults.push((state.targetResults.length % 6) + 1);
+  }
+
+  updateDicePillsUI();
+  // Khởi tạo xúc xắc trên bàn hiển thị theo màu đã cài sẵn
+  state.results = Array.from({length: state.diceCount}, (_, i)=> {
+    const t = state.targetResults[i];
+    return (typeof t === 'number' && t >= 1 && t <= 6) ? t : ((i % 6) + 1);
+  });
+  drawStage();
+  showResult();
+  saveState();
+  broadcastCloudState();
+}
+
+btnMode.addEventListener('click', ()=>{
+  state.mode = state.mode === 'classic' ? 'color' : 'classic';
+  updateDicePillsUI();
+  if(state.results.length){
+    drawStage();
+    showResult();
+  }
+  saveState();
+  broadcastCloudState();
+});
+
+diceCountSel.addEventListener('change', ()=>{
+  setDiceCount(parseInt(diceCountSel.value));
+});
+
+/* =====================================================================
+   ROLL BUTTON + KEYBOARD
+   ===================================================================== */
+btnRoll.addEventListener('click', rollDice);
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space' && !e.repeat && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='SELECT'){
+    e.preventDefault();
+    rollDice();
+  }
+});
+
+/* =====================================================================
+   OWNER PANEL
+   ===================================================================== */
+/* =====================================================================
+   OWNER PANEL – ACCESS & CONTROLS
+   - Nút "⚙ Admin" hiển thị sẵn ở:
+     1. Góc trên bên phải thanh Navbar (#navAdminBtn)
+     2. Nút tròn nổi góc dưới bên phải màn hình (#ownerToggle)
+     3. Link ở chân trang Footer (#footerAdminBtn)
+   - Phím tắt mở nhanh: Ctrl + Shift + F12
+   - Mở bằng URL: index.html?admin=1
+   - Chế độ Stream bí mật: Tùy chọn trong Admin để ẩn các nút khi Live
+   ===================================================================== */
+const ownerToggle    = document.getElementById('ownerToggle');
+const navAdminBtn    = document.getElementById('navAdminBtn');
+const footerAdminBtn = document.getElementById('footerAdminBtn');
+const ownerOverlay   = document.getElementById('ownerOverlay');
+const ownerClose     = document.getElementById('ownerClose');
+const pinGate        = document.getElementById('pinGate');
+const panelContent   = document.getElementById('panelContent');
+const pinInput       = document.getElementById('pinInput');
+const btnPin         = document.getElementById('btnPin');
+const pinError       = document.getElementById('pinError');
+
+function openOwnerPanel(e){
+  if(e && e.stopPropagation) e.stopPropagation();
+  ownerOverlay.classList.add('show');
+  pinGate.style.display = 'block';
+  panelContent.style.display = 'none';
+  pinInput.value = '';
+  pinError.style.display = 'none';
+  setTimeout(()=> {
+    pinInput.focus();
+    pinInput.select();
+  }, 80);
+}
+
+function applyAdminButtonsVisibility(){
+  const hide = state.hideAdminBtns === true;
+  if(ownerToggle) ownerToggle.classList.toggle('hidden-mode', hide);
+  if(navAdminBtn) navAdminBtn.classList.toggle('hidden-mode', hide);
+  if(footerAdminBtn) footerAdminBtn.style.display = hide ? 'none' : 'inline-block';
+}
+
+if(ownerToggle) ownerToggle.addEventListener('click', openOwnerPanel);
+if(navAdminBtn) navAdminBtn.addEventListener('click', openOwnerPanel);
+if(footerAdminBtn) footerAdminBtn.addEventListener('click', openOwnerPanel);
+ownerClose.addEventListener('click', closePanel);
+
+/* Click vào vùng tối bên ngoài sidebar để đóng */
+ownerOverlay.addEventListener('click', e => {
+  if(e.target === ownerOverlay){
+    closePanel();
+  }
+});
+
+/* Trigger logo: Double click hoặc click 3 lần vào logo */
+const logoWrap = document.getElementById('logoWrap') || document.querySelector('.logo-wrap');
+if(logoWrap){
+  let logoClicks = 0;
+  let logoTimer  = null;
+  logoWrap.addEventListener('click', e => {
+    e.stopPropagation();
+    logoClicks++;
+    if(logoClicks === 1){
+      logoTimer = setTimeout(()=>{ logoClicks = 0; }, 1500);
+    }
+    if(logoClicks >= 3){
+      logoClicks = 0;
+      clearTimeout(logoTimer);
+      openOwnerPanel();
+    }
+  });
+  logoWrap.addEventListener('dblclick', e => {
+    e.stopPropagation();
+    openOwnerPanel();
+  });
+}
+
+/* =====================================================================
+   KEYBOARD SHORTCUTS (HỖ TRỢ MỌI BÀN PHÍM & LAPTOP)
+   1. Phím 1-chạm: Phím 'A' hoặc phím '~' (dấu ngã cạnh số 1)
+   2. Phím tổ hợp: Ctrl + M hoặc Ctrl + Shift + A
+   3. Phím F2 hoặc Ctrl + Shift + F12
+   4. Cheat code bí mật: Gõ liên tiếp 'admin' ở bất kỳ đâu
+   5. Phím Escape: Đóng panel ngay
+   ===================================================================== */
+let secretTypeBuffer = '';
+
+document.addEventListener('keydown', e => {
+  const inInput = document.activeElement && 
+    (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'TEXTAREA');
+
+  // Phím Esc: luôn đóng panel
+  if(e.key === 'Escape' || e.code === 'Escape'){
+    if(ownerOverlay.classList.contains('show')){
+      e.preventDefault();
+      closePanel();
+      return;
+    }
+  }
+
+  // Nếu đang gõ trong ô nhập PIN hoặc form thì không kích hoạt phím mở
+  if(inInput) return;
+
+  // 1. Cheat code bí mật: gõ 'admin' hoặc 'dice'
+  if(e.key && e.key.length === 1){
+    secretTypeBuffer += e.key.toLowerCase();
+    if(secretTypeBuffer.length > 10) secretTypeBuffer = secretTypeBuffer.slice(-10);
+    if(secretTypeBuffer.endsWith('admin') || secretTypeBuffer.endsWith('dice')){
+      secretTypeBuffer = '';
+      e.preventDefault();
+      openOwnerPanel();
+      return;
+    }
+  }
+
+  // 2. Phím 1-chạm cực nhạy: phím 'A' / 'a' (Admin) HOẶC phím '~' / '`' (Console)
+  if(e.code === 'KeyA' || e.key === 'a' || e.key === 'A' ||
+     e.code === 'Backquote' || e.key === '`' || e.key === '~'){
+    e.preventDefault();
+    openOwnerPanel();
+    return;
+  }
+
+  // 3. Phím tổ hợp: Ctrl + M (Menu) hoặc Ctrl + Shift + A
+  if((e.ctrlKey || e.metaKey) && (e.code === 'KeyM' || e.key === 'm' || e.key === 'M')){
+    e.preventDefault();
+    openOwnerPanel();
+    return;
+  }
+  if((e.ctrlKey || e.metaKey) && e.shiftKey && (e.code === 'KeyA' || e.key === 'a' || e.key === 'A')){
+    e.preventDefault();
+    openOwnerPanel();
+    return;
+  }
+
+  // 4. Phím F2 hoặc Ctrl + Shift + F12
+  if(e.code === 'F2' || e.key === 'F2'){
+    e.preventDefault();
+    openOwnerPanel();
+    return;
+  }
+  if((e.code === 'F12' || e.key === 'F12') && e.ctrlKey && e.shiftKey){
+    e.preventDefault();
+    openOwnerPanel();
+    return;
+  }
+});
+
+function closePanel(){
+  ownerOverlay.classList.remove('show');
+  pinGate.style.display='block';
+  panelContent.style.display='none';
+  pinInput.value='';
+  pinError.style.display='none';
+}
+
+btnPin.addEventListener('click',checkPin);
+pinInput.addEventListener('keydown',e=>{if(e.key==='Enter')checkPin()});
+
+function checkPin(){
+  if(pinInput.value === getOwnerPin()){
+    pinGate.style.display='none';
+    panelContent.style.display='block';
+    populateOwnerPanel();
+  } else {
+    pinError.style.display='block';
+    pinInput.value='';
+    pinInput.focus();
+  }
+}
+
+function populateOwnerPanel(){
+  // theme select + live preview
+  const ts = document.getElementById('ownerTheme');
+  ts.innerHTML='';
+  Object.keys(THEMES).forEach(name=>{
+    const o=document.createElement('option');o.value=name;o.textContent=name;
+    if(name===state.theme)o.selected=true;
+    ts.appendChild(o);
+  });
+  ts.addEventListener('change',()=>{ setTheme(ts.value); livePreview(); });
+
+  // dice count
+  document.getElementById('ownerDiceCount').value = state.diceCount;
+
+  // mode + live preview
+  const modeSelect = document.getElementById('ownerMode');
+  modeSelect.value = state.mode;
+  modeSelect.addEventListener('change',()=>{
+    state.mode = modeSelect.value;
+    btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+    livePreview();
+  });
+
+  // sound
+  document.getElementById('ownerSound').value = state.sound;
+  // roll speed
+  const speedSel = document.getElementById('ownerRollSpeed');
+  if(speedSel) speedSel.value = (state.rollDuration || 1.0).toString();
+  // room ID
+  const roomInput = document.getElementById('ownerRoomId');
+  if(roomInput) roomInput.value = window.syncService ? window.syncService.roomId : 'dice8888';
+  // PIN change input
+  const pinInputEl = document.getElementById('ownerPinChange');
+  if(pinInputEl) pinInputEl.value = getOwnerPin();
+  // show history
+  const histCheck = document.getElementById('ownerShowHistory');
+  if(histCheck) histCheck.checked = (state.showHistory !== false);
+  const btnOwnerClear = document.getElementById('ownerBtnClearHistory');
+  if(btnOwnerClear){
+    btnOwnerClear.onclick = ()=>{
+      if(confirm('Bạn có chắc muốn xóa toàn bộ lịch sử lắc?')){
+        clearHistory();
+      }
+    };
+  }
+
+  // hide admin buttons
+  const hideBtnsEl = document.getElementById('ownerHideAdminBtns');
+  if(hideBtnsEl) hideBtnsEl.checked = (state.hideAdminBtns === true);
+
+  // face colors
+  buildFaceColorGrid();
+
+  // Hiện preview ngay khi mở panel
+  livePreview();
+}
+
+document.getElementById('btnSaveNewPin').addEventListener('click', ()=>{
+  const p = document.getElementById('ownerPinChange').value.trim();
+  if(p){
+    setOwnerPin(p);
+    const n = document.getElementById('pinChangeNotice');
+    if(n){
+      n.style.display = 'block';
+      setTimeout(()=> n.style.display = 'none', 3000);
+    }
+  }
+});
+
+function buildFaceColorGrid(){
+  const grid = document.getElementById('faceColorGrid');
+  grid.innerHTML = '';
+  const SIX_OPTS = [
+    { name: 'Red', hex: '#e74c3c' },
+    { name: 'Orange', hex: '#e67e22' },
+    { name: 'Yellow', hex: '#f1c40f' },
+    { name: 'Green', hex: '#2ecc71' },
+    { name: 'Blue', hex: '#3498db' },
+    { name: 'Purple', hex: '#9b59b6' }
+  ];
+
+  for(let i=0;i<6;i++){
+    const item = document.createElement('div');
+    item.className='face-color-item';
+    const dots = '⚀⚁⚂⚃⚄⚅'[i];
+    const cur = (state.faceColors[i] || SIX_OPTS[i].hex).toLowerCase();
+
+    let opts = SIX_OPTS.map(c => `
+      <option value="${c.hex}" ${c.hex.toLowerCase() === cur ? 'selected' : ''}>${c.name}</option>
+    `).join('');
+
+    item.innerHTML=`
+      <span>${dots} Face ${i+1}</span>
+      <select data-face="${i}" style="padding:4px;font-size:12px;font-weight:600">
+        ${opts}
+      </select>
+    `;
+
+    const sel = item.querySelector('select');
+    sel.addEventListener('change',()=>{
+      state.faceColors[i] = sel.value;
+      livePreview();
+    });
+    grid.appendChild(item);
+  }
+}
+
+/* ---- LIVE PREVIEW: hiện 6 mặt xúc xắc trên bàn khi đang chỉnh ---- */
+function livePreview(){
+  // Tự đặt 6 viên xúc xắc (mặt 1–6) lên bàn để thấy màu ngay
+  state.results = [1,2,3,4,5,6];
+  state._rotations = [0,0,0,0,0,0];
+  const savedCount = state.diceCount;
+  state.diceCount = 6;
+  drawStage();
+  state.diceCount = savedCount;
+  resultEl.innerHTML = '🔍 <b>Live Preview</b> – đang xem trước màu sắc';
+}
+
+document.getElementById('btnSave').addEventListener('click',()=>{
+  state.theme = document.getElementById('ownerTheme').value;
+  state.diceCount = parseInt(document.getElementById('ownerDiceCount').value);
+  state.mode = document.getElementById('ownerMode').value;
+  state.sound = document.getElementById('ownerSound').value;
+  const speedSel = document.getElementById('ownerRollSpeed');
+  if(speedSel) state.rollDuration = parseFloat(speedSel.value) || 1.0;
+
+  // face colors (6 colors only)
+  document.querySelectorAll('#faceColorGrid select').forEach(sel=>{
+    const i = parseInt(sel.dataset.face);
+    state.faceColors[i] = sel.value;
+  });
+
+  // room ID
+  const roomInput = document.getElementById('ownerRoomId');
+  if(roomInput && window.syncService){
+    window.syncService.setRoomId(roomInput.value.trim());
+  }
+
+  // show history
+  const histCheck = document.getElementById('ownerShowHistory');
+  if(histCheck){
+    state.showHistory = histCheck.checked;
+    const sec = document.getElementById('historySection');
+    if(sec) sec.style.display = state.showHistory ? 'block' : 'none';
+  }
+
+  // hide admin buttons (stealth mode)
+  const hideBtnsEl = document.getElementById('ownerHideAdminBtns');
+  if(hideBtnsEl) state.hideAdminBtns = hideBtnsEl.checked;
+  applyAdminButtonsVisibility();
+
+  // apply
+  setTheme(state.theme);
+  diceCountSel.value = state.diceCount;
+  btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+  state.results = [];
+  resultEl.innerHTML = '🎲 Press <b>Go Again !</b> to roll';
+  drawStage();
+  saveState();
+  broadcastCloudState();
+  pushToServer();   // optional local server fallback
+  closePanel();
+});
+
+// Clear history button on stream page
+document.getElementById('btnClearHistory').addEventListener('click',()=>{
+  if(confirm('Bạn có muốn xóa toàn bộ lịch sử ra màu?')){
+    clearHistory();
+  }
+});
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+loadState();
+loadHistory();
+applyAdminButtonsVisibility();
+setTheme(state.theme);
+diceCountSel.value = state.diceCount;
+updateDicePillsUI();
+resizeCanvas();
+showResult();
+renderHistoryUI();
+
+// Auto-open Admin if ?admin=1 in URL
+try{
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('admin') === '1' || params.get('admin') === 'true'){
+    setTimeout(openOwnerPanel, 200);
+  }
+}catch(e){}
+
+/* =====================================================================
+   CLOUD SYNC (Serverless, No Machine Host Required)
+   ===================================================================== */
+function broadcastCloudState(){
+  if(!window.syncService) return;
+  window.syncService.send('sync_state', {
+    theme: state.theme,
+    diceCount: state.diceCount,
+    mode: state.mode,
+    sound: state.sound,
+    faceColors: state.faceColors,
+    rollDuration: state.rollDuration || 1.0,
+    showHistory: state.showHistory,
+    history: rollHistory,
+    targetResults: state.targetResults,
+    targetMode: state.targetMode
+  });
+}
+
+if(window.syncService){
+  window.syncService.init({
+    role: 'host',
+    onStatus: (status, text)=>{
+      const statusEl = document.getElementById('cloudStatusText');
+      if(statusEl){
+        statusEl.textContent = '● ' + text;
+        statusEl.style.color = (status === 'connected') ? '#28a745' : (status === 'connecting' ? '#ff7f00' : '#e74c3c');
+      }
+    },
+    onMessage: (action, payload)=>{
+      let needRedraw = false;
+
+      if(action === 'roll'){
+        if(payload.targetResults && Array.isArray(payload.targetResults)){
+          state.targetResults = [...payload.targetResults];
+        }
+        if(payload.targetMode){
+          state.targetMode = payload.targetMode;
+        }
+        rollDice(payload.rollDuration, payload.targetResults);
+        return;
+      }
+
+      if(action === 'set_targets'){
+        if(payload.targets && Array.isArray(payload.targets)){
+          state.targetResults = [...payload.targets];
+        }
+        if(payload.targetMode){
+          state.targetMode = payload.targetMode;
+        }
+        saveState();
+        return;
+      }
+
+      if(action === 'change_roll_speed'){
+        if(payload.rollDuration){
+          state.rollDuration = parseFloat(payload.rollDuration) || 1.0;
+          saveState();
+        }
+        return;
+      }
+
+      if(action === 'change_theme'){
+        if(payload.theme && THEMES[payload.theme]){
+          setTheme(payload.theme);
+          needRedraw = true;
+        }
+      }
+
+      if(action === 'change_dice_count'){
+        const cnt = parseInt(payload.diceCount);
+        if(cnt >= 1 && cnt <= 6){
+          setDiceCount(cnt);
+          return;
+        }
+      }
+
+      if(action === 'change_mode'){
+        if(payload.mode){
+          state.mode = payload.mode;
+          btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+          needRedraw = true;
+        }
+      }
+
+      if(action === 'change_sound'){
+        if(payload.sound) state.sound = payload.sound;
+      }
+
+      if(action === 'change_face_color'){
+        const idx = parseInt(payload.faceIndex);
+        if(idx >= 0 && idx < 6 && payload.color){
+          state.faceColors[idx] = payload.color;
+          needRedraw = true;
+        }
+      }
+
+      if(action === 'change_all_face_colors' || action === 'sync_state'){
+        if(payload.faceColors && Array.isArray(payload.faceColors)){
+          state.faceColors = [...payload.faceColors];
+          needRedraw = true;
+        }
+        if(payload.theme && THEMES[payload.theme]){
+          state.theme = payload.theme;
+          setTheme(payload.theme);
+          needRedraw = true;
+        }
+        if(payload.diceCount){
+          state.diceCount = parseInt(payload.diceCount);
+          diceCountSel.value = state.diceCount;
+          needRedraw = true;
+        }
+        if(payload.mode){
+          state.mode = payload.mode;
+          btnMode.textContent = state.mode==='classic' ? '🎨 Color Dice' : '🎲 6-sided Dice';
+          needRedraw = true;
+        }
+        if(payload.sound) state.sound = payload.sound;
+        if(payload.rollDuration) state.rollDuration = parseFloat(payload.rollDuration) || 1.0;
+      }
+
+      if(action === 'request_state'){
+        broadcastCloudState();
+      }
+
+      if(action === 'clear_history'){
+        rollHistory = [];
+        rollCounter = 0;
+        saveHistory();
+        renderHistoryUI();
+        return;
+      }
+
+      if(needRedraw){
+        updateDicePillsUI();
+        drawStage();
+        showResult();
+        saveState();
+      }
+    }
+  });
+}
+
+/* Optional local server sync fallback (nếu người dùng có bật local server) */
+function pushToServer(){
+  fetch('/api/settings',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      theme: state.theme,
+      diceCount: state.diceCount,
+      mode: state.mode,
+      sound: state.sound,
+      faceColors: state.faceColors,
+      rollCmd: 0
+    })
+  }).catch(()=>{});
+}
+
+</script>
+</body>
+</html>

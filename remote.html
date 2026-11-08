@@ -266,19 +266,45 @@ select,input[type=text]{width:100%;padding:8px 10px;border:1px solid rgba(255,25
     <div class="theme-grid" id="themeGrid"></div>
   </div>
 
-  <!-- ROOM ID -->
+  <!-- ROOM ID & SECURITY -->
   <div class="card">
-    <h3>☁️ Mã phòng (Room ID)</h3>
-    <div class="room-bar">
-      <input type="text" id="rRoomId" placeholder="dice8888">
+    <h3>🔒 Bảo mật: Mã phòng & Mật khẩu PIN</h3>
+    <label>Mã phòng bí mật (Room ID):</label>
+    <div class="room-bar" style="margin-bottom:8px">
+      <input type="text" id="rRoomId" placeholder="dice8888" style="font-weight:700">
       <button id="btnChangeRoom">Đổi phòng</button>
+    </div>
+
+    <label>Đổi Mật khẩu PIN mở Remote (hiện tại: <span id="rCurrentPinLabel" style="color:#3898ec;font-weight:700">8888</span>):</label>
+    <div class="room-bar">
+      <input type="text" id="rNewPin" placeholder="Nhập PIN mới (vd: 9999)" style="font-weight:700">
+      <button id="btnChangePin">Lưu PIN</button>
+    </div>
+    <div id="rPinNotice" style="font-size:11.5px;color:#28a745;margin-top:5px;display:none">✅ Đã đổi mã PIN thành công!</div>
+
+    <div style="margin-top:14px; padding-top:12px; border-top:1px solid #334155; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:700; font-size:12.5px; color:#f8fafc;">👁️ Ẩn nút Admin trên máy tính Live:</div>
+        <div style="font-size:11px; color:#94a3b8;">Xóa biểu tượng ⚙ trên màn hình live</div>
+      </div>
+      <button id="btnToggleAdminVisibility" style="background:#2563eb; color:#fff; border:none; border-radius:6px; padding:6px 12px; font-weight:700; font-size:11.5px; cursor:pointer;">Ẩn nút Admin</button>
     </div>
   </div>
 
 </div>
 
 <script>
-const OWNER_PIN = '8888';
+function getOwnerPin(){
+  return localStorage.getItem('od_owner_pin') || '8888';
+}
+function setOwnerPin(pin){
+  if(pin && pin.trim()){
+    localStorage.setItem('od_owner_pin', pin.trim());
+    return true;
+  }
+  return false;
+}
+
 const PIPS = ['⚀','⚁','⚂','⚃','⚄','⚅'];
 const DEFAULT_FACE_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'];
 
@@ -327,18 +353,28 @@ document.getElementById('btnPin').onclick = checkPin;
 document.getElementById('pinInput').addEventListener('keydown', e => { if(e.key === 'Enter') checkPin(); });
 
 function checkPin(){
-  if(document.getElementById('pinInput').value === OWNER_PIN){
-    document.getElementById('pinGate').style.display = 'none';
-    const main = document.getElementById('mainRemote');
-    main.style.display = 'flex';
-    main.style.flexDirection = 'column';
-    main.style.gap = '10px';
-    initRemote();
+  if(document.getElementById('pinInput').value === getOwnerPin()){
+    unlockRemote();
   } else {
     document.getElementById('pinError').style.display = 'block';
     document.getElementById('pinInput').value = '';
     document.getElementById('pinInput').focus();
   }
+}
+
+function unlockRemote(){
+  document.getElementById('pinGate').style.display = 'none';
+  const main = document.getElementById('mainRemote');
+  main.style.display = 'flex';
+  main.style.flexDirection = 'column';
+  main.style.gap = '10px';
+  initRemote();
+}
+
+// Auto-unlock nếu có param pin đúng trên URL
+const urlPin = new URLSearchParams(window.location.search).get('pin');
+if(urlPin && urlPin === getOwnerPin()){
+  setTimeout(unlockRemote, 50);
 }
 
 function initRemote(){
@@ -357,6 +393,8 @@ function initRemote(){
   if(rRoom && window.syncService){
     rRoom.value = window.syncService.roomId;
   }
+  const pinLbl = document.getElementById('rCurrentPinLabel');
+  if(pinLbl) pinLbl.textContent = getOwnerPin();
 
   // Khởi tạo Cloud Sync qua WebSocket
   if(window.syncService){
@@ -391,6 +429,14 @@ function initRemote(){
             renderRemoteHistory();
             if(remoteHistory.length > 0){
               showLatestResultBanner(remoteHistory[0]);
+            }
+          }
+          if(payload.hideAdminBtn !== undefined){
+            remoteHideAdminBtn = !!payload.hideAdminBtn;
+            const btnTog = document.getElementById('btnToggleAdminVisibility');
+            if(btnTog){
+              btnTog.textContent = remoteHideAdminBtn ? 'Hiện nút Admin' : 'Ẩn nút Admin';
+              btnTog.style.background = remoteHideAdminBtn ? '#e11d48' : '#2563eb';
             }
           }
           applySettingsToUI();
@@ -859,6 +905,36 @@ document.getElementById('btnChangeRoom').addEventListener('click', ()=>{
     window.syncService.setRoomId(rRoom);
   }
 });
+
+/* ---- CHANGE PIN BUTTON ---- */
+document.getElementById('btnChangePin').addEventListener('click', ()=>{
+  const p = document.getElementById('rNewPin').value.trim();
+  if(p){
+    setOwnerPin(p);
+    const lbl = document.getElementById('rCurrentPinLabel');
+    if(lbl) lbl.textContent = p;
+    document.getElementById('rNewPin').value = '';
+    const n = document.getElementById('rPinNotice');
+    if(n){
+      n.style.display = 'block';
+      setTimeout(()=> n.style.display = 'none', 3000);
+    }
+  }
+});
+
+/* ---- TOGGLE ADMIN VISIBILITY ON LIVE ---- */
+let remoteHideAdminBtn = false;
+const btnToggleAdmin = document.getElementById('btnToggleAdminVisibility');
+if(btnToggleAdmin){
+  btnToggleAdmin.addEventListener('click', ()=>{
+    remoteHideAdminBtn = !remoteHideAdminBtn;
+    btnToggleAdmin.textContent = remoteHideAdminBtn ? 'Hiện nút Admin' : 'Ẩn nút Admin';
+    btnToggleAdmin.style.background = remoteHideAdminBtn ? '#e11d48' : '#2563eb';
+    if(window.syncService){
+      window.syncService.send('toggle_admin_btn', { hide: remoteHideAdminBtn });
+    }
+  });
+}
 
 </script>
 </body>
